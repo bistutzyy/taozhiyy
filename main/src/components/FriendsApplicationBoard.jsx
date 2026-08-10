@@ -21,6 +21,7 @@ import {
 } from "./friendsApplicationThreads";
 
 const FRIENDS_CHANNEL = "friends";
+const FRIENDS_COMMENT_PAGE_SIZE = 5;
 const FRIEND_COMMENT_MAX_LENGTH = 500;
 const FRIEND_REPLY_MAX_LENGTH = 300;
 
@@ -64,6 +65,11 @@ const formatTime = (value) => {
   }
 };
 
+const expandedStateForFriendsThreads = (items = []) =>
+  Object.fromEntries(
+    items.map((item) => [item.id, (item.replyCount || 0) > 0]),
+  );
+
 const CommentAvatar = ({ item, name }) => {
   const avatar = item?.avatar;
   const label = name || item?.nickname || "友链伙伴";
@@ -89,6 +95,8 @@ const FriendsApplicationBoard = () => {
   const [user, setUser] = useState(null);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [commentTotal, setCommentTotal] = useState(0);
   const [nickname, setNickname] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [content, setContent] = useState("");
@@ -123,22 +131,24 @@ const FriendsApplicationBoard = () => {
 
     const loadEntries = async () => {
       setLoading(true);
-      const { ok, data } = await fetchGuestbookMessages(1, 30, {
-        channel: FRIENDS_CHANNEL,
-      });
+      const { ok, data } = await fetchGuestbookMessages(
+        1,
+        FRIENDS_COMMENT_PAGE_SIZE,
+        {
+          channel: FRIENDS_CHANNEL,
+        },
+      );
       if (cancelled) return;
       if (!ok) {
         setEntries([]);
+        setCommentTotal(0);
         setLoading(false);
         return;
       }
       const nextEntries = normalizeFriendsThreads(asList(data));
       setEntries(nextEntries);
-      setExpandedThreads(
-        Object.fromEntries(
-          nextEntries.map((item) => [item.id, (item.replyCount || 0) > 0]),
-        ),
-      );
+      setCommentTotal(Number(data?.total) || nextEntries.length);
+      setExpandedThreads(expandedStateForFriendsThreads(nextEntries));
       setLoading(false);
     };
 
@@ -148,6 +158,46 @@ const FriendsApplicationBoard = () => {
       cancelled = true;
     };
   }, []);
+
+  const hasMoreComments = entries.length < commentTotal;
+
+  const onLoadMore = async () => {
+    if (loadingMore || !hasMoreComments) return;
+
+    const nextPage =
+      Math.floor(entries.length / FRIENDS_COMMENT_PAGE_SIZE) + 1;
+    setLoadingMore(true);
+    setError("");
+
+    const { ok, data } = await fetchGuestbookMessages(
+      nextPage,
+      FRIENDS_COMMENT_PAGE_SIZE,
+      {
+        channel: FRIENDS_CHANNEL,
+      },
+    );
+
+    setLoadingMore(false);
+
+    if (!ok) {
+      setError(data.message || "更多留言加载失败，请稍后再试。");
+      return;
+    }
+
+    const nextEntries = normalizeFriendsThreads(asList(data));
+    setEntries((prev) => {
+      const existingIds = new Set(prev.map((item) => item.id));
+      return [
+        ...prev,
+        ...nextEntries.filter((item) => !existingIds.has(item.id)),
+      ];
+    });
+    setCommentTotal(Number(data?.total) || entries.length + nextEntries.length);
+    setExpandedThreads((prev) => ({
+      ...prev,
+      ...expandedStateForFriendsThreads(nextEntries),
+    }));
+  };
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -189,8 +239,13 @@ const FriendsApplicationBoard = () => {
     setContactEmail("");
     setNotice("留言已经提交成功。");
     if (data.item) {
+      setCommentTotal((prev) => prev + 1);
+      setExpandedThreads((prev) => ({ ...prev, [data.item.id]: false }));
       setEntries((prev) =>
-        [{ ...data.item, replies: [], replyCount: 0 }, ...prev].slice(0, 30),
+        [{ ...data.item, replies: [], replyCount: 0 }, ...prev].slice(
+          0,
+          Math.max(prev.length, FRIENDS_COMMENT_PAGE_SIZE),
+        ),
       );
     }
   };
@@ -261,7 +316,7 @@ const FriendsApplicationBoard = () => {
             </h2>
           </div>
           <p className="text-sm font-semibold text-[#7B5C61]">
-            {entries.length} 条留言
+            {commentTotal || entries.length} 条留言
           </p>
         </div>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-[#6B7280]">
@@ -627,6 +682,22 @@ const FriendsApplicationBoard = () => {
             </article>
           );
         })}
+
+        {!loading && hasMoreComments && (
+          <div className="flex flex-col items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onLoadMore}
+              disabled={loadingMore}
+              className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-[#D8E9F8] bg-white/76 px-5 py-2 text-sm font-bold text-[#5F80C8] shadow-[0_10px_24px_rgba(95,75,82,0.08)] transition hover:border-[#FF8FAB] hover:text-[#FF8FAB] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loadingMore ? "加载中..." : "加载更多"}
+            </button>
+            <p className="text-xs font-semibold text-[#8A7C74]">
+              已显示 {entries.length}/{commentTotal} 条
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
