@@ -44,3 +44,20 @@ test("keeps the 090909 friend link as Tashuo", () => {
   assert.equal(tashuo.desc, "梁栋烨的博客网站。");
   assert.equal(tashuo.avatar, "https://090909.top/assets/images/logo.ico");
 });
+
+test("keeps friend links published after Lingka", () => {
+  const urls = new Set(friendCards.map((friend) => friend.url));
+
+  assert.ok(friendCards.length >= 28);
+  for (const url of [
+    "https://justpureh2o.cn",
+    "https://home.nibutupaopao.top",
+    "https://123456l.com",
+    "https://blog.zuodev.top",
+    "https://www.minedensity.top",
+    "https://keiyan.top",
+    "https://blog.pldduck.com",
+  ]) {
+    assert.ok(urls.has(url), `missing friend link ${url}`);
+  }
+});
