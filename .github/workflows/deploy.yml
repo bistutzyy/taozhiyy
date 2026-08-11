@@ -1,9 +1,6 @@
-name: Deploy Taozhiyy To UCloud
+name: Deploy Taozhiyy On Self-Hosted Runner
 
 run-name: Deploy ${{ github.sha }}
-
-# Touch this workflow file when a manual push-triggered redeploy is needed.
-# Last redeploy trigger: friend links 2026-06-08 16:17 +0800.
 
 on:
   push:
@@ -18,16 +15,16 @@ on:
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
+concurrency:
+  group: taozhiyy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: [self-hosted, taozhiyy, linux]
+    timeout-minutes: 45
 
     env:
-      UCLOUD_HOST: ${{ secrets.UCLOUD_HOST }}
-      UCLOUD_PORT: ${{ secrets.UCLOUD_PORT }}
-      UCLOUD_USER: ${{ secrets.UCLOUD_USER }}
-      UCLOUD_SUDO_PASSWORD: ${{ secrets.UCLOUD_SUDO_PASSWORD }}
       ROOT_DIR: /var/www/taozhiyy
       TMP_DIR: /tmp/taozhiyy-deploy
       VITE_API_BASE: https://taozhiyy.top
@@ -35,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -57,7 +56,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build acg-api (linux)
+      - name: Build acg-api
         run: |
           cd acg-api
           go mod tidy
@@ -72,69 +71,22 @@ jobs:
         env:
           VITE_API_BASE: ${{ env.VITE_API_BASE }}
 
-      - name: Build blog (Hexo)
+      - name: Build blog
         run: |
           cd blog
           npm ci
           npm run clean
           npm run build
 
-      - name: Build build (Vite)
+      - name: Build build site
         run: |
           cd build
           npm ci
           npm run build
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.UCLOUD_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          if [ -n "$UCLOUD_PORT" ]; then
-            ssh-keyscan -p "$UCLOUD_PORT" "$UCLOUD_HOST" >> ~/.ssh/known_hosts
-          else
-            ssh-keyscan "$UCLOUD_HOST" >> ~/.ssh/known_hosts
-          fi
-
-      - name: Upload artifacts to remote tmp
-        run: |
-          SSH_PORT="${UCLOUD_PORT:-22}"
-          ssh -p "$SSH_PORT" "$UCLOUD_USER@$UCLOUD_HOST" "mkdir -p $TMP_DIR/main $TMP_DIR/blog $TMP_DIR/build $TMP_DIR/acg-api $TMP_DIR/ai-assistant"
-          rsync -az --delete -e "ssh -p $SSH_PORT" main/dist/ "$UCLOUD_USER@$UCLOUD_HOST:$TMP_DIR/main/"
-          rsync -az --delete -e "ssh -p $SSH_PORT" blog/public/ "$UCLOUD_USER@$UCLOUD_HOST:$TMP_DIR/blog/"
-          rsync -az --delete -e "ssh -p $SSH_PORT" build/dist/ "$UCLOUD_USER@$UCLOUD_HOST:$TMP_DIR/build/"
-          rsync -az -e "ssh -p $SSH_PORT" shared/ai-assistant/ "$UCLOUD_USER@$UCLOUD_HOST:$TMP_DIR/ai-assistant/"
-          scp -P "$SSH_PORT" \
-            acg-api/acg-api \
-            deploy/remote-install-acg-api.sh \
-            deploy/acg-api.service \
-            "$UCLOUD_USER@$UCLOUD_HOST:$TMP_DIR/acg-api/"
-
-      - name: Install acg-api and nginx /api proxy
-        run: |
-          SSH_PORT="${UCLOUD_PORT:-22}"
-          REMOTE_SUDO_ENV="/tmp/taozhiyy-sudo.env"
-          SUDO_ENV=$(mktemp)
-          trap 'rm -f "$SUDO_ENV"' EXIT
-          chmod 600 "$SUDO_ENV"
-          printf 'export SUDO_PASSWORD=%q\n' "$UCLOUD_SUDO_PASSWORD" > "$SUDO_ENV"
-          scp -P "$SSH_PORT" "$SUDO_ENV" \
-            "$UCLOUD_USER@$UCLOUD_HOST:$REMOTE_SUDO_ENV"
-          ssh -p "$SSH_PORT" "$UCLOUD_USER@$UCLOUD_HOST" 'bash -se' <<REMOTE
-          set -e
-          trap 'rm -f $REMOTE_SUDO_ENV' EXIT
-          chmod 600 $REMOTE_SUDO_ENV
-          . $REMOTE_SUDO_ENV
-          sed -i 's/\r$//' $TMP_DIR/acg-api/remote-install-acg-api.sh
-          sed -i 's/\r$//' $TMP_DIR/acg-api/acg-api.service
-          chmod +x $TMP_DIR/acg-api/remote-install-acg-api.sh
-          bash $TMP_DIR/acg-api/remote-install-acg-api.sh \
-            $TMP_DIR/acg-api/acg-api \
-            $TMP_DIR/acg-api/acg-api.service
-          REMOTE
-
-      - name: Sync deployment-managed env on server
+      - name: Deploy on UCloud host
         env:
+          SUDO_PASSWORD: ${{ secrets.UCLOUD_SUDO_PASSWORD }}
           AUTH_OWNER_PASSWORD: ${{ secrets.AUTH_OWNER_PASSWORD }}
           AUTH_OWNER_SECURITY_ANSWER: ${{ secrets.AUTH_OWNER_SECURITY_ANSWER }}
           AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
@@ -165,163 +117,7 @@ jobs:
           SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
           MAIL_NOTIFY_TO: ${{ secrets.MAIL_NOTIFY_TO }}
           SYNC_TRIGGER_TOKEN: ${{ secrets.SYNC_TRIGGER_TOKEN }}
-        run: |
-          TENCENT_COS_SECRET_ID="${TENCENT_COS_SECRET_ID:-$LEGACY_COS_SECRET_ID}"
-          TENCENT_COS_SECRET_KEY="${TENCENT_COS_SECRET_KEY:-$LEGACY_COS_SECRET_KEY}"
-          TENCENT_COS_BUCKET="${TENCENT_COS_BUCKET:-$LEGACY_COS_BUCKET}"
-          TENCENT_COS_REGION="${TENCENT_COS_REGION:-$LEGACY_COS_REGION}"
-          if [ -z "$AUTH_OWNER_PASSWORD" ] && [ -z "$AUTH_OWNER_SECURITY_ANSWER" ] && [ -z "$AGNES_API_KEY" ] && [ -z "$AGNES_BASE_URL" ] && [ -z "$AGNES_IMAGE_MODEL" ] && [ -z "$DASHSCOPE_API_KEY" ] && [ -z "$DASHSCOPE_BASE_URL" ] && [ -z "$AI_IMAGE_MODEL" ] && [ -z "$PEXELS_API_KEY" ] && [ -z "$PIXABAY_API_KEY" ] && [ -z "$TENCENT_COS_SECRET_ID" ] && [ -z "$TENCENT_COS_SECRET_KEY" ] && [ -z "$TENCENT_COS_BUCKET" ] && [ -z "$TENCENT_COS_REGION" ] && [ -z "$TENCENT_COS_BASE_URL" ] && [ -z "$OWNER_PUBLISH_GITHUB_TOKEN" ] && [ -z "$OWNER_PUBLISH_GITHUB_OWNER" ] && [ -z "$OWNER_PUBLISH_GITHUB_REPO" ] && [ -z "$OWNER_PUBLISH_GITHUB_BRANCH" ] && [ -z "$SMTP_HOST" ] && [ -z "$SMTP_PORT" ] && [ -z "$SMTP_USER" ] && [ -z "$SMTP_PASS" ] && [ -z "$SMTP_FROM_NAME" ] && [ -z "$MAIL_NOTIFY_TO" ] && [ -z "$SYNC_TRIGGER_TOKEN" ]; then
-            echo "Skip env sync: no deployment-managed env secrets are set"
-            exit 0
-          fi
-          SSH_PORT="${UCLOUD_PORT:-22}"
-          REMOTE_FRAG="/tmp/taozhiyy-auth.env.frag"
-          REMOTE_SUDO_ENV="/tmp/taozhiyy-sudo.env"
-          FRAG=$(mktemp)
-          SUDO_ENV=$(mktemp)
-          trap 'rm -f "$FRAG" "$SUDO_ENV"' EXIT
-          chmod 600 "$FRAG"
-          chmod 600 "$SUDO_ENV"
-          : > "$FRAG"
-          printf 'export SUDO_PASSWORD=%q\n' "$UCLOUD_SUDO_PASSWORD" > "$SUDO_ENV"
-          if [ -n "$AUTH_OWNER_PASSWORD" ]; then
-            printf 'AUTH_OWNER_PASSWORD=%s\n' "$AUTH_OWNER_PASSWORD" >> "$FRAG"
-          fi
-          if [ -n "$AUTH_OWNER_SECURITY_ANSWER" ]; then
-            printf 'AUTH_OWNER_SECURITY_ANSWER=%s\n' "$AUTH_OWNER_SECURITY_ANSWER" >> "$FRAG"
-          fi
-          if [ -n "$AGNES_API_KEY" ]; then
-            printf 'AGNES_API_KEY=%s\n' "$AGNES_API_KEY" >> "$FRAG"
-          fi
-          if [ -n "$AGNES_BASE_URL" ]; then
-            printf 'AGNES_BASE_URL=%s\n' "$AGNES_BASE_URL" >> "$FRAG"
-          fi
-          if [ -n "$AGNES_IMAGE_MODEL" ]; then
-            printf 'AGNES_IMAGE_MODEL=%s\n' "$AGNES_IMAGE_MODEL" >> "$FRAG"
-          fi
-          if [ -n "$DASHSCOPE_API_KEY" ]; then
-            printf 'DASHSCOPE_API_KEY=%s\n' "$DASHSCOPE_API_KEY" >> "$FRAG"
-          fi
-          if [ -n "$DASHSCOPE_BASE_URL" ]; then
-            printf 'DASHSCOPE_BASE_URL=%s\n' "$DASHSCOPE_BASE_URL" >> "$FRAG"
-          fi
-          if [ -n "$AI_IMAGE_MODEL" ]; then
-            printf 'AI_IMAGE_MODEL=%s\n' "$AI_IMAGE_MODEL" >> "$FRAG"
-          fi
-          if [ -n "$PEXELS_API_KEY" ]; then
-            printf 'PEXELS_API_KEY=%s\n' "$PEXELS_API_KEY" >> "$FRAG"
-          fi
-          if [ -n "$PIXABAY_API_KEY" ]; then
-            printf 'PIXABAY_API_KEY=%s\n' "$PIXABAY_API_KEY" >> "$FRAG"
-          fi
-          if [ -n "$TENCENT_COS_SECRET_ID" ]; then
-            printf 'TENCENT_COS_SECRET_ID=%s\n' "$TENCENT_COS_SECRET_ID" >> "$FRAG"
-          fi
-          if [ -n "$TENCENT_COS_SECRET_KEY" ]; then
-            printf 'TENCENT_COS_SECRET_KEY=%s\n' "$TENCENT_COS_SECRET_KEY" >> "$FRAG"
-          fi
-          if [ -n "$TENCENT_COS_BUCKET" ]; then
-            printf 'TENCENT_COS_BUCKET=%s\n' "$TENCENT_COS_BUCKET" >> "$FRAG"
-          fi
-          if [ -n "$TENCENT_COS_REGION" ]; then
-            printf 'TENCENT_COS_REGION=%s\n' "$TENCENT_COS_REGION" >> "$FRAG"
-          fi
-          if [ -n "$TENCENT_COS_BASE_URL" ]; then
-            printf 'TENCENT_COS_BASE_URL=%s\n' "$TENCENT_COS_BASE_URL" >> "$FRAG"
-          fi
-          if [ -n "$OWNER_PUBLISH_GITHUB_TOKEN" ]; then
-            printf 'OWNER_PUBLISH_GITHUB_TOKEN=%s\n' "$OWNER_PUBLISH_GITHUB_TOKEN" >> "$FRAG"
-          fi
-          if [ -n "$OWNER_PUBLISH_GITHUB_OWNER" ]; then
-            printf 'OWNER_PUBLISH_GITHUB_OWNER=%s\n' "$OWNER_PUBLISH_GITHUB_OWNER" >> "$FRAG"
-          fi
-          if [ -n "$OWNER_PUBLISH_GITHUB_REPO" ]; then
-            printf 'OWNER_PUBLISH_GITHUB_REPO=%s\n' "$OWNER_PUBLISH_GITHUB_REPO" >> "$FRAG"
-          fi
-          if [ -n "$OWNER_PUBLISH_GITHUB_BRANCH" ]; then
-            printf 'OWNER_PUBLISH_GITHUB_BRANCH=%s\n' "$OWNER_PUBLISH_GITHUB_BRANCH" >> "$FRAG"
-          fi
-          if [ -n "$SMTP_HOST" ]; then
-            printf 'SMTP_HOST=%s\n' "$SMTP_HOST" >> "$FRAG"
-          fi
-          if [ -n "$SMTP_PORT" ]; then
-            printf 'SMTP_PORT=%s\n' "$SMTP_PORT" >> "$FRAG"
-          fi
-          if [ -n "$SMTP_USER" ]; then
-            printf 'SMTP_USER=%s\n' "$SMTP_USER" >> "$FRAG"
-          fi
-          if [ -n "$SMTP_PASS" ]; then
-            printf 'SMTP_PASS=%s\n' "$SMTP_PASS" >> "$FRAG"
-          fi
-          if [ -n "$SMTP_FROM_NAME" ]; then
-            printf 'SMTP_FROM_NAME=%s\n' "$SMTP_FROM_NAME" >> "$FRAG"
-          fi
-          if [ -n "$MAIL_NOTIFY_TO" ]; then
-            printf 'MAIL_NOTIFY_TO=%s\n' "$MAIL_NOTIFY_TO" >> "$FRAG"
-          fi
-          if [ -n "$SYNC_TRIGGER_TOKEN" ]; then
-            printf 'SYNC_TRIGGER_TOKEN=%s\n' "$SYNC_TRIGGER_TOKEN" >> "$FRAG"
-          fi
-          scp -P "$SSH_PORT" deploy/sync-auth-env.sh \
-            "$UCLOUD_USER@$UCLOUD_HOST:/tmp/sync-auth-env.sh"
-          scp -P "$SSH_PORT" "$FRAG" \
-            "$UCLOUD_USER@$UCLOUD_HOST:$REMOTE_FRAG"
-          scp -P "$SSH_PORT" "$SUDO_ENV" \
-            "$UCLOUD_USER@$UCLOUD_HOST:$REMOTE_SUDO_ENV"
-          ssh -p "$SSH_PORT" "$UCLOUD_USER@$UCLOUD_HOST" 'bash -se' <<REMOTE
-          set -e
-          trap 'rm -f /tmp/sync-auth-env.sh $REMOTE_FRAG $REMOTE_SUDO_ENV' EXIT
-          sed -i 's/\r$//' /tmp/sync-auth-env.sh
-          chmod +x /tmp/sync-auth-env.sh
-          chmod 600 $REMOTE_SUDO_ENV
-          . $REMOTE_SUDO_ENV
-          /tmp/sync-auth-env.sh $REMOTE_FRAG
-          REMOTE
-
-      - name: Switch to production directories
-        run: |
-          SSH_PORT="${UCLOUD_PORT:-22}"
-          REMOTE_SUDO_ENV="/tmp/taozhiyy-sudo.env"
-          SUDO_ENV=$(mktemp)
-          trap 'rm -f "$SUDO_ENV"' EXIT
-          chmod 600 "$SUDO_ENV"
-          printf 'export SUDO_PASSWORD=%q\n' "$UCLOUD_SUDO_PASSWORD" > "$SUDO_ENV"
-          scp -P "$SSH_PORT" "$SUDO_ENV" \
-            "$UCLOUD_USER@$UCLOUD_HOST:$REMOTE_SUDO_ENV"
-          ssh -p "$SSH_PORT" "$UCLOUD_USER@$UCLOUD_HOST" 'bash -se' <<REMOTE
-          set -e
-          trap 'rm -f $REMOTE_SUDO_ENV' EXIT
-          chmod 600 $REMOTE_SUDO_ENV
-          . $REMOTE_SUDO_ENV
-          run_sudo() {
-            if [ -n "\${SUDO_PASSWORD:-}" ]; then
-              printf '%s\n' "\$SUDO_PASSWORD" | sudo -S -p '' "\$@"
-            else
-              sudo "\$@"
-            fi
-          }
-          run_sudo mkdir -p $ROOT_DIR $ROOT_DIR/blog $ROOT_DIR/build $ROOT_DIR/ai-assistant
-          run_sudo rsync -a --delete $TMP_DIR/main/ $ROOT_DIR/
-          run_sudo rsync -a --delete $TMP_DIR/blog/ $ROOT_DIR/blog/
-          run_sudo rsync -a --delete $TMP_DIR/build/ $ROOT_DIR/build/
-          run_sudo rsync -a $TMP_DIR/ai-assistant/ $ROOT_DIR/ai-assistant/
-          run_sudo nginx -t
-          run_sudo systemctl reload-or-restart nginx || {
-            echo "ERROR: nginx reload-or-restart failed"
-            echo "=== nginx status ==="
-            run_sudo systemctl --no-pager --full status nginx || true
-            echo "=== nginx processes ==="
-            run_sudo ps aux | grep '[n]ginx' || true
-            echo "=== listening ports ==="
-            run_sudo sh -c 'if command -v ss >/dev/null 2>&1; then ss -tlnp; else netstat -tlnp; fi' | grep -E ':(80|443)[[:space:]]' || true
-            echo "=== nginx journal ==="
-            run_sudo journalctl -u nginx -n 200 --no-pager || true
-            echo "=== recent kernel messages ==="
-            run_sudo dmesg 2>&1 | tail -50 || true
-            exit 1
-          }
-          rm -rf $TMP_DIR
-          REMOTE
+        run: bash deploy/self-hosted-deploy.sh
 
       - name: Trigger protected backend sync
         env:
@@ -335,35 +131,7 @@ jobs:
 
       - name: Bilibili covers smoke check
         run: |
-          if ! BODY=$(curl -sf --max-time 30 https://taozhiyy.top/api/v1/bangumi/list); then
-            echo "ERROR: Bilibili cover smoke check failed"
-            SSH_PORT="${UCLOUD_PORT:-22}"
-            REMOTE_SUDO_ENV="/tmp/taozhiyy-sudo.env"
-            SUDO_ENV=$(mktemp)
-            trap 'rm -f "$SUDO_ENV"' EXIT
-            chmod 600 "$SUDO_ENV"
-            printf 'export SUDO_PASSWORD=%q\n' "$UCLOUD_SUDO_PASSWORD" > "$SUDO_ENV"
-            scp -P "$SSH_PORT" "$SUDO_ENV" \
-              "$UCLOUD_USER@$UCLOUD_HOST:$REMOTE_SUDO_ENV"
-            ssh -p "$SSH_PORT" "$UCLOUD_USER@$UCLOUD_HOST" 'bash -se' <<REMOTE
-          set -e
-          trap 'rm -f $REMOTE_SUDO_ENV' EXIT
-          chmod 600 $REMOTE_SUDO_ENV
-          . $REMOTE_SUDO_ENV
-          run_sudo() {
-            if [ -n "\${SUDO_PASSWORD:-}" ]; then
-              printf '%s\n' "\$SUDO_PASSWORD" | sudo -S -p '' "\$@"
-            else
-              sudo "\$@"
-            fi
-          }
-          run_sudo systemctl --no-pager --full status acg-api || true
-          run_sudo journalctl -u acg-api -n 120 --no-pager || true
-          run_sudo sh -c 'if command -v ss >/dev/null 2>&1; then ss -tlnp; else netstat -tlnp; fi' | grep -E ':(8787)[[:space:]]' || true
-          curl -i --max-time 10 http://127.0.0.1:8787/api/v1/health || true
-          REMOTE
-            exit 1
-          fi
+          BODY=$(curl -sf --max-time 30 https://taozhiyy.top/api/v1/bangumi/list)
           echo "$BODY" | head -c 500
           echo ""
           echo "$BODY" | grep -q 'acg/image' && echo "covers: ok" || echo "covers: pending; background sync will retry"
