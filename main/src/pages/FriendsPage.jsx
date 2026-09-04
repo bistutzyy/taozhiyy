@@ -12,6 +12,13 @@ desc: 桃之夭夭的小屋
 url: https://taozhiyy.top
 avatar: ${siteAvatarUrl}`;
 
+const handleFriendAvatarError = ({ currentTarget }) => {
+  if (currentTarget.dataset.fallbackAvatar === "true") return;
+
+  currentTarget.dataset.fallbackAvatar = "true";
+  currentTarget.src = siteAvatarUrl;
+};
+
 const FriendsPage = () => {
   const [copied, setCopied] = useState(false);
 
@@ -86,6 +93,10 @@ const FriendsPage = () => {
                     <img
                       src={friend.avatar}
                       alt={friend.name}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      decoding="async"
+                      onError={handleFriendAvatarError}
                       className="h-16 w-16 rounded-[20px] object-cover shadow-[0_10px_24px_rgba(95,75,82,0.16)]"
                     />
                     <div>
