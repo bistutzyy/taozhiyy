@@ -67,8 +67,8 @@ export const friendCards = [
   {
     name: "楠枝小笺",
     desc: "安安静静地存在，就已经很好啦。",
-    url: "https://www.nannax.top",
-    avatar: "https://www.nannax.top/upload/LOGO-mini.ico",
+    url: "https://www.nanzhiy.cn",
+    avatar: "https://www.nanzhiy.cn/upload/avatar.jpg",
     note: "FRIEND",
   },
   {
@@ -163,10 +163,10 @@ export const friendCards = [
     note: "FRIEND",
   },
   {
-    name: "笔尖代码",
-    desc: "笔尖代码 - 一份汇聚前端、后端、数据库、运维、系统知识的个人技术文档库",
-    url: "https://123456l.com",
-    avatar: "https://123456l.com/assets/images/logo.png",
+    name: "万象存笺",
+    desc: "万象存笺 - 一个汇聚了前端、后端、数据库、运维、系统知识等内容的网络日志",
+    url: "https://3z.ink",
+    avatar: "https://3z.ink/assets/images/logo-v2.png",
     note: "FRIEND",
   },
   {
