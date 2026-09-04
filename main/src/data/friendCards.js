@@ -239,4 +239,18 @@ export const friendCards = [
     avatar: "https://serve.giovan.cn/uploads/1769860376979-bee3b2d1a4baa1d2.jpeg",
     note: "FRIEND",
   },
+  {
+    name: "Wangxinyang",
+    desc: "个人博客 / 学习交流 / 生活日常",
+    url: "https://wangxinyang.top",
+    avatar: "https://wangxinyang.top/avatar.png",
+    note: "FRIEND",
+  },
+  {
+    name: "桜鵞のすみか",
+    desc: "你开源的代码写的很不错，现在是我的了~",
+    url: "https://retmon.cc",
+    avatar: "https://retmon.cc/pic/head.jpg",
+    note: "FRIEND",
+  },
 ];
