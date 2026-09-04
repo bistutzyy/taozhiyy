@@ -232,4 +232,11 @@ export const friendCards = [
     avatar: "https://i0.hdslb.com/bfs/face/a09cb25595f69324ed7da361391de337dbe47601.jpg",
     note: "FRIEND",
   },
+  {
+    name: "桜鵞のすみか",
+    desc: "你开源的代码写的很不错，现在是我的了~",
+    url: "https://retmon.cc",
+    avatar: "https://retmon.cc/pic/head.jpg",
+    note: "FRIEND",
+  },
 ];
