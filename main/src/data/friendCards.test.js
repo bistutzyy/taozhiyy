@@ -54,6 +54,21 @@ test("keeps xiaomo friend link on the canonical domain", () => {
   assert.equal(xiaomo.avatar, "https://xiaomoo.top/images/dog.jpg");
 });
 
+test("updates renamed and relocated friend links from owner requests", () => {
+  const nanzhiy = friendCards.find((friend) => friend.name === "楠枝小笺");
+  const wanxiang = friendCards.find((friend) => friend.name === "万象存笺");
+
+  assert.ok(nanzhiy);
+  assert.equal(nanzhiy.desc, "安安静静地存在，就已经很好啦。");
+  assert.equal(nanzhiy.url, "https://www.nanzhiy.cn");
+  assert.equal(nanzhiy.avatar, "https://www.nanzhiy.cn/upload/avatar.jpg");
+
+  assert.ok(wanxiang);
+  assert.equal(wanxiang.desc, "万象存笺 - 一个汇聚了前端、后端、数据库、运维、系统知识等内容的网络日志");
+  assert.equal(wanxiang.url, "https://3z.ink");
+  assert.equal(wanxiang.avatar, "https://3z.ink/assets/images/logo-v2.png");
+});
+
 test("publishes the requested four friend links", () => {
   const expectedFriends = [
     {
@@ -99,7 +114,7 @@ test("keeps friend links published after Lingka", () => {
   for (const url of [
     "https://justpureh2o.cn",
     "https://home.nibutupaopao.top",
-    "https://123456l.com",
+    "https://3z.ink",
     "https://blog.zuodev.top",
     "https://www.minedensity.top",
     "https://keiyan.top",
