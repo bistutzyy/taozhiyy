@@ -6,6 +6,7 @@ import { friendCards } from "../data/friendCards";
 import { cosAsset } from "../lib/cosAsset.js";
 
 const siteAvatarUrl = `https://taozhiyy.top${cosAsset("1.png")}`;
+const friendAvatarPlaceholder = "/friend-avatar-placeholder.svg";
 
 const copyBlock = `name: 桃之夭夭
 desc: 桃之夭夭的小屋
@@ -16,7 +17,7 @@ const handleFriendAvatarError = ({ currentTarget }) => {
   if (currentTarget.dataset.fallbackAvatar === "true") return;
 
   currentTarget.dataset.fallbackAvatar = "true";
-  currentTarget.src = siteAvatarUrl;
+  currentTarget.src = friendAvatarPlaceholder;
 };
 
 const FriendsPage = () => {
