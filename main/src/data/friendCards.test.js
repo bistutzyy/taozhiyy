@@ -54,6 +54,44 @@ test("keeps xiaomo friend link on the canonical domain", () => {
   assert.equal(xiaomo.avatar, "https://xiaomoo.top/images/dog.jpg");
 });
 
+test("publishes the requested four friend links", () => {
+  const expectedFriends = [
+    {
+      name: "日和",
+      desc: "想把一些代码笔记、阅读碎片和日常里的小幸福慢慢留下来，以及分享一些有趣的东西",
+      url: "https://codevfun.work",
+      avatar: "https://i0.hdslb.com/bfs/face/a09cb25595f69324ed7da361391de337dbe47601.jpg",
+    },
+    {
+      name: "Giovan",
+      desc: "万事顺意",
+      url: "https://www.giovan.cn",
+      avatar: "https://serve.giovan.cn/uploads/1769860376979-bee3b2d1a4baa1d2.jpeg",
+    },
+    {
+      name: "Wangxinyang",
+      desc: "个人博客 / 学习交流 / 生活日常",
+      url: "https://wangxinyang.top",
+      avatar: "https://wangxinyang.top/avatar.png",
+    },
+    {
+      name: "桜鵞のすみか",
+      desc: "你开源的代码写的很不错，现在是我的了~",
+      url: "https://retmon.cc",
+      avatar: "https://retmon.cc/pic/head.jpg",
+    },
+  ];
+
+  for (const expected of expectedFriends) {
+    const friend = friendCards.find((item) => item.name === expected.name);
+
+    assert.ok(friend, `missing friend link ${expected.name}`);
+    assert.equal(friend.desc, expected.desc);
+    assert.equal(friend.url, expected.url);
+    assert.equal(friend.avatar, expected.avatar);
+  }
+});
+
 test("keeps friend links published after Lingka", () => {
   const urls = new Set(friendCards.map((friend) => friend.url));
 
