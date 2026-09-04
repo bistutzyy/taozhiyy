@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
-  <title id="title">Friend avatar placeholder</title>
-  <desc id="desc">A neutral placeholder for an unavailable friend avatar</desc>
-  <rect width="128" height="128" rx="24" fill="#EEF2F6"/>
-  <circle cx="64" cy="47" r="20" fill="#A7B3C2"/>
-  <path d="M28 105c4-22 18-34 36-34s32 12 36 34" fill="#A7B3C2"/>
-</svg>

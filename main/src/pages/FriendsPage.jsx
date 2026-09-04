@@ -6,7 +6,9 @@ import { friendCards } from "../data/friendCards";
 import { cosAsset } from "../lib/cosAsset.js";
 
 const siteAvatarUrl = `https://taozhiyy.top${cosAsset("1.png")}`;
-const friendAvatarPlaceholder = "/friend-avatar-placeholder.svg";
+const friendAvatarPlaceholder = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="24" fill="#EEF2F6"/><circle cx="64" cy="47" r="20" fill="#A7B3C2"/><path d="M28 105c4-22 18-34 36-34s32 12 36 34" fill="#A7B3C2"/></svg>',
+)}`;
 
 const copyBlock = `name: 桃之夭夭
 desc: 桃之夭夭的小屋

@@ -8,7 +8,7 @@ test("friend avatars avoid hotlink referers and fall back to a unified placehold
   assert.match(source, /referrerPolicy="no-referrer"/);
   assert.match(source, /onError=\{handleFriendAvatarError\}/);
   assert.match(source, /currentTarget\.dataset\.fallbackAvatar = "true"/);
-  assert.match(source, /friend-avatar-placeholder\.svg/);
+  assert.match(source, /data:image\/svg\+xml,/);
   assert.match(source, /currentTarget\.src = friendAvatarPlaceholder/);
   assert.doesNotMatch(source, /currentTarget\.src = siteAvatarUrl/);
 });
