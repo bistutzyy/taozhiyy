@@ -232,4 +232,11 @@ export const friendCards = [
     avatar: "https://i0.hdslb.com/bfs/face/a09cb25595f69324ed7da361391de337dbe47601.jpg",
     note: "FRIEND",
   },
+  {
+    name: "Giovan",
+    desc: "万事顺意",
+    url: "https://www.giovan.cn",
+    avatar: "https://serve.giovan.cn/uploads/1769860376979-bee3b2d1a4baa1d2.jpeg",
+    note: "FRIEND",
+  },
 ];
