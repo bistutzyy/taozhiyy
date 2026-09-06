@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -96,6 +97,19 @@ func normalizeGuestbookChannel(raw string) string {
 		return guestbookChannelLink
 	default:
 		return ""
+	}
+}
+
+func mainGuestbookPostsDisabled() bool {
+	return !guestbookEnvEnabled(os.Getenv("GUESTBOOK_MAIN_POSTS_ENABLED"))
+}
+
+func guestbookEnvEnabled(raw string) bool {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "yes", "on", "enabled":
+		return true
+	default:
+		return false
 	}
 }
 
@@ -298,6 +312,10 @@ func guestbookCreateHandler(w http.ResponseWriter, r *http.Request) {
 	channel := normalizeGuestbookChannel(body.Channel)
 	if channel == "" {
 		writeGuestbookErr(w, http.StatusBadRequest, "INVALID_CHANNEL", "留言分区不正确")
+		return
+	}
+	if channel == guestbookChannelMain && mainGuestbookPostsDisabled() {
+		writeGuestbookErr(w, http.StatusServiceUnavailable, "GUESTBOOK_DISABLED", "留言区暂时维护中，已暂停提交。")
 		return
 	}
 	content := strings.TrimSpace(body.Content)
