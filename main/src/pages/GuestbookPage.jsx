@@ -14,6 +14,7 @@ import {
 
 const GUESTBOOK_CHANNEL = "guestbook";
 const GUESTBOOK_MESSAGE_MAX_LENGTH = 300;
+const GUESTBOOK_SUBMISSIONS_DISABLED = true;
 
 const cardTone = (item) => {
   if (item.isAdminUser) return "admin";
@@ -90,6 +91,10 @@ const GuestbookPage = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (GUESTBOOK_SUBMISSIONS_DISABLED) {
+      setError("留言区暂时维护中，已暂停提交。");
+      return;
+    }
     setSubmitting(true);
     setNotice("");
     setError("");
@@ -171,6 +176,7 @@ const GuestbookPage = () => {
                 maxLength={12}
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
+                disabled={GUESTBOOK_SUBMISSIONS_DISABLED}
                 placeholder="给自己取个名字吧"
                 className="mb-4 w-full rounded-xl border border-[#F2E6C9] bg-[#FFFBF5] px-4 py-3 text-base text-[#2B2B2B] outline-none focus:border-[#FFD43B]"
               />
@@ -185,7 +191,12 @@ const GuestbookPage = () => {
             maxLength={GUESTBOOK_MESSAGE_MAX_LENGTH}
             rows={4}
             required
-            placeholder="写点什么吧～"
+            disabled={GUESTBOOK_SUBMISSIONS_DISABLED}
+            placeholder={
+              GUESTBOOK_SUBMISSIONS_DISABLED
+                ? "留言区暂时维护中，已暂停提交。"
+                : "写点什么吧～"
+            }
             className="w-full resize-y rounded-xl border border-[#F2E6C9] bg-[#FFFBF5] px-4 py-3 text-base leading-relaxed text-[#2B2B2B] outline-none focus:border-[#FFD43B]"
           />
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -196,13 +207,22 @@ const GuestbookPage = () => {
               <EmojiPicker onPick={onPickEmoji} />
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={GUESTBOOK_SUBMISSIONS_DISABLED || submitting}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border-2 border-[#FFD43B] bg-gradient-to-r from-[#FFFDF5] to-[#FFF8E7] px-6 py-3 text-sm font-bold text-[#2B2B2B] shadow-[0_8px_24px_rgba(255,212,59,0.25)] transition hover:border-[#FF8FAB] hover:shadow-[0_10px_28px_rgba(255,143,171,0.2)] disabled:opacity-60 sm:flex-none"
               >
-                {submitting ? "贴上中…" : "贴上小纸条"}
+                {GUESTBOOK_SUBMISSIONS_DISABLED
+                  ? "暂停提交"
+                  : submitting
+                    ? "贴上中…"
+                    : "贴上小纸条"}
               </button>
             </div>
           </div>
+          {GUESTBOOK_SUBMISSIONS_DISABLED && (
+            <p className="mt-3 text-sm font-semibold text-[#E67700]">
+              留言区暂时维护中，已暂停提交。
+            </p>
+          )}
           {notice && (
             <p className="mt-3 text-sm font-semibold text-[#51CF66]">{notice}</p>
           )}

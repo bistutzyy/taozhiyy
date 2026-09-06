@@ -31,6 +31,7 @@ func openGuestbookMessageTestDB(t *testing.T) *sql.DB {
 
 func withGuestbookTestDB(t *testing.T, fn func()) {
 	t.Helper()
+	t.Setenv("GUESTBOOK_MAIN_POSTS_ENABLED", "1")
 	prev := db
 	db = openGuestbookMessageTestDB(t)
 	t.Cleanup(func() { db = prev })
@@ -191,6 +192,50 @@ func TestGuestbookCreateAllowsVisitorTopLevelMessagesWithRequiredFields(t *testi
 			})
 		})
 	}
+}
+
+func TestGuestbookCreateBlocksMainGuestbookWhenDisabled(t *testing.T) {
+	withGuestbookTestDB(t, func() {
+		t.Setenv("GUESTBOOK_MAIN_POSTS_ENABLED", "0")
+
+		rr := postGuestbookMessageWithSession(
+			t,
+			`{"nickname":"kimi09test","content":"batch probe","channel":"guestbook"}`,
+			"127.0.0.1:3456",
+			"",
+		)
+
+		if rr.Code != http.StatusServiceUnavailable {
+			t.Fatalf("expected 503 when main guestbook posts are disabled, got %d body=%s", rr.Code, rr.Body.String())
+		}
+		payload := decodeJSONMap(t, rr)
+		if payload["error"] != "GUESTBOOK_DISABLED" {
+			t.Fatalf("expected GUESTBOOK_DISABLED, got %#v", payload["error"])
+		}
+		if count := guestbookMessageCount(t); count != 0 {
+			t.Fatalf("disabled main guestbook post should not be stored, found %d rows", count)
+		}
+	})
+}
+
+func TestGuestbookCreateAllowsFriendsChannelWhenMainGuestbookDisabled(t *testing.T) {
+	withGuestbookTestDB(t, func() {
+		t.Setenv("GUESTBOOK_MAIN_POSTS_ENABLED", "0")
+
+		rr := postGuestbookMessageWithSession(
+			t,
+			`{"nickname":"Friend","content":"friends root","channel":"friends","contactEmail":"visitor@example.com"}`,
+			"127.0.0.1:3456",
+			"",
+		)
+
+		if rr.Code != http.StatusOK {
+			t.Fatalf("expected 200 for friends post while main guestbook is disabled, got %d body=%s", rr.Code, rr.Body.String())
+		}
+		if count := guestbookMessageCount(t); count != 1 {
+			t.Fatalf("friends post should still be stored once, found %d rows", count)
+		}
+	})
 }
 
 func TestGuestbookCreateTopLevelMessage(t *testing.T) {
