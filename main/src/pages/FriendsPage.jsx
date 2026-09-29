@@ -6,24 +6,29 @@ import { friendCards } from "../data/friendCards";
 import { cosAsset } from "../lib/cosAsset.js";
 
 const siteAvatarUrl = `https://taozhiyy.top${cosAsset("1.png")}`;
-const friendAvatarPlaceholder = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="24" fill="#EEF2F6"/><circle cx="64" cy="47" r="20" fill="#A7B3C2"/><path d="M28 105c4-22 18-34 36-34s32 12 36 34" fill="#A7B3C2"/></svg>',
-)}`;
-
 const copyBlock = `name: 桃之夭夭
 desc: 桃之夭夭的小屋
 url: https://taozhiyy.top
 avatar: ${siteAvatarUrl}`;
 
-const handleFriendAvatarError = ({ currentTarget }) => {
-  if (currentTarget.dataset.fallbackAvatar === "true") return;
-
-  currentTarget.dataset.fallbackAvatar = "true";
-  currentTarget.src = friendAvatarPlaceholder;
+const friendAvatarInitial = (name = "") => {
+  const [initial] = Array.from(name.trim());
+  return initial?.toUpperCase() || "友";
 };
 
 const FriendsPage = () => {
   const [copied, setCopied] = useState(false);
+  const [failedFriendAvatars, setFailedFriendAvatars] = useState(() => new Set());
+
+  const handleFriendAvatarError = (name) => {
+    setFailedFriendAvatars((current) => {
+      if (current.has(name)) return current;
+
+      const next = new Set(current);
+      next.add(name);
+      return next;
+    });
+  };
 
   const handleCopy = async () => {
     try {
@@ -83,40 +88,53 @@ const FriendsPage = () => {
           </div>
 
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {friendCards.map((friend) => (
-              <a
-                key={friend.name}
-                href={friend.url}
-                target="_blank"
-                rel="noreferrer"
-                className="group block rounded-[28px] border border-[#F0E3D8] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,248,241,0.94))] p-5 shadow-[0_18px_44px_rgba(95,75,82,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_56px_rgba(95,75,82,0.14)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={friend.avatar}
-                      alt={friend.name}
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      decoding="async"
-                      onError={handleFriendAvatarError}
-                      className="h-16 w-16 rounded-[20px] object-cover shadow-[0_10px_24px_rgba(95,75,82,0.16)]"
-                    />
-                    <div>
-                      <p className="text-lg font-semibold text-[#2B2B2B]">{friend.name}</p>
-                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#74C0FC]">
-                        {friend.note}
-                      </p>
+            {friendCards.map((friend) => {
+              const avatarFailed = !friend.avatar || failedFriendAvatars.has(friend.name);
+
+              return (
+                <a
+                  key={friend.name}
+                  href={friend.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group block rounded-[28px] border border-[#F0E3D8] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,248,241,0.94))] p-5 shadow-[0_18px_44px_rgba(95,75,82,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_56px_rgba(95,75,82,0.14)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-4">
+                      {avatarFailed ? (
+                        <span
+                          aria-label={`${friend.name} 默认头像`}
+                          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-[linear-gradient(135deg,#EEF2F6,#F8FBFF)] text-xl font-bold text-[#8A9AAD] shadow-[0_10px_24px_rgba(95,75,82,0.16)]"
+                        >
+                          {friendAvatarInitial(friend.name)}
+                        </span>
+                      ) : (
+                        <img
+                          src={friend.avatar}
+                          alt={friend.name}
+                          referrerPolicy="no-referrer"
+                          loading="lazy"
+                          decoding="async"
+                          onError={() => handleFriendAvatarError(friend.name)}
+                          className="h-16 w-16 rounded-[20px] object-cover shadow-[0_10px_24px_rgba(95,75,82,0.16)]"
+                        />
+                      )}
+                      <div>
+                        <p className="text-lg font-semibold text-[#2B2B2B]">{friend.name}</p>
+                        <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#74C0FC]">
+                          {friend.note}
+                        </p>
+                      </div>
                     </div>
+                    <FiExternalLink
+                      className="mt-1 h-4 w-4 text-[#B76E79] transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      aria-hidden
+                    />
                   </div>
-                  <FiExternalLink
-                    className="mt-1 h-4 w-4 text-[#B76E79] transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                    aria-hidden
-                  />
-                </div>
-                <p className="mt-5 text-sm leading-7 text-[#6B7280]">{friend.desc}</p>
-              </a>
-            ))}
+                  <p className="mt-5 text-sm leading-7 text-[#6B7280]">{friend.desc}</p>
+                </a>
+              );
+            })}
           </div>
         </section>
 
