@@ -426,7 +426,7 @@ const FriendsApplicationBoard = () => {
       )}
 
       {entries.length > 0 && (
-        <div className="friends-comments-waterfall mt-8 columns-1 gap-6 md:columns-2">
+        <div className="friends-comments-balanced mt-8 grid grid-cols-1 items-stretch gap-5 md:grid-cols-2">
         {entries.map((item) => {
           const tone = cardTone(item);
           const isExpanded = !!expandedThreads[item.id];
@@ -439,15 +439,15 @@ const FriendsApplicationBoard = () => {
             <article
               key={item.id}
               className={clsx(
-                "mb-5 inline-block w-full break-inside-avoid align-top",
+                "flex h-full",
                 activeReplyInThread ? "relative z-40" : "relative z-0",
               )}
             >
-              <div className="flex items-start gap-3 md:gap-4">
+              <div className="flex h-full w-full items-start gap-3 md:gap-4">
                 <CommentAvatar item={item} />
                 <div
                   className={clsx(
-                    "min-w-0 flex-1 rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
+                    "flex h-full min-w-0 flex-1 flex-col rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
                     tone === "guest" && "border-[#FFE066]/70 bg-[#FFF9DB]/72",
                     tone === "login" && "border-[#A5D8FF]/70 bg-[#F3FAFF]/78",
                     tone === "admin" && "border-[#FFC9C9]/80 bg-[#FFF0F6]/78",
