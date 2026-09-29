@@ -22,7 +22,9 @@ import {
 
 const FRIENDS_CHANNEL = "friends";
 const FRIENDS_COMMENT_COLUMNS = 3;
+const FRIENDS_COMMENT_ROWS = 2;
 const FRIENDS_COMMENT_FETCH_SIZE = 50;
+const FRIENDS_COMMENT_PAGE = FRIENDS_COMMENT_COLUMNS * FRIENDS_COMMENT_ROWS;
 const FRIEND_COMMENT_MAX_LENGTH = 500;
 const FRIEND_REPLY_MAX_LENGTH = 300;
 
@@ -71,11 +73,15 @@ const expandedStateForFriendsThreads = (items = []) =>
     items.map((item) => [item.id, (item.replyCount || 0) > 0]),
   );
 
-const balancedFriendsEntries = (items = []) => {
-  if (items.length < FRIENDS_COMMENT_COLUMNS) return items;
-  const remainder = items.length % FRIENDS_COMMENT_COLUMNS;
-  if (remainder === 0) return items;
-  return items.slice(0, items.length - remainder);
+const visibleFriendsEntries = (items = [], steps = 1) => {
+  const equalCount = items.length - (items.length % FRIENDS_COMMENT_COLUMNS);
+  const requested = Math.max(steps, 1) * FRIENDS_COMMENT_PAGE;
+  const visibleEqual = Math.min(requested, equalCount);
+  const includeRemainder =
+    items.length > equalCount &&
+    requested > equalCount &&
+    (steps > 1 || equalCount === 0);
+  return items.slice(0, includeRemainder ? items.length : visibleEqual);
 };
 
 const CommentAvatar = ({ item, name }) => {
@@ -103,6 +109,7 @@ const FriendsApplicationBoard = () => {
   const [user, setUser] = useState(null);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [visibleSteps, setVisibleSteps] = useState(1);
   const [commentTotal, setCommentTotal] = useState(0);
   const [nickname, setNickname] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -184,7 +191,8 @@ const FriendsApplicationBoard = () => {
     };
   }, []);
 
-  const visibleEntries = balancedFriendsEntries(entries);
+  const visibleEntries = visibleFriendsEntries(entries, visibleSteps);
+  const hasHiddenComments = visibleEntries.length < entries.length;
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -672,6 +680,21 @@ const FriendsApplicationBoard = () => {
             </article>
           );
         })}
+        </div>
+      )}
+
+      {!loading && hasHiddenComments && (
+        <div className="relative left-1/2 mt-5 flex w-[96.625rem] max-w-none -translate-x-1/2 flex-col items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setVisibleSteps((steps) => steps + 1)}
+            className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-[#D8E9F8] bg-white/76 px-5 py-2 text-sm font-bold text-[#5F80C8] shadow-[0_10px_24px_rgba(95,75,82,0.08)] transition hover:border-[#FF8FAB] hover:text-[#FF8FAB]"
+          >
+            显示更多
+          </button>
+          <p className="text-xs font-semibold text-[#8A7C74]">
+            已显示 {visibleEntries.length}/{entries.length} 条
+          </p>
         </div>
       )}
     </section>
