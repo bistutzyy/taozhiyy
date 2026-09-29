@@ -260,4 +260,11 @@ export const friendCards = [
     avatar: "https://mingcy.cn/image/mcy.png",
     note: "FRIEND",
   },
+  {
+    name: "时光潜流",
+    desc: "妹控的中二君！",
+    url: "https://www.dreamcenter.top",
+    avatar: "https://www.dreamcenter.top/imgs/avatar.jpg",
+    note: "FRIEND",
+  },
 ];
