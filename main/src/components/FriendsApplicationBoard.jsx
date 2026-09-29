@@ -304,7 +304,7 @@ const FriendsApplicationBoard = () => {
   const displayName = nameFromUser(user);
 
   return (
-    <section id="friends-guestbook" className="relative mx-auto max-w-[920px]">
+    <section id="friends-guestbook" className="relative mx-auto max-w-6xl">
       <div className="border-b border-[#E7D8C7]/80 pb-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
@@ -331,7 +331,7 @@ const FriendsApplicationBoard = () => {
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="relative z-20 mt-6">
+      <form onSubmit={onSubmit} className="relative z-20 mx-auto mt-6 max-w-[920px]">
         <div>
           <div className="min-w-0 flex-1 rounded-[22px] border border-[#D8E9F8] bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(241,248,255,0.72))] p-4 shadow-[0_16px_36px_rgba(95,75,82,0.08)] backdrop-blur md:p-5">
             <div className="mb-4">
@@ -415,15 +415,18 @@ const FriendsApplicationBoard = () => {
         </div>
       </form>
 
-      <div className="mt-8 space-y-5">
-        {loading && <p className="text-sm text-[#6B7280]">加载留言中...</p>}
+      {loading && (
+        <p className="mt-8 text-sm text-[#6B7280]">加载留言中...</p>
+      )}
 
-        {!loading && entries.length === 0 && (
-          <div className="rounded-[18px] border border-dashed border-[#D8E9F8] bg-white/70 px-4 py-10 text-center text-sm text-[#6B7280]">
-            还没有留言，欢迎留下第一条。
-          </div>
-        )}
+      {!loading && entries.length === 0 && (
+        <div className="mt-8 rounded-[18px] border border-dashed border-[#D8E9F8] bg-white/70 px-4 py-10 text-center text-sm text-[#6B7280]">
+          还没有留言，欢迎留下第一条。
+        </div>
+      )}
 
+      {entries.length > 0 && (
+        <div className="friends-comments-waterfall mt-8 columns-1 gap-5 md:columns-2 xl:columns-3">
         {entries.map((item) => {
           const tone = cardTone(item);
           const isExpanded = !!expandedThreads[item.id];
@@ -436,19 +439,20 @@ const FriendsApplicationBoard = () => {
             <article
               key={item.id}
               className={clsx(
-                "flex items-start gap-4",
+                "mb-5 inline-block w-full break-inside-avoid align-top",
                 activeReplyInThread ? "relative z-40" : "relative z-0",
               )}
             >
-              <CommentAvatar item={item} />
-              <div
-                className={clsx(
-                  "min-w-0 flex-1 rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
-                  tone === "guest" && "border-[#FFE066]/70 bg-[#FFF9DB]/72",
-                  tone === "login" && "border-[#A5D8FF]/70 bg-[#F3FAFF]/78",
-                  tone === "admin" && "border-[#FFC9C9]/80 bg-[#FFF0F6]/78",
-                )}
-              >
+              <div className="flex items-start gap-3 md:gap-4">
+                <CommentAvatar item={item} />
+                <div
+                  className={clsx(
+                    "min-w-0 flex-1 rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
+                    tone === "guest" && "border-[#FFE066]/70 bg-[#FFF9DB]/72",
+                    tone === "login" && "border-[#A5D8FF]/70 bg-[#F3FAFF]/78",
+                    tone === "admin" && "border-[#FFC9C9]/80 bg-[#FFF0F6]/78",
+                  )}
+                >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#8A7C74]">
@@ -678,10 +682,13 @@ const FriendsApplicationBoard = () => {
                     })}
                   </div>
                 )}
+                </div>
               </div>
             </article>
           );
         })}
+        </div>
+      )}
 
         {!loading && hasMoreComments && (
           <div className="flex flex-col items-center gap-2 pt-1">
@@ -698,7 +705,6 @@ const FriendsApplicationBoard = () => {
             </p>
           </div>
         )}
-      </div>
     </section>
   );
 };
