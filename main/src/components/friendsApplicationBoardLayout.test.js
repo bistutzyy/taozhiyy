@@ -28,3 +28,15 @@ test("loads friends comments in five-item pages with a load more action", () => 
   assert.match(source, /existingIds\.has\(item\.id\)/);
   assert.match(source, />\s*\{loadingMore\s*\?\s*"加载中\.\.\."\s*:\s*"加载更多"\}\s*</);
 });
+
+test("renders friends comments as a responsive masonry stream", () => {
+  const source = readSource("components/FriendsApplicationBoard.jsx");
+
+  assert.match(source, /max-w-6xl/);
+  assert.match(source, /friends-comments-waterfall/);
+  assert.match(source, /columns-1/);
+  assert.match(source, /md:columns-2/);
+  assert.match(source, /xl:columns-3/);
+  assert.match(source, /break-inside-avoid/);
+  assert.doesNotMatch(source, /mt-8 space-y-5/);
+});
