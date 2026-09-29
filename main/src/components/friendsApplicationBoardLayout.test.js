@@ -25,15 +25,18 @@ test("loads every friends comment instead of five-item pages", () => {
   assert.doesNotMatch(source, /加载更多/);
 });
 
-test("renders friends comments in three equal columns", () => {
+test("shows two comments per column, then the final remainder left to right", () => {
   const source = readSource("components/FriendsApplicationBoard.jsx");
 
   assert.match(source, /FRIENDS_COMMENT_COLUMNS\s*=\s*3/);
-  assert.match(source, /items\.length\s*%\s*FRIENDS_COMMENT_COLUMNS/);
+  assert.match(source, /FRIENDS_COMMENT_ROWS\s*=\s*2/);
+  assert.match(source, /requested\s*>\s*equalCount/);
+  assert.match(source, /steps\s*>\s*1/);
   assert.match(source, /friends-comments-even/);
   assert.match(source, /w-\[96\.625rem\]/);
   assert.match(source, /grid-cols-3 items-stretch gap-5/);
   assert.match(source, /"flex h-full"/);
+  assert.match(source, />\s*显示更多\s*</);
   assert.doesNotMatch(source, /column-count:3/);
-  assert.doesNotMatch(source, /加载更多/);
+  assert.doesNotMatch(source, /FRIENDS_COMMENT_PAGE_SIZE\s*=\s*5/);
 });
