@@ -32,11 +32,12 @@ test("loads friends comments in five-item pages with a load more action", () => 
 test("renders friends comments as a responsive masonry stream", () => {
   const source = readSource("components/FriendsApplicationBoard.jsx");
 
-  assert.match(source, /max-w-6xl/);
+  assert.match(source, /max-w-5xl/);
   assert.match(source, /friends-comments-waterfall/);
   assert.match(source, /columns-1/);
   assert.match(source, /md:columns-2/);
-  assert.match(source, /xl:columns-3/);
+  assert.doesNotMatch(source, /xl:columns-3/);
+  assert.doesNotMatch(source, /columns-3/);
   assert.match(source, /break-inside-avoid/);
   assert.doesNotMatch(source, /mt-8 space-y-5/);
 });

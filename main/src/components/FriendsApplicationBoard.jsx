@@ -304,7 +304,7 @@ const FriendsApplicationBoard = () => {
   const displayName = nameFromUser(user);
 
   return (
-    <section id="friends-guestbook" className="relative mx-auto max-w-6xl">
+    <section id="friends-guestbook" className="relative mx-auto max-w-5xl">
       <div className="border-b border-[#E7D8C7]/80 pb-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
@@ -426,7 +426,7 @@ const FriendsApplicationBoard = () => {
       )}
 
       {entries.length > 0 && (
-        <div className="friends-comments-waterfall mt-8 columns-1 gap-5 md:columns-2 xl:columns-3">
+        <div className="friends-comments-waterfall mt-8 columns-1 gap-6 md:columns-2">
         {entries.map((item) => {
           const tone = cardTone(item);
           const isExpanded = !!expandedThreads[item.id];
