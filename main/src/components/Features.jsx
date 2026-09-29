@@ -22,7 +22,7 @@ const ARCHIVE_ITEMS = [
     subtitle: "进入花园",
     src: `${COS}/videos/feature-2.mp4`,
     note: "一个收纳日常念头、随手灵感与短暂心绪的温柔角落。",
-    linkUrl: "/blog/",
+    linkUrl: "https://bistutzyy.github.io/",
     linkText: "进入花园",
   },
   {
@@ -318,6 +318,9 @@ const ArchiveBook = ({ open, onClose }) => {
                 <a
                   href={activeItem.linkUrl}
                   className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-[#241322] px-5 py-2 text-xs font-bold uppercase text-[#ffe7ef]"
+                  {...(String(activeItem.linkUrl).startsWith("http")
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
                 >
                   <TiLocationArrow />
                   {activeItem.linkText}
@@ -400,7 +403,7 @@ const Features = () => {
                 </>
               }
               description="一个收纳日常念头、随手灵感与短暂心绪的温柔角落，把路过的故事轻轻写下来。"
-              linkUrl="/blog/"
+              linkUrl="https://bistutzyy.github.io/"
               linkText="进入花园"
             />
           </ExhibitTilt>
