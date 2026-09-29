@@ -253,4 +253,11 @@ export const friendCards = [
     avatar: "https://retmon.cc/pic/head.jpg",
     note: "FRIEND",
   },
+  {
+    name: "茗辰原",
+    desc: "茶香四溢，编程世界",
+    url: "https://mingcy.cn",
+    avatar: "https://mingcy.cn/image/mcy.png",
+    note: "FRIEND",
+  },
 ];
