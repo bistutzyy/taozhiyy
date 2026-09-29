@@ -15,29 +15,25 @@ test("raises the active friends reply thread above following cards for emoji pan
   assert.match(source, /isReplyingToReply\s*&&\s*"relative z-30"/);
 });
 
-test("loads friends comments in five-item pages with a load more action", () => {
+test("loads every friends comment instead of five-item pages", () => {
   const source = readSource("components/FriendsApplicationBoard.jsx");
 
-  assert.match(source, /FRIENDS_COMMENT_PAGE_SIZE\s*=\s*5/);
-  assert.match(source, /fetchGuestbookMessages\(\s*1,\s*FRIENDS_COMMENT_PAGE_SIZE/);
-  assert.match(
-    source,
-    /fetchGuestbookMessages\(\s*nextPage,\s*FRIENDS_COMMENT_PAGE_SIZE/,
-  );
-  assert.match(source, /entries\.length\s*<\s*commentTotal/);
-  assert.match(source, /existingIds\.has\(item\.id\)/);
-  assert.match(source, />\s*\{loadingMore\s*\?\s*"加载中\.\.\."\s*:\s*"加载更多"\}\s*</);
+  assert.match(source, /FRIENDS_COMMENT_FETCH_SIZE\s*=\s*50/);
+  assert.match(source, /fetchGuestbookMessages\(\s*page,\s*FRIENDS_COMMENT_FETCH_SIZE/);
+  assert.match(source, /collected\.length\s*>=\s*total/);
+  assert.doesNotMatch(source, /FRIENDS_COMMENT_PAGE_SIZE\s*=\s*5/);
+  assert.doesNotMatch(source, /加载更多/);
 });
 
-test("renders friends comments as a three-column waterfall at the current card width", () => {
+test("renders friends comments in three equal columns", () => {
   const source = readSource("components/FriendsApplicationBoard.jsx");
 
-  assert.match(source, /friends-comments-waterfall/);
+  assert.match(source, /FRIENDS_COMMENT_COLUMNS\s*=\s*3/);
+  assert.match(source, /items\.length\s*%\s*FRIENDS_COMMENT_COLUMNS/);
+  assert.match(source, /friends-comments-even/);
   assert.match(source, /w-\[96\.625rem\]/);
-  assert.match(source, /\[column-count:3\]/);
-  assert.match(source, /\[column-gap:1\.25rem\]/);
-  assert.match(source, /break-inside-avoid/);
-  assert.doesNotMatch(source, /friends-comments-balanced/);
-  assert.doesNotMatch(source, /md:grid-cols-2/);
-  assert.doesNotMatch(source, /mt-8 space-y-5/);
+  assert.match(source, /grid-cols-3 items-stretch gap-5/);
+  assert.match(source, /"flex h-full"/);
+  assert.doesNotMatch(source, /column-count:3/);
+  assert.doesNotMatch(source, /加载更多/);
 });

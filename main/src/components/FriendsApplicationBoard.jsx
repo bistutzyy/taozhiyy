@@ -21,7 +21,8 @@ import {
 } from "./friendsApplicationThreads";
 
 const FRIENDS_CHANNEL = "friends";
-const FRIENDS_COMMENT_PAGE_SIZE = 5;
+const FRIENDS_COMMENT_COLUMNS = 3;
+const FRIENDS_COMMENT_FETCH_SIZE = 50;
 const FRIEND_COMMENT_MAX_LENGTH = 500;
 const FRIEND_REPLY_MAX_LENGTH = 300;
 
@@ -70,6 +71,13 @@ const expandedStateForFriendsThreads = (items = []) =>
     items.map((item) => [item.id, (item.replyCount || 0) > 0]),
   );
 
+const balancedFriendsEntries = (items = []) => {
+  if (items.length < FRIENDS_COMMENT_COLUMNS) return items;
+  const remainder = items.length % FRIENDS_COMMENT_COLUMNS;
+  if (remainder === 0) return items;
+  return items.slice(0, items.length - remainder);
+};
+
 const CommentAvatar = ({ item, name }) => {
   const avatar = item?.avatar;
   const label = name || item?.nickname || "友链伙伴";
@@ -95,7 +103,6 @@ const FriendsApplicationBoard = () => {
   const [user, setUser] = useState(null);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [commentTotal, setCommentTotal] = useState(0);
   const [nickname, setNickname] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -131,24 +138,42 @@ const FriendsApplicationBoard = () => {
 
     const loadEntries = async () => {
       setLoading(true);
-      const { ok, data } = await fetchGuestbookMessages(
-        1,
-        FRIENDS_COMMENT_PAGE_SIZE,
-        {
-          channel: FRIENDS_CHANNEL,
-        },
-      );
+      const collected = [];
+      let page = 1;
+      let total = 0;
+      let failed = false;
+
+      while (page <= 20) {
+        const { ok, data } = await fetchGuestbookMessages(
+          page,
+          FRIENDS_COMMENT_FETCH_SIZE,
+          {
+            channel: FRIENDS_CHANNEL,
+          },
+        );
+        if (cancelled) return;
+        if (!ok) {
+          failed = true;
+          break;
+        }
+        const batch = normalizeFriendsThreads(asList(data));
+        total = Number(data?.total) || collected.length + batch.length;
+        const existingIds = new Set(collected.map((item) => item.id));
+        collected.push(...batch.filter((item) => !existingIds.has(item.id)));
+        if (batch.length === 0 || collected.length >= total) break;
+        page += 1;
+      }
+
       if (cancelled) return;
-      if (!ok) {
+      if (failed && collected.length === 0) {
         setEntries([]);
         setCommentTotal(0);
         setLoading(false);
         return;
       }
-      const nextEntries = normalizeFriendsThreads(asList(data));
-      setEntries(nextEntries);
-      setCommentTotal(Number(data?.total) || nextEntries.length);
-      setExpandedThreads(expandedStateForFriendsThreads(nextEntries));
+      setEntries(collected);
+      setCommentTotal(total || collected.length);
+      setExpandedThreads(expandedStateForFriendsThreads(collected));
       setLoading(false);
     };
 
@@ -159,45 +184,7 @@ const FriendsApplicationBoard = () => {
     };
   }, []);
 
-  const hasMoreComments = entries.length < commentTotal;
-
-  const onLoadMore = async () => {
-    if (loadingMore || !hasMoreComments) return;
-
-    const nextPage =
-      Math.floor(entries.length / FRIENDS_COMMENT_PAGE_SIZE) + 1;
-    setLoadingMore(true);
-    setError("");
-
-    const { ok, data } = await fetchGuestbookMessages(
-      nextPage,
-      FRIENDS_COMMENT_PAGE_SIZE,
-      {
-        channel: FRIENDS_CHANNEL,
-      },
-    );
-
-    setLoadingMore(false);
-
-    if (!ok) {
-      setError(data.message || "更多留言加载失败，请稍后再试。");
-      return;
-    }
-
-    const nextEntries = normalizeFriendsThreads(asList(data));
-    setEntries((prev) => {
-      const existingIds = new Set(prev.map((item) => item.id));
-      return [
-        ...prev,
-        ...nextEntries.filter((item) => !existingIds.has(item.id)),
-      ];
-    });
-    setCommentTotal(Number(data?.total) || entries.length + nextEntries.length);
-    setExpandedThreads((prev) => ({
-      ...prev,
-      ...expandedStateForFriendsThreads(nextEntries),
-    }));
-  };
+  const visibleEntries = balancedFriendsEntries(entries);
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -241,12 +228,10 @@ const FriendsApplicationBoard = () => {
     if (data.item) {
       setCommentTotal((prev) => prev + 1);
       setExpandedThreads((prev) => ({ ...prev, [data.item.id]: false }));
-      setEntries((prev) =>
-        [{ ...data.item, replies: [], replyCount: 0 }, ...prev].slice(
-          0,
-          Math.max(prev.length, FRIENDS_COMMENT_PAGE_SIZE),
-        ),
-      );
+      setEntries((prev) => [
+        { ...data.item, replies: [], replyCount: 0 },
+        ...prev,
+      ]);
     }
   };
 
@@ -316,7 +301,7 @@ const FriendsApplicationBoard = () => {
             </h2>
           </div>
           <p className="text-sm font-semibold text-[#7B5C61]">
-            {commentTotal || entries.length} 条留言
+            {visibleEntries.length} 条留言
           </p>
         </div>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-[#6B7280]">
@@ -419,15 +404,15 @@ const FriendsApplicationBoard = () => {
         <p className="mt-8 text-sm text-[#6B7280]">加载留言中...</p>
       )}
 
-      {!loading && entries.length === 0 && (
+      {!loading && visibleEntries.length === 0 && (
         <div className="mt-8 rounded-[18px] border border-dashed border-[#D8E9F8] bg-white/70 px-4 py-10 text-center text-sm text-[#6B7280]">
           还没有留言，欢迎留下第一条。
         </div>
       )}
 
-      {entries.length > 0 && (
-        <div className="friends-comments-waterfall relative left-1/2 mt-8 w-[96.625rem] max-w-none -translate-x-1/2 [column-count:3] [column-gap:1.25rem]">
-        {entries.map((item) => {
+      {visibleEntries.length > 0 && (
+        <div className="friends-comments-even relative left-1/2 mt-8 grid w-[96.625rem] max-w-none -translate-x-1/2 grid-cols-3 items-stretch gap-5">
+        {visibleEntries.map((item) => {
           const tone = cardTone(item);
           const isExpanded = !!expandedThreads[item.id];
           const isReplying = replyTargetId === item.id;
@@ -439,15 +424,15 @@ const FriendsApplicationBoard = () => {
             <article
               key={item.id}
               className={clsx(
-                "mb-5 inline-block w-full break-inside-avoid align-top",
+                "flex h-full",
                 activeReplyInThread ? "relative z-40" : "relative z-0",
               )}
             >
-              <div className="flex items-start gap-3 md:gap-4">
+              <div className="flex h-full w-full items-start gap-3 md:gap-4">
                 <CommentAvatar item={item} />
                 <div
                   className={clsx(
-                    "min-w-0 flex-1 rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
+                    "flex h-full min-w-0 flex-1 flex-col rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
                     tone === "guest" && "border-[#FFE066]/70 bg-[#FFF9DB]/72",
                     tone === "login" && "border-[#A5D8FF]/70 bg-[#F3FAFF]/78",
                     tone === "admin" && "border-[#FFC9C9]/80 bg-[#FFF0F6]/78",
@@ -689,22 +674,6 @@ const FriendsApplicationBoard = () => {
         })}
         </div>
       )}
-
-        {!loading && hasMoreComments && (
-          <div className="flex flex-col items-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onLoadMore}
-              disabled={loadingMore}
-              className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-[#D8E9F8] bg-white/76 px-5 py-2 text-sm font-bold text-[#5F80C8] shadow-[0_10px_24px_rgba(95,75,82,0.08)] transition hover:border-[#FF8FAB] hover:text-[#FF8FAB] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loadingMore ? "加载中..." : "加载更多"}
-            </button>
-            <p className="text-xs font-semibold text-[#8A7C74]">
-              已显示 {entries.length}/{commentTotal} 条
-            </p>
-          </div>
-        )}
     </section>
   );
 };
