@@ -111,11 +111,20 @@ test("fetches the about preview with a versioned no-store request", () => {
   assert.match(routeSource, /fetch\(getAboutPreviewUrl\(\), \{ cache: "no-store" \}\)/);
 });
 
-test("about preview source eagerly loads image assets without hiding failed Genshin images", () => {
+test("about preview source eagerly loads remaining image assets", () => {
   const previewHtml = readFileSync(resolve("public/about-preview.html"), "utf8");
 
   assert.doesNotMatch(previewHtml, /loading="lazy"/);
   assert.doesNotMatch(previewHtml, /onerror="this\.style\.display='none'"/);
   assert.match(previewHtml, /simpleicon-react-61dafb-7c601a5c00\.svg/);
-  assert.match(previewHtml, /games-genshin\.jpg-card-4f646b6651\.jpg/);
+  assert.doesNotMatch(previewHtml, /games-genshin\.jpg-card-4f646b6651\.jpg/);
+});
+
+test("about preview no longer shows the games and site readme sections", () => {
+  const previewHtml = readFileSync(resolve("public/about-preview.html"), "utf8");
+
+  assert.doesNotMatch(previewHtml, /我玩的游戏/);
+  assert.doesNotMatch(previewHtml, /本站说明/);
+  assert.doesNotMatch(previewHtml, /game-shelf/);
+  assert.doesNotMatch(previewHtml, /readme/);
 });
