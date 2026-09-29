@@ -29,15 +29,15 @@ test("loads friends comments in five-item pages with a load more action", () => 
   assert.match(source, />\s*\{loadingMore\s*\?\s*"加载中\.\.\."\s*:\s*"加载更多"\}\s*</);
 });
 
-test("renders friends comments as an even two-column grid", () => {
+test("renders friends comments as a three-column waterfall at the current card width", () => {
   const source = readSource("components/FriendsApplicationBoard.jsx");
 
-  assert.match(source, /max-w-5xl/);
-  assert.match(source, /friends-comments-balanced/);
-  assert.match(source, /grid grid-cols-1 items-stretch gap-5 md:grid-cols-2/);
-  assert.doesNotMatch(source, /columns-1/);
-  assert.doesNotMatch(source, /md:columns-2/);
-  assert.doesNotMatch(source, /columns-3/);
-  assert.doesNotMatch(source, /break-inside-avoid/);
+  assert.match(source, /friends-comments-waterfall/);
+  assert.match(source, /w-\[96\.625rem\]/);
+  assert.match(source, /\[column-count:3\]/);
+  assert.match(source, /\[column-gap:1\.25rem\]/);
+  assert.match(source, /break-inside-avoid/);
+  assert.doesNotMatch(source, /friends-comments-balanced/);
+  assert.doesNotMatch(source, /md:grid-cols-2/);
   assert.doesNotMatch(source, /mt-8 space-y-5/);
 });
