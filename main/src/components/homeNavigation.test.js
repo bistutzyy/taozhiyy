@@ -298,6 +298,14 @@ test("does not put the moments entry in feature five", () => {
   assert.doesNotMatch(featuresSource, /说说入口|碎语入口|进入碎语|进入碎碎念/);
 });
 
+test("routes homepage fragment 02 to the external blog", () => {
+  const featuresSource = readSource("components/Features.jsx");
+
+  assert.match(featuresSource, /linkUrl:\s*"https:\/\/bistutzyy\.github\.io\/"/);
+  assert.match(featuresSource, /linkUrl="https:\/\/bistutzyy\.github\.io\/"/);
+  assert.doesNotMatch(featuresSource, /linkUrl[:=]\s*["']\/blog\/["']/);
+});
+
 test("does not render moments as a separate homepage section", () => {
   const homePageSource = readSource("pages/HomePage.jsx");
 
