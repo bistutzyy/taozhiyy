@@ -40,3 +40,19 @@ test("shows two comments per column, then the final remainder left to right", ()
   assert.doesNotMatch(source, /column-count:3/);
   assert.doesNotMatch(source, /FRIENDS_COMMENT_PAGE_SIZE\s*=\s*5/);
 });
+
+test("mixes friend comment cards across a palette that does not repeat every column", () => {
+  const source = readSource("components/FriendsApplicationBoard.jsx");
+
+  assert.match(source, /FRIEND_COMMENT_TONES/);
+  assert.match(source, /index % FRIEND_COMMENT_TONES\.length/);
+  assert.match(source, /border-\[#FFE066\]/);
+  assert.match(source, /border-\[#A5D8FF\]/);
+  assert.match(source, /border-\[#FFC9C9\]/);
+  assert.match(source, /border-\[#B2F2BB\]/);
+  assert.match(source, /border-\[#D0BFFF\]/);
+  assert.match(source, /FRIEND_COMMENT_TONES\.length % FRIENDS_COMMENT_COLUMNS !== 0/);
+  assert.doesNotMatch(source, /tone === "guest"/);
+  assert.doesNotMatch(source, /tone === "login"/);
+  assert.doesNotMatch(source, /tone === "admin"/);
+});

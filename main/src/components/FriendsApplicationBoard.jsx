@@ -31,10 +31,19 @@ const FRIEND_REPLY_MAX_LENGTH = 300;
 const FRIEND_COMMENT_PLACEHOLDER =
   "写下你的留言、站点介绍，或者想对桃之夭夭说的话...";
 
-const cardTone = (item) => {
-  if (item.isAdminUser) return "admin";
-  if (item.isLoginUser) return "login";
-  return "guest";
+const FRIEND_COMMENT_TONES = [
+  "border-[#FFE066]/80 bg-[#FFF9DB]/80",
+  "border-[#A5D8FF]/80 bg-[#F3FAFF]/85",
+  "border-[#FFC9C9]/80 bg-[#FFF0F6]/85",
+  "border-[#B2F2BB]/80 bg-[#EBFBEE]/85",
+  "border-[#D0BFFF]/80 bg-[#F3F0FF]/85",
+];
+
+const commentToneClass = (index) => {
+  if (FRIEND_COMMENT_TONES.length % FRIENDS_COMMENT_COLUMNS !== 0) {
+    return FRIEND_COMMENT_TONES[index % FRIEND_COMMENT_TONES.length];
+  }
+  return FRIEND_COMMENT_TONES[(index + 1) % FRIEND_COMMENT_TONES.length];
 };
 
 const nameFromUser = (user) => {
@@ -420,8 +429,8 @@ const FriendsApplicationBoard = () => {
 
       {visibleEntries.length > 0 && (
         <div className="friends-comments-even relative left-1/2 mt-8 grid w-[96.625rem] max-w-none -translate-x-1/2 grid-cols-3 items-stretch gap-5">
-        {visibleEntries.map((item) => {
-          const tone = cardTone(item);
+        {visibleEntries.map((item, index) => {
+          const tone = commentToneClass(index);
           const isExpanded = !!expandedThreads[item.id];
           const isReplying = replyTargetId === item.id;
           const replies = flattenThreadReplies(item.replies || []);
@@ -441,9 +450,7 @@ const FriendsApplicationBoard = () => {
                 <div
                   className={clsx(
                     "flex h-full min-w-0 flex-1 flex-col rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
-                    tone === "guest" && "border-[#FFE066]/70 bg-[#FFF9DB]/72",
-                    tone === "login" && "border-[#A5D8FF]/70 bg-[#F3FAFF]/78",
-                    tone === "admin" && "border-[#FFC9C9]/80 bg-[#FFF0F6]/78",
+                    tone,
                   )}
                 >
                 <div className="flex items-start justify-between gap-4">
