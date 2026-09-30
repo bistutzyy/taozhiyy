@@ -8,9 +8,8 @@ import AiTrafficPage from "./pages/AiTrafficPage";
 import FriendsPage from "./pages/FriendsPage";
 import GuestbookPage from "./pages/GuestbookPage";
 import GalleryAlbumPage from "./pages/GalleryAlbumPage";
-import GalleryPage from "./pages/GalleryPage";
+import GlimmerPage from "./pages/GlimmerPage";
 import AiGalleryPage from "./pages/AiGalleryPage";
-import MomentsPage from "./pages/MomentsPage";
 import AboutSitePage from "./pages/AboutSitePage";
 import AboutProjectPage from "./pages/AboutProjectPage";
 import {
@@ -49,10 +48,11 @@ function App() {
             <Route path="ai-traffic" element={<AiTrafficPage />} />
             <Route path="friends" element={<FriendsPage />} />
             <Route path="guestbook" element={<GuestbookPage />} />
-            <Route path="gallery" element={<GalleryPage />} />
+            <Route path="glimmer" element={<GlimmerPage />} />
+            <Route path="gallery" element={<Navigate to="/glimmer" replace />} />
             <Route path="gallery/:albumId" element={<GalleryAlbumPage />} />
             <Route path="ai-gallery" element={<AiGalleryPage />} />
-            <Route path="moments" element={<MomentsPage />} />
+            <Route path="moments" element={<Navigate to="/glimmer" replace />} />
             <Route path="about" element={<AboutSitePage />} />
             <Route path="about/projects/:projectId" element={<AboutProjectPage />} />
             <Route path="login" element={<LoginPage />} />

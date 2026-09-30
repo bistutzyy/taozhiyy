@@ -7687,6 +7687,472 @@ body {
   }
 }
 
+/* Combined gallery and note entry. */
+.glimmer-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 15% 18%, rgba(255, 221, 235, 0.58), transparent 24rem),
+    radial-gradient(circle at 84% 16%, rgba(223, 246, 239, 0.68), transparent 23rem),
+    radial-gradient(circle at 74% 76%, rgba(255, 238, 190, 0.38), transparent 22rem),
+    repeating-linear-gradient(
+      0deg,
+      rgba(233, 206, 220, 0.11) 0,
+      rgba(233, 206, 220, 0.11) 1px,
+      transparent 1px,
+      transparent 5.25rem
+    ),
+    linear-gradient(180deg, #fffdfb 0%, #fff8fb 46%, #f6fffc 100%);
+  color: #4a3d4c;
+  padding: 6.8rem clamp(1rem, 4vw, 3rem) 5rem;
+}
+
+.glimmer-page::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(112deg, transparent 0 20%, rgba(255, 199, 221, 0.15) 20.2%, transparent 21.2% 54%, rgba(204, 239, 229, 0.16) 54.4%, transparent 55.5%),
+    repeating-linear-gradient(
+      118deg,
+      rgba(202, 184, 196, 0.1) 0,
+      rgba(202, 184, 196, 0.1) 1px,
+      transparent 1px,
+      transparent 9rem
+    );
+  opacity: 0.54;
+}
+
+.glimmer-page-bg,
+.glimmer-page-hero,
+.glimmer-albums,
+.glimmer-notes {
+  position: relative;
+  z-index: 1;
+}
+
+.glimmer-page-bg {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.glimmer-page-glow {
+  position: absolute;
+  display: block;
+  height: 1px;
+  border-radius: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 168, 207, 0.28), rgba(174, 226, 214, 0.24), transparent);
+}
+
+.glimmer-page-glow--rose {
+  right: 8vw;
+  top: 8.4rem;
+  width: 18rem;
+  transform: rotate(-8deg);
+}
+
+.glimmer-page-glow--mint {
+  left: 10vw;
+  top: 27rem;
+  width: 14rem;
+  transform: rotate(7deg);
+}
+
+.glimmer-page-glow--sun {
+  right: 18vw;
+  bottom: 9rem;
+  width: 16rem;
+  transform: rotate(5deg);
+}
+
+.glimmer-page-hero,
+.glimmer-albums,
+.glimmer-notes {
+  width: min(100%, 1180px);
+  margin-inline: auto;
+}
+
+.glimmer-page-hero {
+  text-align: center;
+}
+
+.glimmer-page-kicker {
+  margin: 0 0 0.62rem;
+  color: #b6788c;
+  font-family: "General Sans", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.glimmer-page h1 {
+  margin: 0;
+  color: #655569;
+  font-family: "ZCOOL XiaoWei", "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+  font-size: clamp(2.7rem, 7vw, 5.7rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.glimmer-page-subtitle {
+  width: fit-content;
+  max-width: min(100%, 39rem);
+  margin: 0.86rem auto 0;
+  padding: 0 0.34rem 0.18rem;
+  color: #8c7282;
+  font-family: "ZCOOL XiaoWei", "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+  font-size: clamp(1rem, 2vw, 1.18rem);
+  line-height: 1.75;
+  background: linear-gradient(180deg, transparent 59%, rgba(255, 214, 232, 0.55) 59%);
+}
+
+.glimmer-albums {
+  margin-top: clamp(2.7rem, 6vw, 4.8rem);
+}
+
+.glimmer-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-bottom: clamp(1.3rem, 3vw, 2rem);
+}
+
+.glimmer-section-head h2 {
+  margin: 0;
+  color: #6b586b;
+  font-family: "ZCOOL XiaoWei", "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.glimmer-section-head span {
+  margin-bottom: 0.24rem;
+  color: rgba(151, 116, 136, 0.7);
+  font-family: "General Sans", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.glimmer-album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: clamp(1rem, 2.4vw, 1.8rem);
+  align-items: start;
+}
+
+.glimmer-polaroid {
+  position: relative;
+  display: block;
+  min-width: 0;
+  border: 1px solid rgba(222, 211, 202, 0.84);
+  border-radius: 6px;
+  background: #fffaf2;
+  padding: 0.68rem 0.68rem 0.82rem;
+  color: #746269;
+  text-align: center;
+  text-decoration: none;
+  box-shadow:
+    0 1.05rem 2.6rem rgba(99, 79, 88, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: rotate(var(--album-tilt, -1.2deg));
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+
+.glimmer-polaroid:nth-child(2n) {
+  --album-tilt: 1.1deg;
+}
+
+.glimmer-polaroid:nth-child(3n) {
+  --album-tilt: -0.45deg;
+}
+
+.glimmer-polaroid::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -0.72rem;
+  width: 3.2rem;
+  height: 1rem;
+  border-radius: 2px;
+  background: rgba(255, 195, 214, 0.58);
+  box-shadow: 0 0.2rem 0.62rem rgba(182, 124, 148, 0.14);
+  transform: translateX(-50%) rotate(-2deg);
+}
+
+.glimmer-polaroid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(95, 75, 82, 0.08);
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+.glimmer-polaroid span {
+  display: block;
+  min-width: 0;
+  margin-top: 0.62rem;
+  overflow: hidden;
+  color: #76646b;
+  font-family: "ZCOOL XiaoWei", "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glimmer-polaroid:hover,
+.glimmer-polaroid:focus-visible {
+  transform: rotate(0deg) translateY(-0.28rem);
+  border-color: rgba(255, 173, 204, 0.55);
+  box-shadow:
+    0 1.35rem 3rem rgba(99, 79, 88, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.glimmer-polaroid:focus-visible {
+  outline: 3px solid rgba(255, 143, 171, 0.28);
+  outline-offset: 4px;
+}
+
+.glimmer-notes {
+  margin-top: clamp(3rem, 7vw, 5.2rem);
+}
+
+.glimmer-notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+  gap: clamp(1rem, 2.4vw, 1.55rem);
+  align-items: start;
+}
+
+.glimmer-note {
+  --note-accent: 255, 160, 202;
+  --note-paper: #fff7cf;
+  --note-line: rgba(200, 156, 96, 0.17);
+  --note-ink: #554354;
+  position: relative;
+  min-width: 0;
+  min-height: 11rem;
+  border: 1px solid rgba(var(--note-accent), 0.24);
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent 2.06rem,
+      var(--note-line) 2.06rem,
+      var(--note-line) 2.12rem
+    ),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.38), transparent 48%),
+    var(--note-paper);
+  padding: 1.18rem 1.12rem 1.25rem;
+  box-shadow:
+    0 1rem 2.4rem rgba(124, 93, 107, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  transform: rotate(var(--note-tilt, -0.75deg));
+}
+
+.glimmer-note:nth-child(2n) {
+  --note-tilt: 0.8deg;
+}
+
+.glimmer-note:nth-child(3n) {
+  --note-tilt: -0.25deg;
+}
+
+.glimmer-note::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -0.58rem;
+  width: 2.7rem;
+  height: 0.9rem;
+  border-radius: 2px;
+  background: rgba(255, 220, 228, 0.72);
+  box-shadow: 0 0.28rem 0.68rem rgba(149, 98, 118, 0.12);
+  transform: translateX(-50%) rotate(2deg);
+}
+
+.glimmer-note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.48rem;
+  margin-bottom: 0.72rem;
+  color: rgba(91, 71, 91, 0.64);
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.glimmer-note-meta span {
+  border: 1px solid rgba(var(--note-accent), 0.26);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.38);
+  padding: 0.13rem 0.42rem 0.16rem;
+}
+
+.glimmer-note-lines {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.glimmer-note-lines p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--note-ink);
+  font-family: "Ma Shan Zheng", "ZCOOL XiaoWei", "STKaiti", "KaiTi", "Microsoft YaHei",
+    cursive;
+  font-size: clamp(1.18rem, 2.5vw, 1.42rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.82;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.glimmer-note-photo {
+  width: min(100%, 8.2rem);
+  margin: 0.72rem 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.48);
+  padding: 0.32rem;
+  box-shadow: 0 0.44rem 1rem rgba(116, 86, 70, 0.1);
+}
+
+.glimmer-note-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  object-fit: contain;
+}
+
+.glimmer-note--aurora {
+  --note-accent: 255, 160, 202;
+  --note-paper: #fff1f6;
+  --note-line: rgba(255, 160, 202, 0.16);
+  --note-ink: #5a4059;
+}
+
+.glimmer-note--rainbow {
+  --note-accent: 255, 178, 94;
+  --note-paper: #fff4cf;
+  --note-line: rgba(210, 151, 70, 0.16);
+  --note-ink: #5c4537;
+}
+
+.glimmer-note--ticket {
+  --note-accent: 180, 156, 226;
+  --note-paper: #f3efff;
+  --note-line: rgba(153, 128, 204, 0.15);
+  --note-ink: #514866;
+}
+
+.glimmer-note--watercolor {
+  --note-accent: 144, 211, 197;
+  --note-paper: #effbf6;
+  --note-line: rgba(104, 174, 158, 0.15);
+  --note-ink: #455d59;
+}
+
+.glimmer-note--mist {
+  --note-accent: 151, 184, 232;
+  --note-paper: #eff7ff;
+  --note-line: rgba(112, 150, 208, 0.14);
+  --note-ink: #46556d;
+}
+
+.glimmer-note--journal {
+  --note-accent: 229, 188, 118;
+  --note-paper: #fff5dc;
+  --note-line: rgba(203, 162, 106, 0.18);
+  --note-ink: #5c4f3c;
+}
+
+.glimmer-note--mint {
+  --note-accent: 255, 174, 132;
+  --note-paper: #fff1e8;
+  --note-line: rgba(220, 145, 102, 0.14);
+  --note-ink: #5f4d42;
+}
+
+@media (max-width: 767px) {
+  .glimmer-page {
+    padding: 5.85rem 0.95rem 4.1rem;
+  }
+
+  .glimmer-page::before {
+    opacity: 0.42;
+  }
+
+  .glimmer-page-glow {
+    opacity: 0.45;
+  }
+
+  .glimmer-section-head {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.16rem;
+  }
+
+  .glimmer-section-head span {
+    margin-bottom: 0;
+  }
+
+  .glimmer-album-grid,
+  .glimmer-notes-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .glimmer-polaroid {
+    transform: none;
+    padding: 0.5rem 0.5rem 0.68rem;
+  }
+
+  .glimmer-polaroid span {
+    font-size: 0.82rem;
+  }
+
+  .glimmer-note,
+  .glimmer-note:nth-child(2n),
+  .glimmer-note:nth-child(3n) {
+    min-height: 10rem;
+    transform: none;
+    padding: 1rem 0.9rem 1.05rem;
+  }
+
+  .glimmer-note-lines p {
+    font-size: 1.08rem;
+    line-height: 1.78;
+  }
+}
+
+@media (max-width: 430px) {
+  .glimmer-album-grid,
+  .glimmer-notes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 680px) {
   .owner-console-app {
     padding: 10px 10px 88px;

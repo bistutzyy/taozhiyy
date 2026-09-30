@@ -7,10 +7,22 @@ import { fileURLToPath } from "node:url";
 const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const readSource = (path) => readFileSync(resolve(sourceRoot, path), "utf8");
 
-test("keeps the moments entry in the top navbar", () => {
+test("merges gallery and moments into one glimmer navbar entry", () => {
   const navbarSource = readSource("components/Navbar.jsx");
+  const appSource = readSource("App.jsx");
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
 
-  assert.match(navbarSource, /\{\s*label:\s*"碎语",\s*to:\s*"\/moments"/);
+  assert.match(navbarSource, /\{\s*label:\s*"浮光集",\s*to:\s*"\/glimmer"/);
+  assert.doesNotMatch(navbarSource, /label:\s*"相册集"/);
+  assert.doesNotMatch(navbarSource, /label:\s*"碎语"/);
+  assert.match(appSource, /path="glimmer" element={<GlimmerPage \/>}/);
+  assert.match(appSource, /path="gallery" element={<Navigate to="\/glimmer" replace \/>}/);
+  assert.match(appSource, /path="moments" element={<Navigate to="\/glimmer" replace \/>}/);
+  assert.match(glimmerSource, /<h1>浮光集<\/h1>/);
+  assert.match(glimmerSource, /galleryAlbums\.map/);
+  assert.match(glimmerSource, /moments\.map/);
+  assert.doesNotMatch(glimmerSource, /柔软的手札/);
+  assert.doesNotMatch(glimmerSource, /数据中心/);
 });
 
 test("keeps the about entry in the top navbar", () => {

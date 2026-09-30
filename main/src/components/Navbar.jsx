@@ -10,8 +10,7 @@ import VisitorNetworkBadge from "./VisitorNetworkBadge";
 const navLinks = [
   { label: "HOME", to: "/", end: true },
   { label: "关于我", to: "/about", end: true },
-  { label: "相册集", to: "/gallery", end: true },
-  { label: "碎语", to: "/moments", end: true },
+  { label: "浮光集", to: "/glimmer", end: true },
   { label: "哔哩BILI", to: "/bili", end: true },
   { label: "数据中心", to: "/ai-traffic", end: true },
   { label: "Friends", to: "/friends", end: true },
@@ -29,6 +28,7 @@ const getNavTheme = (pathname) => {
   if (pathname === "/ai-traffic" || pathname.startsWith("/ai-traffic/")) return "ai";
   if (pathname === "/friends" || pathname.startsWith("/friends/")) return "friends";
   if (pathname === "/guestbook" || pathname.startsWith("/guestbook/")) return "guestbook";
+  if (pathname === "/glimmer" || pathname.startsWith("/glimmer/")) return "moments";
   if (pathname === "/gallery" || pathname.startsWith("/gallery/")) return "gallery";
   if (pathname === "/moments" || pathname.startsWith("/moments/")) return "moments";
   if (pathname === "/about" || pathname.startsWith("/about/")) return "about";
@@ -59,6 +59,8 @@ const NavBar = () => {
     pathname === "/friends" || pathname.startsWith("/friends/");
   const isGuestbookPage =
     pathname === "/guestbook" || pathname.startsWith("/guestbook/");
+  const isGlimmerPage =
+    pathname === "/glimmer" || pathname.startsWith("/glimmer/");
   const isGalleryPage =
     pathname === "/gallery" || pathname.startsWith("/gallery/");
   const isAiGalleryPage =
@@ -72,6 +74,7 @@ const NavBar = () => {
     isAiTrafficPage ||
     isFriendsPage ||
     isGuestbookPage ||
+    isGlimmerPage ||
     isGalleryPage ||
     isAiGalleryPage ||
     isMomentsPage ||
@@ -216,6 +219,7 @@ const NavBar = () => {
 
   const isLinkActive = (item) =>
     (item.to === "/" && pathname === "/") ||
+    (item.to === "/glimmer" && (isGlimmerPage || isGalleryPage || isMomentsPage)) ||
     (item.to === "/gallery" && isGalleryPage) ||
     (item.to === "/bili" && isBiliPage) ||
     (item.to === "/ai-traffic" && isAiTrafficPage) ||

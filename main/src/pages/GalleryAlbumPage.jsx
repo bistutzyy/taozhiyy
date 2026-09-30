@@ -6,7 +6,7 @@ const GalleryAlbumPage = () => {
   const { albumId } = useParams();
   const album = getGalleryAlbum(albumId);
 
-  if (!album) return <Navigate to="/gallery" replace />;
+  if (!album) return <Navigate to="/glimmer" replace />;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#fff8f1] pt-24 text-[#241322]">
@@ -18,11 +18,11 @@ const GalleryAlbumPage = () => {
 
       <header className="container mx-auto px-5 pb-8 md:px-10">
         <Link
-          to="/gallery"
+          to="/glimmer"
           className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#5f4b52] shadow-[0_14px_38px_rgba(95,75,82,0.12)] backdrop-blur-md"
         >
           <TiLocationArrow className="rotate-180" />
-          Gallery
+          浮光集
         </Link>
 
         <div className="mt-8 grid gap-7 md:grid-cols-[0.9fr_1.1fr] md:items-end">
