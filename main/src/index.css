@@ -1204,6 +1204,17 @@ body {
 
   .story-envelope-btn span {
     @apply font-general text-[13px] uppercase tracking-[0.22em] md:text-sm;
+    height: 1.2em;
+    line-height: 1.2;
+  }
+
+  .story-envelope-btn span > div:first-child {
+    white-space: nowrap;
+    transform: none !important;
+  }
+
+  .story-envelope-btn span > div:last-child {
+    display: none;
   }
 
   .story-envelope-btn:focus-visible {

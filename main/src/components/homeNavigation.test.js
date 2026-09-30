@@ -53,6 +53,8 @@ test("keeps the homepage data-center entry readable without button overlap", () 
 
   assert.ok(signoffBlock, "missing story envelope signoff CSS block");
   assert.match(signoffBlock.groups.rules, /margin-bottom:\s*clamp\(1\.65rem,\s*2\.6vw,\s*2\.2rem\)/);
+  assert.match(cssSource, /\.story-envelope-btn span > div:last-child\s*\{/);
+  assert.match(cssSource, /\.story-envelope-btn span > div:last-child\s*\{[\s\S]*?display:\s*none/);
 });
 
 test("registers the about page and project child route", () => {
