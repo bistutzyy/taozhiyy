@@ -72,7 +72,7 @@ const Footer = () => {
         ? "guestbook"
         : pathname.startsWith("/friends")
           ? "friends"
-          : pathname.startsWith("/moments")
+          : pathname.startsWith("/moments") || pathname.startsWith("/glimmer")
             ? "moments"
             : "default";
   const theme = footerThemes[variant];
