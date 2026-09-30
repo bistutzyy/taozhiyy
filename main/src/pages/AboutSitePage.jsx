@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import ServerInfoPanel from "../components/ServerInfoPanel";
 import { rewriteAboutPreviewAssets } from "./aboutPreviewAssets.js";
 
 const ABOUT_PREVIEW_URL = "/about-preview.html";
-const ABOUT_PREVIEW_VERSION = "20260627-icons-genshin";
+const ABOUT_PREVIEW_VERSION = "20260930-server-status";
 
 const getAboutPreviewUrl = () =>
   `${ABOUT_PREVIEW_URL}?${new URLSearchParams({ v: ABOUT_PREVIEW_VERSION })}`;
@@ -148,6 +149,7 @@ const AboutSitePage = () => {
   const hostRef = useRef(null);
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [serverStatusReady, setServerStatusReady] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -156,6 +158,7 @@ const AboutSitePage = () => {
     let alive = true;
     let cleanup = () => {};
 
+    setServerStatusReady(false);
     shadow.innerHTML = '<div class="about-route-loading">正在打开关于本站...</div>';
 
     fetch(getAboutPreviewUrl(), { cache: "no-store" })
@@ -184,6 +187,7 @@ const AboutSitePage = () => {
           removeProjectCards();
           removeGameShelf();
         };
+        setServerStatusReady(true);
       })
       .catch((err) => {
         if (!alive) return;
@@ -199,7 +203,13 @@ const AboutSitePage = () => {
 
   return (
     <section className="about-route-page" aria-label="关于我">
-      <div ref={hostRef} className="about-route-shadow" />
+      <div ref={hostRef} className="about-route-shadow">
+        {serverStatusReady ? (
+          <div slot="server-status">
+            <ServerInfoPanel />
+          </div>
+        ) : null}
+      </div>
       {error ? <p className="about-route-error">关于页加载失败：{error}</p> : null}
     </section>
   );

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchChatStats } from "../services/chatStatsApi";
-import ServerInfoPanel from "../components/ServerInfoPanel";
 
 const CHART_EMPTY =
   "还没有提问记录，等第一个人来问问博客吧 ✦";
@@ -168,12 +167,8 @@ const AiTrafficPage = () => {
           <span className="text-[#FF8FAB]">✦</span> 数据中心
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#6B7280]">
-          实时呈现服务器运行状态与 AI 调用流量，让每一次访问都留下可被回看的痕迹。
+          实时呈现 AI 调用流量，让每一次访问都留下可被回看的痕迹。
         </p>
-
-        <div className="mt-8">
-          <ServerInfoPanel />
-        </div>
 
         {loading && (
           <p className="mt-8 text-sm text-[#6B7280]">加载统计中…</p>

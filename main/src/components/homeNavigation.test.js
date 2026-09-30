@@ -38,6 +38,19 @@ test("registers the about page and project child route", () => {
   assert.match(appSource, /path="about\/projects\/:projectId"/);
 });
 
+test("moves server status into the about page in place of the sites section", () => {
+  const aboutPreviewSource = readSource("../public/about-preview.html");
+  const aboutPageSource = readSource("pages/AboutSitePage.jsx");
+  const trafficSource = readSource("pages/AiTrafficPage.jsx");
+
+  assert.match(aboutPreviewSource, /slot name="server-status"/);
+  assert.doesNotMatch(aboutPreviewSource, /我的网站/);
+  assert.doesNotMatch(aboutPreviewSource, /class="sites"/);
+  assert.match(aboutPageSource, /<ServerInfoPanel \/>/);
+  assert.match(aboutPageSource, /slot="server-status"/);
+  assert.doesNotMatch(trafficSource, /ServerInfoPanel/);
+});
+
 test("keeps the about preview production-safe", () => {
   const aboutPreviewSource = readSource("../public/about-preview.html");
 
