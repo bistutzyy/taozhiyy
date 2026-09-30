@@ -157,11 +157,11 @@ const FloatingImage = () => {
                   in view.
                 </h2>
                 <p className="story-envelope-desc">
-                  这里记录服务器状态与 AI 调用流量，能看到站点现在是否在线、
-                  资源是否稳定，以及最近的访问痕迹。
+                  Real-time server telemetry and AI traffic are collected here,
+                  so you can check uptime, resource health, and recent activity.
                 </p>
                 <p className="story-envelope-signoff">
-                  <span className="story-envelope-signoff-line">Live from</span>
+                  <span className="story-envelope-signoff-line">Live from:</span>
                   <span className="story-envelope-signoff-name">taozhiyy.top</span>
                 </p>
                 <Button

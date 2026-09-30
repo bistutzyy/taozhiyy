@@ -1174,7 +1174,7 @@ body {
     font-size: clamp(0.85rem, 1.4vw, 1.05rem);
     line-height: 1.4;
     color: #5a4750;
-    margin-bottom: clamp(1rem, 1.8vw, 1.4rem);
+    margin-bottom: clamp(1.65rem, 2.6vw, 2.2rem);
   }
 
   .story-envelope-signoff-line {
@@ -1204,6 +1204,17 @@ body {
 
   .story-envelope-btn span {
     @apply font-general text-[13px] uppercase tracking-[0.22em] md:text-sm;
+    height: 1.2em;
+    line-height: 1.2;
+  }
+
+  .story-envelope-btn span > div:first-child {
+    white-space: nowrap;
+    transform: none !important;
+  }
+
+  .story-envelope-btn span > div:last-child {
+    display: none;
   }
 
   .story-envelope-btn:focus-visible {

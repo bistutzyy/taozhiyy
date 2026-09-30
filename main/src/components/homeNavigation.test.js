@@ -41,8 +41,20 @@ test("moves the data center entry to the homepage follow-up card", () => {
   assert.match(appSource, /path="ai-traffic" element={<AiTrafficPage \/>}/);
   assert.match(storySource, /to="\/ai-traffic"/);
   assert.match(storySource, /数据中心/);
+  assert.match(storySource, /Real-time server telemetry and AI traffic are collected here/);
+  assert.doesNotMatch(storySource, /这里记录服务器状态与 AI 调用流量/);
   assert.doesNotMatch(storySource, /to="\/guestbook"/);
   assert.doesNotMatch(storySource, /Leave a message/);
+});
+
+test("keeps the homepage data-center entry readable without button overlap", () => {
+  const cssSource = readSource("index.css");
+  const signoffBlock = cssSource.match(/\.story-envelope-signoff\s*\{(?<rules>[\s\S]*?)\n  \}/);
+
+  assert.ok(signoffBlock, "missing story envelope signoff CSS block");
+  assert.match(signoffBlock.groups.rules, /margin-bottom:\s*clamp\(1\.65rem,\s*2\.6vw,\s*2\.2rem\)/);
+  assert.match(cssSource, /\.story-envelope-btn span > div:last-child\s*\{/);
+  assert.match(cssSource, /\.story-envelope-btn span > div:last-child\s*\{[\s\S]*?display:\s*none/);
 });
 
 test("registers the about page and project child route", () => {
