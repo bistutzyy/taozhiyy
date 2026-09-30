@@ -150,25 +150,25 @@ const FloatingImage = () => {
               <div className="story-envelope-arc" aria-hidden="true" />
 
               <div className="story-envelope-body">
-                <p className="story-envelope-meta">№ 01 · A letter</p>
-                <p className="story-envelope-salutation">Dear visitor,</p>
+                <p className="story-envelope-meta">№ 01 · Live panel</p>
+                <p className="story-envelope-salutation">数据中心</p>
                 <h2 id="story-envelope-heading" className="story-envelope-title">
-                  thank you<br />
-                  for stopping by.
+                  site pulse<br />
+                  in view.
                 </h2>
                 <p className="story-envelope-desc">
-                  If anything here needs correction, or you just want to say
-                  hello — please drop me a line.
+                  这里记录服务器状态与 AI 调用流量，能看到站点现在是否在线、
+                  资源是否稳定，以及最近的访问痕迹。
                 </p>
                 <p className="story-envelope-signoff">
-                  <span className="story-envelope-signoff-line">Yours,</span>
-                  <span className="story-envelope-signoff-name">taozhiyo</span>
+                  <span className="story-envelope-signoff-line">Live from</span>
+                  <span className="story-envelope-signoff-name">taozhiyy.top</span>
                 </p>
                 <Button
                   id="realm-btn"
-                  title="Leave a message →"
+                  title="Open data center →"
                   containerClass="story-envelope-btn"
-                  to="/guestbook"
+                  to="/ai-traffic"
                 />
               </div>
             </article>
