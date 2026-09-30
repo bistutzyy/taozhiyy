@@ -12,7 +12,6 @@ const navLinks = [
   { label: "关于我", to: "/about", end: true },
   { label: "浮光集", to: "/glimmer", end: true },
   { label: "哔哩BILI", to: "/bili", end: true },
-  { label: "数据中心", to: "/ai-traffic", end: true },
   { label: "Friends", to: "/friends", end: true },
 ];
 

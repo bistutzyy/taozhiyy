@@ -31,6 +31,20 @@ test("keeps the about entry in the top navbar", () => {
   assert.match(navbarSource, /\{\s*label:\s*"关于我",\s*to:\s*"\/about"/);
 });
 
+test("moves the data center entry to the homepage follow-up card", () => {
+  const navbarSource = readSource("components/Navbar.jsx");
+  const storySource = readSource("components/Story.jsx");
+  const appSource = readSource("App.jsx");
+
+  assert.doesNotMatch(navbarSource, /label:\s*"数据中心"/);
+  assert.doesNotMatch(navbarSource, /to:\s*"\/ai-traffic"/);
+  assert.match(appSource, /path="ai-traffic" element={<AiTrafficPage \/>}/);
+  assert.match(storySource, /to="\/ai-traffic"/);
+  assert.match(storySource, /数据中心/);
+  assert.doesNotMatch(storySource, /to="\/guestbook"/);
+  assert.doesNotMatch(storySource, /Leave a message/);
+});
+
 test("registers the about page and project child route", () => {
   const appSource = readSource("App.jsx");
 
