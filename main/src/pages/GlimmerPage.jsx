@@ -16,7 +16,6 @@ const GlimmerPage = () => (
     </div>
 
     <header className="glimmer-page-hero">
-      <p className="glimmer-page-kicker">Glimmer Collection</p>
       <h1>浮光集</h1>
       <p className="glimmer-page-subtitle">
         一面收住照片，一面摊开短句。把看见的、想起的，都放在这里。
