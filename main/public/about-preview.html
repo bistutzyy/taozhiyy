@@ -417,87 +417,8 @@ body::after {
     transition: none !important; animation: none !important;
   }
 }
-/* ============ 3. 我的网站（动态卡片，桌面 4 张一行） ============ */
-.sites {
-  display: grid; gap: 1rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-@media (min-width: 600px) { .sites { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 900px) { .sites { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-
-.site {
-  position: relative; overflow: hidden;
-  border-radius: var(--radius-lg);
-  background: var(--cream);
-  border: 1px solid var(--line);
-  box-shadow: 0 22px 60px rgba(95, 75, 82, 0.10);
-  cursor: pointer;
-  transition: transform .45s cubic-bezier(0.22,1,0.36,1), box-shadow .45s ease;
-}
-.site:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 36px 100px rgba(95, 75, 82, 0.22);
-}
-.site-thumb {
-  position: relative; width: 100%; aspect-ratio: 16 / 9;
-  background-size: cover; background-position: top center;
-  overflow: hidden;
-}
-.site-thumb::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 50%, rgba(36,19,34,0.55) 100%);
-  transition: opacity .35s;
-}
-.site:hover .site-thumb::after { opacity: 0.6; }
-.site-thumb img {
-  width: 100%; height: 100%; object-fit: cover; object-position: top center;
-  transition: transform 1s ease;
-}
-.site:hover .site-thumb img { transform: scale(1.05); }
-
-/* 占位封面色，等真实截图替换 */
-.site-thumb.placeholder {
-  display: grid; place-items: center;
-  color: rgba(255, 255, 255, 0.85);
-  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em;
-}
-.site-thumb.s-main      { background: radial-gradient(circle at 30% 30%, #ffb6c1, transparent 50%), linear-gradient(135deg, #ff8fab, #b76e79); }
-.site-thumb.s-blog      { background: radial-gradient(circle at 70% 30%, #ffd9c0, transparent 50%), linear-gradient(135deg, #ffb347, #d88a4d); }
-.site-thumb.s-build     { background: radial-gradient(circle at 50% 50%, #c8b6ff, transparent 60%), linear-gradient(135deg, #7c5cff, #5b4ad4); }
-.site-thumb.s-reimu     { background: radial-gradient(circle at 30% 70%, #d4faf0, transparent 60%), linear-gradient(135deg, #2fae91, #1f8a76); }
-
-.site-info {
-  padding: 1rem 1.1rem 1.2rem;
-}
-.site-info .url {
-  font-family: var(--font-mono); font-size: 10.5px; color: var(--rose-2);
-  letter-spacing: 0.06em; margin-bottom: 0.35rem;
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
-}
-.site-info h3 {
-  margin: 0 0 0.35rem; font-family: var(--font-display);
-  font-size: 1.25rem; letter-spacing: 0.04em; line-height: 1.15;
-}
-.site-info p {
-  margin: 0; font-size: 12px; line-height: 1.6; color: var(--ink-2);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.site-info .row {
-  margin-top: 0.8rem; display: flex; align-items: center; justify-content: space-between;
-  gap: 0.5rem;
-}
-.site-info .tags { display: flex; gap: 0.3rem; flex-wrap: wrap; min-width: 0; }
-.site-info .tags span {
-  font-family: var(--font-mono); font-size: 10px;
-  padding: 2px 7px; border-radius: 6px;
-  background: rgba(255, 143, 171, 0.14); color: var(--rose-2);
-  white-space: nowrap;
-}
-.site-info .visit {
-  font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 800;
-  color: var(--ink-1); white-space: nowrap; flex: 0 0 auto;
-}
+/* ============ 3. 服务器状态（由关于页把数据中心面板插到这里） ============ */
+slot[name="server-status"] { display: block; }
 
 /* ============ 4. 技术（独占一行，原 split 拆成 split-tech 单栏） ============ */
 .split-tech { display: block; }
@@ -759,69 +680,9 @@ body::after {
     </div>
   </section>
 
-  <!-- 3. 我的网站 -->
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <p class="kicker">Sites</p>
-        <h2 class="section-title">我的<span class="accent">网站</span></h2>
-      </div>
-      <p class="section-sub">四座小站，各有来路——有的从零搭起，有的是临摹经典，有的让 AI 陪我边聊边写。</p>
-    </div>
-
-    <div class="sites">
-      <a class="site" href="https://taozhiyy.top/" target="_blank" rel="noopener">
-        <div class="site-thumb"><img loading="eager" decoding="async" src="/cos/about-page/20260624/sites-taozhiyy-3616e0f19f.jpg" alt="taozhiyy.top"/></div>
-        <div class="site-info">
-          <div class="url">→ taozhiyy.top</div>
-          <h3>桃之夭夭 主站</h3>
-          <p>从零开始 vibe-coding 出来的个人主站，React + Vite + Go 后端，全自动 GitHub Actions 部署。</p>
-          <div class="row">
-            <div class="tags"><span>React</span><span>Go</span><span>Vibe</span></div>
-            <span class="visit">Visit ↗</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="site" href="https://bistutzyy.github.io/" target="_blank" rel="noopener">
-        <div class="site-thumb"><img loading="eager" decoding="async" src="/cos/about-page/20260624/sites-butterfly-3b2fb61396.jpg" alt="bistutzyy.github.io"/></div>
-        <div class="site-info">
-          <div class="url">→ bistutzyy.github.io</div>
-          <h3>Butterfly 博客</h3>
-          <p>基于 Hexo 7.3.0 + Butterfly 5.5.4 主题搭建，技术与生活共存的随手笔记本。</p>
-          <div class="row">
-            <div class="tags"><span>Hexo 7.3</span><span>Butterfly</span></div>
-            <span class="visit">Visit ↗</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="site" href="https://blog1-reimu.vercel.app/" target="_blank" rel="noopener">
-        <div class="site-thumb"><img loading="eager" decoding="async" src="/cos/about-page/20260624/sites-reimu-a3d1934027.jpg" alt="blog1-reimu.vercel.app"/></div>
-        <div class="site-info">
-          <div class="url">→ blog1-reimu.vercel.app</div>
-          <h3>Reimu 博客</h3>
-          <p>基于 Hexo Theme.Reimu 搭建，独立部署在 Vercel 的另一份小博客。</p>
-          <div class="row">
-            <div class="tags"><span>Hexo</span><span>Reimu</span><span>Vercel</span></div>
-            <span class="visit">Visit ↗</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="site" href="https://tzyy11.vercel.app/" target="_blank" rel="noopener">
-        <div class="site-thumb"><img loading="eager" decoding="async" src="/cos/about-page/20260624/sites-tzyy11-41ead66835.jpg" alt="tzyy11.vercel.app"/></div>
-        <div class="site-info">
-          <div class="url">→ tzyy11.vercel.app</div>
-          <h3>桃之夭夭の创作屋</h3>
-          <p>完全原创设计的轻量个人小站，简洁清爽，记录灵感与文字。</p>
-          <div class="row">
-            <div class="tags"><span>原创</span><span>Vercel</span></div>
-            <span class="visit">Visit ↗</span>
-          </div>
-        </div>
-      </a>
-    </div>
+  <!-- 3. 服务器状态 -->
+  <section class="section" aria-label="服务器状态">
+    <slot name="server-status"></slot>
   </section>
 
   <!-- 4. 技术说明 -->
