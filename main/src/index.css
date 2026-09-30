@@ -1174,7 +1174,7 @@ body {
     font-size: clamp(0.85rem, 1.4vw, 1.05rem);
     line-height: 1.4;
     color: #5a4750;
-    margin-bottom: clamp(1rem, 1.8vw, 1.4rem);
+    margin-bottom: clamp(1.65rem, 2.6vw, 2.2rem);
   }
 
   .story-envelope-signoff-line {
