@@ -267,4 +267,11 @@ export const friendCards = [
     avatar: "https://www.dreamcenter.top/imgs/avatar.jpg",
     note: "FRIEND",
   },
+  {
+    name: "LonelyBingの小窝",
+    desc: "一名普普通通の大学生~",
+    url: "https://lonelybing.top",
+    avatar: "https://img.lonelybing.top/file/%E5%A4%B4%E5%83%8F/1789400498937.jpg",
+    note: "FRIEND",
+  },
 ];
