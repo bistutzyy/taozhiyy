@@ -256,6 +256,19 @@ test("gives the autumn preview a light autumn recipes inspired background", () =
   assert.doesNotMatch(cssSource, /\.autumn-shiro|\.autumn-paper-grid|\.autumn-floating-note|\.autumn-aurora/);
 });
 
+test("gives the bili page an autumn wave background in the summer ocean motion", () => {
+  const biliSource = readSource("pages/BiliHubPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(biliSource, /autumn-wave-stage/);
+  assert.match(biliSource, /autumn-wave autumn-wave--1/);
+  assert.match(biliSource, /autumn-wave autumn-wave--4/);
+  assert.match(cssSource, /\.autumn-wave-stage\s*\{[\s\S]*?position:\s*fixed/);
+  assert.match(cssSource, /\.autumn-wave-stage\s*\{[\s\S]*?inset:\s*0/);
+  assert.match(cssSource, /\.autumn-wave\s*\{[\s\S]*?animation:\s*autumnWaveSwell/);
+  assert.match(cssSource, /@keyframes\s+autumnWaveSwell\s*\{[\s\S]*?translateX\(-50%\)/);
+});
+
 test("keeps the winter preview to floating snow only", () => {
   const friendsSource = readSource("pages/FriendsPage.jsx");
   const cssSource = readSource("index.css");

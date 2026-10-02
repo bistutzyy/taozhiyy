@@ -4718,11 +4718,69 @@ body {
   --autumn-mustard: #d9a441;
   --autumn-line: rgba(43, 27, 20, 0.16);
   --autumn-shadow: rgba(60, 35, 15, 0.14);
-  background:
-    radial-gradient(ellipse 70% 60% at 16% 0%, rgba(198, 98, 43, 0.18), transparent 62%),
-    radial-gradient(ellipse 60% 50% at 90% 10%, rgba(91, 110, 77, 0.14), transparent 60%),
-    linear-gradient(180deg, var(--autumn-paper) 0%, #f3e7d3 52%, #ead8ba 100%);
+  background: linear-gradient(180deg, #fffaf6 0%, #fff3e6 42%, #f8efe4 100%);
   color: var(--autumn-ink);
+}
+
+.autumn-wave-stage {
+  position: fixed;
+  inset: 0;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fffaf6 0%, #fff3e6 42%, #f8efe4 100%);
+}
+
+.autumn-wave {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 200%;
+  animation: autumnWaveSwell linear infinite;
+}
+
+.autumn-wave--1 {
+  bottom: 18%;
+  height: 220px;
+  opacity: 0.55;
+  animation-duration: 28s;
+}
+
+.autumn-wave--2 {
+  bottom: 8%;
+  height: 260px;
+  opacity: 0.7;
+  animation-duration: 22s;
+  animation-direction: reverse;
+}
+
+.autumn-wave--3 {
+  bottom: -2%;
+  height: 300px;
+  opacity: 0.9;
+  animation-duration: 18s;
+}
+
+.autumn-wave--4 {
+  bottom: -8%;
+  height: 240px;
+  opacity: 0.95;
+  animation-duration: 14s;
+  animation-direction: reverse;
+}
+
+@keyframes autumnWaveSwell {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .autumn-wave {
+    animation: none;
+  }
 }
 
 .bili-hub-page .container,
