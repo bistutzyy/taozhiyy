@@ -4908,13 +4908,12 @@ body {
 .autumn-recipes-leaf {
   position: absolute;
   top: -10vh;
-  width: clamp(1.3rem, 2.4vw, 2.4rem);
-  height: clamp(1.3rem, 2.4vw, 2.4rem);
-  border-radius: 18%;
-  opacity: 0.82;
-  transform-origin: 50% 62%;
-  filter: drop-shadow(0 0.6rem 0.9rem rgba(60, 35, 15, 0.14));
-  animation: autumnRecipeLeafFall var(--leaf-duration, 14s) linear infinite;
+  width: clamp(1.25rem, 2vw, 1.7rem);
+  height: clamp(1.4rem, 2.25vw, 1.9rem);
+  opacity: 0.88;
+  transform-origin: 50% 88%;
+  filter: drop-shadow(0 0.12rem 0.18rem rgba(120, 72, 24, 0.16));
+  animation: autumnRecipeLeafFall var(--leaf-duration, 14s) ease-in-out infinite;
   animation-delay: var(--leaf-delay, 0s);
 }
 
@@ -4923,18 +4922,19 @@ body {
   display: block;
   position: absolute;
   left: 50%;
-  top: 34%;
-  width: 62%;
-  height: 1px;
-  transform: translateX(-50%) rotate(90deg);
-  background: rgba(132, 76, 21, 0.32);
+  top: 28%;
+  width: 1px;
+  height: 36%;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  background: rgba(168, 98, 32, 0.28);
 }
 
 .autumn-recipes-leaf--yellow {
   background:
-    radial-gradient(circle at 35% 22%, rgba(255, 244, 164, 0.92), transparent 18%),
-    linear-gradient(135deg, #f6c343 0%, #f7d96a 48%, #e4a12d 100%);
-  clip-path: polygon(50% 0, 61% 25%, 90% 14%, 74% 41%, 100% 52%, 69% 59%, 84% 87%, 57% 72%, 50% 100%, 43% 72%, 16% 87%, 31% 59%, 0 52%, 26% 41%, 10% 14%, 39% 25%);
+    radial-gradient(circle at 50% 34%, rgba(255, 246, 196, 0.95), transparent 46%),
+    linear-gradient(180deg, #f8dc6a 0%, #f6c343 58%, #e09a2c 100%);
+  clip-path: polygon(50% 94%, 47% 76%, 30% 70%, 16% 58%, 8% 42%, 10% 26%, 20% 14%, 34% 8%, 46% 14%, 50% 22%, 54% 14%, 66% 8%, 80% 14%, 90% 26%, 92% 42%, 84% 58%, 70% 70%, 53% 76%);
 }
 
 .autumn-recipes-leaf--one {
@@ -4978,13 +4978,17 @@ body {
 }
 
 @keyframes autumnRecipeLeafFall {
-  from {
+  0% {
     translate: 0 -12vh;
-    rotate: 0deg;
+    rotate: -14deg;
   }
-  to {
+  50% {
+    translate: calc(var(--leaf-drift, 4vw) * 0.5) 52vh;
+    rotate: 12deg;
+  }
+  100% {
     translate: var(--leaf-drift, 4vw) 118vh;
-    rotate: 340deg;
+    rotate: -6deg;
   }
 }
 
