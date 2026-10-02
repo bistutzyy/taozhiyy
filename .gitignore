@@ -10,6 +10,9 @@ main/public/**
 !main/public/assets/
 !main/public/assets/moments/
 !main/public/assets/moments/**
+!main/public/seasonal/
+!main/public/seasonal/ocean/
+!main/public/seasonal/ocean/**
 !main/public/showcase/
 !main/public/showcase/**
 !main/public/web/

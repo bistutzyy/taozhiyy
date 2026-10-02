@@ -28,6 +28,33 @@ const scopePreviewCSS = (css) =>
     .replace(/body::after/g, ".about-shadow-shell::after")
     .replace(/\bbody\s*\{/g, ".about-shadow-shell {");
 
+const ABOUT_SEASONAL_PREVIEW_CSS = `
+  :host {
+    background: transparent !important;
+  }
+
+  .about-shadow-shell {
+    background:
+      radial-gradient(circle at 16% 13%, rgba(255, 166, 196, 0.2), transparent 24rem),
+      radial-gradient(circle at 83% 11%, rgba(183, 232, 195, 0.28), transparent 23rem),
+      linear-gradient(180deg, rgba(255, 250, 247, 0.94), rgba(247, 255, 246, 0.78) 52%, rgba(255, 248, 241, 0.96)) !important;
+  }
+
+  .about-shadow-shell::before {
+    background:
+      radial-gradient(circle at 18% 18%, rgba(255, 143, 171, 0.24), transparent 30%),
+      radial-gradient(circle at 78% 16%, rgba(157, 220, 175, 0.2), transparent 28%),
+      repeating-linear-gradient(118deg, rgba(255, 182, 204, 0.13) 0 1px, transparent 1px 7rem) !important;
+    opacity: 0.88 !important;
+  }
+
+  .hero-card {
+    background:
+      radial-gradient(circle at 86% 12%, rgba(255, 255, 255, 0.9), transparent 42%),
+      linear-gradient(135deg, #ffe6ef 0%, #fff1d8 52%, #edfbec 100%) !important;
+  }
+`;
+
 const prepareMarkup = (html) => {
   const headLinks = [...html.matchAll(/<link\b[^>]*>/gi)]
     .map((match) => match[0])
@@ -40,7 +67,7 @@ const prepareMarkup = (html) => {
 
   return rewriteAboutPreviewAssets(`
     ${headLinks.join("\n")}
-    <style>${scopePreviewCSS(style)}</style>
+    <style>${scopePreviewCSS(style)}${ABOUT_SEASONAL_PREVIEW_CSS}</style>
     <div class="about-shadow-shell">${body}</div>
   `);
 };
@@ -202,7 +229,32 @@ const AboutSitePage = () => {
   }, [navigate]);
 
   return (
-    <section className="about-route-page" aria-label="关于我">
+    <section className="about-route-page seasonal-page seasonal-page--spring" aria-label="关于我">
+      <div className="seasonal-scene seasonal-scene--spring" aria-hidden="true">
+        <span className="spring-petal spring-petal--one" />
+        <span className="spring-petal spring-petal--two" />
+        <span className="spring-petal spring-petal--three" />
+        <span className="sakura-petal-field">
+          <span className="sakura-petal sakura-petal--one" />
+          <span className="sakura-petal sakura-petal--two" />
+          <span className="sakura-petal sakura-petal--three" />
+          <span className="sakura-petal sakura-petal--four" />
+          <span className="sakura-petal sakura-petal--five" />
+          <span className="sakura-petal sakura-petal--six" />
+          <span className="sakura-petal sakura-petal--seven" />
+          <span className="sakura-petal sakura-petal--eight" />
+          <span className="sakura-petal sakura-petal--nine" />
+          <span className="sakura-petal sakura-petal--ten" />
+          <span className="sakura-petal sakura-petal--eleven" />
+          <span className="sakura-petal sakura-petal--twelve" />
+          <span className="sakura-petal sakura-petal--thirteen" />
+          <span className="sakura-petal sakura-petal--fourteen" />
+          <span className="sakura-petal sakura-petal--fifteen" />
+          <span className="sakura-petal sakura-petal--sixteen" />
+          <span className="sakura-petal sakura-petal--seventeen" />
+          <span className="sakura-petal sakura-petal--eighteen" />
+        </span>
+      </div>
       <div ref={hostRef} className="about-route-shadow">
         {serverStatusReady ? (
           <div slot="server-status">
