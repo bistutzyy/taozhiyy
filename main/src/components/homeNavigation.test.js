@@ -212,6 +212,24 @@ test("keeps scrolled seasonal navigation matched to each page theme", () => {
   assert.match(cssSource, /\.nav-hover-btn--friends::after\s*\{[\s\S]*?background-color:\s*#74b8e8/);
 });
 
+test("prevents spring summer and autumn from flashing bottom preload backgrounds", () => {
+  const cssSource = readSource("index.css");
+
+  assert.match(cssSource, /\.seasonal-page--spring\s*\{[\s\S]*?--season-bg:\s*transparent/);
+  assert.match(cssSource, /\.seasonal-page--spring\s*\{[\s\S]*?--season-wash:\s*none/);
+  assert.match(cssSource, /\.seasonal-page--spring\s*\{[\s\S]*?--season-thread:\s*none/);
+  assert.match(cssSource, /\.seasonal-page--summer\s*\{[\s\S]*?--season-bg:\s*transparent/);
+  assert.match(cssSource, /\.seasonal-page--summer\s*\{[\s\S]*?--season-wash:\s*none/);
+  assert.match(cssSource, /\.seasonal-page--summer\s*\{[\s\S]*?--season-thread:\s*none/);
+  assert.match(cssSource, /\.seasonal-page--autumn\s*\{[\s\S]*?--season-bg:\s*transparent/);
+  assert.match(cssSource, /\.seasonal-page--autumn\s*\{[\s\S]*?--season-wash:\s*none/);
+  assert.match(cssSource, /\.seasonal-page--autumn\s*\{[\s\S]*?--season-thread:\s*none/);
+  assert.match(cssSource, /\.glimmer-page\.seasonal-page--summer\s*\{[\s\S]*?background:\s*transparent/);
+  assert.match(cssSource, /\.summer-ocean-media\s*\{[\s\S]*?background:\s*transparent/);
+  assert.match(cssSource, /\.glimmer-page\.seasonal-page--summer::before\s*\{[\s\S]*?background:\s*transparent/);
+  assert.match(cssSource, /\.glimmer-page\.seasonal-page--summer::before\s*\{[\s\S]*?opacity:\s*0/);
+});
+
 test("gives the autumn preview a light autumn recipes inspired background", () => {
   const biliSource = readSource("pages/BiliHubPage.jsx");
   const cssSource = readSource("index.css");
@@ -289,7 +307,7 @@ test("gives the about page a sakura theme with falling petals", () => {
   assert.match(cssSource, /\.sakura-petal-field/);
   assert.match(cssSource, /\.sakura-petal::before/);
   assert.match(cssSource, /\.sakura-petal\s*\{[\s\S]*?animation:\s*sakuraPetalFall var\(--fall-duration,\s*9s\)/);
-  assert.match(cssSource, /\.seasonal-page--spring\s*\{[\s\S]*?linear-gradient\(135deg,[\s\S]*?linear-gradient\(180deg/);
+  assert.match(cssSource, /\.seasonal-page--spring\s*\{[\s\S]*?--season-bg:\s*transparent/);
 });
 
 test("moves the data center entry to the homepage follow-up card", () => {

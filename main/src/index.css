@@ -4333,17 +4333,9 @@ body {
   --sakura-petal: #ffd9e5;
   --sakura-blush: #fff1f5;
   --sakura-leaf: #dff4d7;
-  --season-bg:
-    radial-gradient(circle at 48% 5rem, rgba(255, 204, 213, 0.48), transparent 19rem),
-    linear-gradient(135deg, rgba(255, 224, 236, 0.82) 0%, rgba(255, 250, 247, 0.9) 44%, rgba(232, 250, 226, 0.72) 100%),
-    linear-gradient(180deg, #fff0f3 0%, #fffaf8 46%, #f6fff1 100%);
-  --season-wash:
-    radial-gradient(circle at 13% 12%, rgba(255, 143, 171, 0.32), transparent 23rem),
-    radial-gradient(circle at 84% 16%, rgba(217, 245, 200, 0.36), transparent 24rem),
-    radial-gradient(circle at 50% 92%, rgba(255, 204, 213, 0.2), transparent 30rem);
-  --season-thread:
-    repeating-linear-gradient(118deg, rgba(255, 143, 171, 0.13) 0 1px, transparent 1px 7rem),
-    repeating-linear-gradient(0deg, rgba(217, 245, 200, 0.12) 0 1px, transparent 1px 4.4rem);
+  --season-bg: transparent;
+  --season-wash: none;
+  --season-thread: none;
 }
 
 .seasonal-page--spring .seasonal-scene {
@@ -4351,28 +4343,15 @@ body {
 }
 
 .seasonal-page--summer {
-  --season-bg:
-    linear-gradient(180deg, #f8fffb 0%, #eefcff 46%, #fffdf6 100%);
-  --season-wash:
-    radial-gradient(circle at 12% 18%, rgba(107, 203, 210, 0.25), transparent 24rem),
-    radial-gradient(circle at 86% 12%, rgba(255, 226, 126, 0.23), transparent 24rem),
-    radial-gradient(circle at 72% 76%, rgba(123, 188, 255, 0.18), transparent 30rem);
-  --season-thread:
-    repeating-linear-gradient(110deg, rgba(71, 184, 202, 0.12) 0 1px, transparent 1px 6.8rem),
-    repeating-linear-gradient(0deg, rgba(255, 226, 126, 0.11) 0 1px, transparent 1px 4.8rem);
+  --season-bg: transparent;
+  --season-wash: none;
+  --season-thread: none;
 }
 
 .seasonal-page--autumn {
-  --season-bg:
-    radial-gradient(circle at 50% 3rem, rgba(255, 249, 239, 0.96), transparent 24rem),
-    linear-gradient(180deg, #fffdf9 0%, #fffaf3 48%, #fff6e9 100%);
-  --season-wash:
-    radial-gradient(circle at 14% 14%, rgba(246, 190, 116, 0.2), transparent 24rem),
-    radial-gradient(circle at 86% 10%, rgba(209, 94, 74, 0.1), transparent 22rem),
-    radial-gradient(circle at 72% 86%, rgba(151, 110, 71, 0.1), transparent 30rem);
-  --season-thread:
-    repeating-linear-gradient(112deg, rgba(82, 68, 55, 0.055) 0 1px, transparent 1px 7.2rem),
-    repeating-linear-gradient(0deg, rgba(222, 171, 105, 0.07) 0 1px, transparent 1px 4.6rem);
+  --season-bg: transparent;
+  --season-wash: none;
+  --season-thread: none;
 }
 
 .seasonal-page--winter {
@@ -4400,16 +4379,12 @@ body {
 }
 
 .glimmer-page.seasonal-page--summer {
-  background: #eefcff;
+  background: transparent;
 }
 
 .glimmer-page.seasonal-page--summer::before {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(246, 255, 255, 0.78) 74%, rgba(240, 255, 255, 0.9)),
-    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.34), transparent 22rem),
-    radial-gradient(circle at 88% 24%, rgba(255, 242, 184, 0.24), transparent 24rem),
-    repeating-linear-gradient(118deg, rgba(108, 196, 218, 0.08) 0, rgba(108, 196, 218, 0.08) 1px, transparent 1px, transparent 8.5rem);
-  opacity: 0.95;
+  background: transparent;
+  opacity: 0;
 }
 
 .seasonal-scene {
@@ -4689,9 +4664,7 @@ body {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.58), transparent 17rem),
-    linear-gradient(180deg, rgba(77, 196, 218, 0.46), rgba(21, 134, 176, 0.42) 52%, rgba(9, 78, 130, 0.34));
+  background: transparent;
 }
 
 .summer-ocean-video {
