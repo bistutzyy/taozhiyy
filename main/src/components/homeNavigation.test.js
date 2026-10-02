@@ -67,7 +67,7 @@ test("uses recognizable seasonal objects instead of color swaps", () => {
   assert.match(cssSource, /\.summer-ocean-video/);
   assert.match(cssSource, /\.summer-ocean-overlay/);
   assert.match(cssSource, /\.autumn-recipes-shell/);
-  assert.match(cssSource, /\.autumn-recipes-leaf/);
+  assert.match(cssSource, /\.autumn-wave-stage/);
   assert.match(cssSource, /\.autumn-recipe-card/);
   assert.match(cssSource, /\.winter-snowfall-field/);
   assert.match(cssSource, /\.winter-floating-snow/);
@@ -235,9 +235,7 @@ test("gives the autumn preview a light autumn recipes inspired background", () =
   const cssSource = readSource("index.css");
 
   assert.match(biliSource, /autumn-recipes-shell/);
-  assert.match(biliSource, /autumn-recipes-leaf-layer/);
-  assert.match(biliSource, /autumn-recipes-leaf--yellow/);
-  assert.doesNotMatch(biliSource, /autumn-recipes-leaf--moss|autumn-recipes-leaf--mustard/);
+  assert.doesNotMatch(biliSource, /autumn-recipes-leaf/);
   assert.match(cssSource, /--autumn-paper:\s*#efe3ce/);
   assert.match(cssSource, /--autumn-card:\s*#f7efe0/);
   assert.match(cssSource, /--autumn-pumpkin:\s*#c6622b/);
@@ -247,9 +245,7 @@ test("gives the autumn preview a light autumn recipes inspired background", () =
   assert.match(cssSource, /\.autumn-recipes-shell\s*\{[\s\S]*?background:\s*transparent/);
   assert.match(cssSource, /\.autumn-recipes-shell\s*\{[\s\S]*?box-shadow:\s*none/);
   assert.doesNotMatch(cssSource, /\.autumn-recipes-shell::before|\.autumn-recipes-shell::after/);
-  assert.match(cssSource, /\.autumn-recipes-leaf\s*\{[\s\S]*?animation:\s*autumnRecipeLeafFall/);
-  assert.match(cssSource, /\.autumn-recipes-leaf--yellow\s*\{[\s\S]*?#f6c343/);
-  assert.match(cssSource, /\.autumn-recipes-leaf--yellow\s*\{[\s\S]*?clip-path:\s*polygon/);
+  assert.doesNotMatch(cssSource, /\.autumn-recipes-leaf|autumnRecipeLeafFall/);
   assert.match(cssSource, /\.autumn-recipe-card/);
   assert.match(cssSource, /\.bili-hub-page \.bangumi-mini-card\s*\{[\s\S]*?var\(--autumn-card\)/);
   assert.doesNotMatch(biliSource, /autumn-shiro|autumn-paper-grid|autumn-floating-note|autumn-aurora/);
