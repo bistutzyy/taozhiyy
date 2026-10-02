@@ -31,6 +31,267 @@ test("keeps the about entry in the top navbar", () => {
   assert.match(navbarSource, /\{\s*label:\s*"关于我",\s*to:\s*"\/about"/);
 });
 
+test("gives about, glimmer, bili, and friends distinct seasonal backgrounds", () => {
+  const aboutSource = readSource("pages/AboutSitePage.jsx");
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
+  const biliSource = readSource("pages/BiliHubPage.jsx");
+  const friendsSource = readSource("pages/FriendsPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(aboutSource, /about-route-page seasonal-page seasonal-page--spring/);
+  assert.match(glimmerSource, /glimmer-page seasonal-page seasonal-page--summer/);
+  assert.match(biliSource, /bili-hub-page seasonal-page seasonal-page--autumn/);
+  assert.match(friendsSource, /friends-page seasonal-page seasonal-page--winter/);
+  assert.match(cssSource, /\.seasonal-page::before/);
+  assert.match(cssSource, /\.seasonal-page--spring/);
+  assert.match(cssSource, /\.seasonal-page--summer/);
+  assert.match(cssSource, /\.seasonal-page--autumn/);
+  assert.match(cssSource, /\.seasonal-page--winter/);
+});
+
+test("uses recognizable seasonal objects instead of color swaps", () => {
+  const aboutSource = readSource("pages/AboutSitePage.jsx");
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
+  const biliSource = readSource("pages/BiliHubPage.jsx");
+  const friendsSource = readSource("pages/FriendsPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(aboutSource, /seasonal-scene--spring/);
+  assert.match(glimmerSource, /seasonal-scene--summer/);
+  assert.match(biliSource, /seasonal-scene--autumn/);
+  assert.match(friendsSource, /seasonal-scene--winter/);
+  assert.match(cssSource, /\.spring-petal/);
+  assert.match(cssSource, /\.sakura-petal-field/);
+  assert.match(cssSource, /\.sakura-petal--eighteen/);
+  assert.match(cssSource, /\.summer-ocean-stage/);
+  assert.match(cssSource, /\.summer-ocean-video/);
+  assert.match(cssSource, /\.summer-ocean-overlay/);
+  assert.match(cssSource, /\.autumn-recipes-shell/);
+  assert.match(cssSource, /\.autumn-recipes-leaf/);
+  assert.match(cssSource, /\.autumn-recipe-card/);
+  assert.match(cssSource, /\.winter-snowfall-field/);
+  assert.match(cssSource, /\.winter-floating-snow/);
+  assert.match(cssSource, /@keyframes\s+winterSnowFloat/);
+});
+
+test("unifies seasonal page headers with matching seasonal treatments", () => {
+  const aboutSource = readSource("pages/AboutSitePage.jsx");
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
+  const friendsSource = readSource("pages/FriendsPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.doesNotMatch(aboutSource, /Spring Profile|seasonal-hero--spring/);
+  assert.match(glimmerSource, /seasonal-hero seasonal-hero--summer/);
+  assert.match(friendsSource, /seasonal-hero seasonal-hero--winter/);
+  assert.match(cssSource, /\.seasonal-hero/);
+  assert.match(cssSource, /\.seasonal-hero__kicker/);
+  assert.match(cssSource, /\.seasonal-hero__title/);
+  assert.match(cssSource, /\.seasonal-hero__text/);
+  assert.match(cssSource, /\.seasonal-hero--summer::after/);
+  assert.match(cssSource, /\.seasonal-hero--winter::after/);
+});
+
+test("removes the bili seasonal hero copy and proportionally scales the original bangumi cards", () => {
+  const biliSource = readSource("pages/BiliHubPage.jsx");
+  const acgSource = readSource("components/AcgNavigation.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.doesNotMatch(biliSource, /Autumn Garden|Bili Season|Warm maple light/);
+  assert.doesNotMatch(biliSource, /seasonal-hero seasonal-hero--autumn/);
+  assert.match(acgSource, /bangumi-mini-grid/);
+  assert.match(acgSource, /bangumi-mini-card/);
+  assert.match(acgSource, /rounded-2xl/);
+  assert.match(acgSource, /repeat\(auto-fill,\s*minmax\(150px,\s*180px\)\)/);
+  assert.doesNotMatch(acgSource, /bangumi-polaroid/);
+  assert.match(cssSource, /\.bangumi-mini-grid/);
+  assert.match(cssSource, /\.bangumi-mini-card/);
+  assert.match(cssSource, /\.bangumi-mini-card\s*\{[\s\S]*?max-width:\s*180px/);
+  assert.doesNotMatch(cssSource, /\.bangumi-polaroid|--bangumi-tilt/);
+});
+
+test("removes the creator radar section from the bili page", () => {
+  const acgNavigationSource = readSource("components/AcgNavigation.jsx");
+
+  assert.doesNotMatch(acgNavigationSource, /作者再看/);
+  assert.doesNotMatch(acgNavigationSource, /Creator radar/i);
+  assert.doesNotMatch(acgNavigationSource, /Open Bilibili/i);
+  assert.doesNotMatch(acgNavigationSource, /getRadarFeed/);
+  assert.doesNotMatch(acgNavigationSource, /RadarCard/);
+});
+
+test("adds an ocean-style dynamic backdrop to the summer glimmer page", () => {
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(glimmerSource, /summer-ocean-stage/);
+  assert.match(glimmerSource, /summer-ocean-media/);
+  assert.match(glimmerSource, /"\/seasonal\/ocean"/);
+  assert.match(glimmerSource, /<video/);
+  assert.match(glimmerSource, /ocean\.mp4/);
+  assert.match(glimmerSource, /ocean\.webm/);
+  assert.match(glimmerSource, /overlay-hero\.png/);
+  for (const asset of ["ocean.mp4", "ocean.webm", "ocean.png", "overlay-hero.png"]) {
+    assert.equal(existsSync(resolve(sourceRoot, `../public/seasonal/ocean/${asset}`)), true);
+  }
+  assert.match(cssSource, /\.summer-ocean-stage/);
+  assert.match(cssSource, /\.summer-ocean-media/);
+  assert.match(cssSource, /\.summer-ocean-video/);
+  assert.match(cssSource, /\.summer-ocean-frame/);
+  assert.match(cssSource, /\.summer-ocean-overlay/);
+  assert.match(cssSource, /\.summer-ocean-stage\s*\{[\s\S]*?min-height:\s*100dvh/);
+});
+
+test("uses the ocean video as the full summer background without leftover widgets", () => {
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.doesNotMatch(glimmerSource, /glimmer-page-bg|glimmer-page-glow/);
+  assert.doesNotMatch(glimmerSource, /summer-light-frame|summer-wave-ribbon|summer-ripple|summer-bubble|summer-sun-strip/);
+  assert.doesNotMatch(cssSource, /\.glimmer-page-bg|\.glimmer-page-glow/);
+  assert.doesNotMatch(cssSource, /\.summer-light-frame|\.summer-wave-ribbon|\.summer-ripple|\.summer-bubble|\.summer-sun-strip/);
+  assert.match(cssSource, /\.summer-ocean-stage\s*\{[\s\S]*?position:\s*fixed/);
+  assert.match(cssSource, /\.summer-ocean-stage\s*\{[\s\S]*?inset:\s*0/);
+  assert.match(cssSource, /\.summer-ocean-stage\s*\{[\s\S]*?min-height:\s*100dvh/);
+  assert.match(cssSource, /\.summer-ocean-video\s*\{[\s\S]*?filter:\s*brightness\(1\.[0-9]+\)\s+saturate\(0\.[0-9]+\)/);
+  assert.match(cssSource, /\.glimmer-page-hero\.seasonal-hero--summer\s*\{[\s\S]*?min-height:\s*clamp\(22rem,\s*44vh,\s*34rem\)/);
+  assert.doesNotMatch(cssSource, /\.glimmer-page-hero\.seasonal-hero--summer\s*\{[\s\S]*?min-height:\s*90vh/);
+  assert.match(cssSource, /\.glimmer-albums,\s*\n\.glimmer-notes\s*\{[\s\S]*?background-color:\s*rgba\(255,\s*255,\s*255,\s*0\.06\)/);
+  assert.match(cssSource, /\.glimmer-albums,\s*\n\.glimmer-notes\s*\{[\s\S]*?backdrop-filter:\s*none/);
+});
+
+test("tones the summer page with readable copy and barely-there transparent panels", () => {
+  const cssSource = readSource("index.css");
+
+  assert.match(cssSource, /--glimmer-panel-transparent:/);
+  assert.doesNotMatch(cssSource, /--glimmer-panel-softlight:/);
+  assert.doesNotMatch(cssSource, /--glimmer-panel-glass:/);
+  assert.doesNotMatch(cssSource, /--glimmer-titanium/);
+  assert.match(cssSource, /\.summer-ocean-video\s*\{[\s\S]*?filter:\s*brightness\(1\.0[0-9]\)\s+saturate\(0\.[0-9]+\)\s+contrast\(0\.[0-9]+\)/);
+  assert.match(cssSource, /\.summer-ocean-overlay\s*\{[\s\S]*?rgba\(255,\s*255,\s*255,\s*0\.5[0-9]\)/);
+  assert.match(cssSource, /\.glimmer-page-hero\.seasonal-hero--summer h1\s*\{[\s\S]*?color:\s*rgba\(37,\s*74,\s*93,\s*0\.9[0-9]\)/);
+  assert.match(cssSource, /\.glimmer-page-hero\.seasonal-hero--summer \.glimmer-page-subtitle\s*\{[\s\S]*?color:\s*rgba\(43,\s*80,\s*98,\s*0\.8[0-9]\)/);
+  assert.match(cssSource, /\.glimmer-albums,\s*\n\.glimmer-notes\s*\{[\s\S]*?background:\s*var\(--glimmer-panel-transparent\)/);
+  assert.match(cssSource, /\.glimmer-albums,\s*\n\.glimmer-notes\s*\{[\s\S]*?border:\s*1px solid rgba\(255,\s*255,\s*255,\s*0\.24\)/);
+  assert.match(cssSource, /\.glimmer-albums,\s*\n\.glimmer-notes\s*\{[\s\S]*?background-color:\s*rgba\(255,\s*255,\s*255,\s*0\.06\)/);
+  assert.match(cssSource, /\.glimmer-albums,\s*\n\.glimmer-notes\s*\{[\s\S]*?backdrop-filter:\s*none/);
+  assert.doesNotMatch(cssSource, /--glimmer-holo-ring:/);
+  assert.match(cssSource, /\.glimmer-albums::before,\s*\n\.glimmer-notes::before\s*\{[\s\S]*?content:\s*none/);
+  assert.match(cssSource, /\.glimmer-albums::after,\s*\n\.glimmer-notes::after\s*\{[\s\S]*?content:\s*none/);
+});
+
+test("removes the friends intro frame and makes winter snow dense and faster", () => {
+  const friendsSource = readSource("pages/FriendsPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(friendsSource, /friends-winter-hero--frameless/);
+  assert.match(friendsSource, /风会替信纸赶路/);
+  assert.match(friendsSource, /Array\.from\(\{\s*length:\s*42\s*\}/);
+  assert.doesNotMatch(friendsSource, /winterLargeSnowflakes/);
+  assert.match(friendsSource, /winterSnowflakes\.map/);
+  assert.match(friendsSource, /className="winter-floating-snow"/);
+  assert.doesNotMatch(friendsSource, /winter-floating-snow winter-floating-snow--large/);
+  assert.match(cssSource, /\.friends-winter-hero--frameless\s*\{[\s\S]*?border:\s*0/);
+  assert.match(cssSource, /\.friends-winter-hero--frameless\s*\{[\s\S]*?background:\s*transparent/);
+  assert.match(cssSource, /\.friends-winter-hero--frameless\s*\{[\s\S]*?box-shadow:\s*none/);
+  assert.match(cssSource, /\.winter-floating-snow\s*\{[\s\S]*?left:\s*var\(--snow-left/);
+  assert.match(cssSource, /\.winter-floating-snow\s*\{[\s\S]*?animation:\s*winterSnowFloat var\(--snow-duration,\s*10s\)/);
+  assert.doesNotMatch(cssSource, /\.winter-floating-snow--large/);
+  assert.doesNotMatch(cssSource, /--snow-duration:\s*2[0-9]s/);
+});
+
+test("keeps scrolled seasonal navigation matched to each page theme", () => {
+  const cssSource = readSource("index.css");
+
+  assert.match(cssSource, /\.floating-nav-about\s*\{[\s\S]*?rgba\(255,\s*232,\s*241,\s*0\.9[0-9]\)/);
+  assert.match(cssSource, /\.floating-nav-moments\s*\{[\s\S]*?rgba\(244,\s*253,\s*255,\s*0\.8[0-9]\)/);
+  assert.match(cssSource, /\.floating-nav-bili\s*\{[\s\S]*?rgba\(255,\s*244,\s*224,\s*0\.9[0-9]\)/);
+  assert.match(cssSource, /\.floating-nav-friends\s*\{[\s\S]*?rgba\(236,\s*248,\s*255,\s*0\.9[0-9]\)/);
+  assert.match(cssSource, /\.nav-hover-btn--about::after\s*\{[\s\S]*?background-color:\s*#ff8fab/);
+  assert.match(cssSource, /\.nav-hover-btn--moments::after\s*\{[\s\S]*?background-color:\s*#4fbfd1/);
+  assert.match(cssSource, /\.nav-hover-btn--bili::after\s*\{[\s\S]*?background-color:\s*#d89145/);
+  assert.match(cssSource, /\.nav-hover-btn--friends::after\s*\{[\s\S]*?background-color:\s*#74b8e8/);
+});
+
+test("gives the autumn preview a light autumn recipes inspired background", () => {
+  const biliSource = readSource("pages/BiliHubPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(biliSource, /autumn-recipes-shell/);
+  assert.match(biliSource, /autumn-recipes-leaf-layer/);
+  assert.match(biliSource, /autumn-recipes-leaf--yellow/);
+  assert.doesNotMatch(biliSource, /autumn-recipes-leaf--moss|autumn-recipes-leaf--mustard/);
+  assert.match(cssSource, /--autumn-paper:\s*#efe3ce/);
+  assert.match(cssSource, /--autumn-card:\s*#f7efe0/);
+  assert.match(cssSource, /--autumn-pumpkin:\s*#c6622b/);
+  assert.match(cssSource, /--autumn-moss:\s*#5b6e4d/);
+  assert.match(cssSource, /--autumn-mustard:\s*#d9a441/);
+  assert.match(cssSource, /\.autumn-recipes-shell\s*\{[\s\S]*?border:\s*0/);
+  assert.match(cssSource, /\.autumn-recipes-shell\s*\{[\s\S]*?background:\s*transparent/);
+  assert.match(cssSource, /\.autumn-recipes-shell\s*\{[\s\S]*?box-shadow:\s*none/);
+  assert.doesNotMatch(cssSource, /\.autumn-recipes-shell::before|\.autumn-recipes-shell::after/);
+  assert.match(cssSource, /\.autumn-recipes-leaf\s*\{[\s\S]*?animation:\s*autumnRecipeLeafFall/);
+  assert.match(cssSource, /\.autumn-recipes-leaf--yellow\s*\{[\s\S]*?#f6c343/);
+  assert.match(cssSource, /\.autumn-recipes-leaf--yellow\s*\{[\s\S]*?clip-path:\s*polygon/);
+  assert.match(cssSource, /\.autumn-recipe-card/);
+  assert.match(cssSource, /\.bili-hub-page \.bangumi-mini-card\s*\{[\s\S]*?var\(--autumn-card\)/);
+  assert.doesNotMatch(biliSource, /autumn-shiro|autumn-paper-grid|autumn-floating-note|autumn-aurora/);
+  assert.doesNotMatch(cssSource, /\.autumn-shiro|\.autumn-paper-grid|\.autumn-floating-note|\.autumn-aurora/);
+});
+
+test("keeps the winter preview to floating snow only", () => {
+  const friendsSource = readSource("pages/FriendsPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(friendsSource, /winter-snowfall-field/);
+  assert.match(friendsSource, /winterSnowflakes\.map/);
+  assert.doesNotMatch(friendsSource, /friends-page-backdrop/);
+  assert.doesNotMatch(friendsSource, /winter-moon|winter-silver-branch|winter-lace-snowflake|winter-snow-curtain|winter-frost-line/);
+  assert.match(cssSource, /\.winter-snowfall-field/);
+  assert.match(cssSource, /\.winter-floating-snow/);
+});
+
+test("sizes winter snowflakes up and themes friend cards for winter", () => {
+  const friendsSource = readSource("pages/FriendsPage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(friendsSource, /friends-winter-card/);
+  assert.match(friendsSource, /friends-winter-avatar/);
+  assert.match(friendsSource, /friends-winter-link-panel/);
+  assert.match(friendsSource, /--snow-size/);
+  assert.match(friendsSource, /0\.92 \+ \(\(index \* 7\) % 10\) \/ 10/);
+  assert.doesNotMatch(friendsSource, /winterLargeSnowflakes/);
+  assert.match(cssSource, /content:\s*"❄"/);
+  assert.doesNotMatch(cssSource, /\.winter-floating-snow--large/);
+  assert.match(cssSource, /\.friends-winter-card/);
+  assert.match(cssSource, /\.friends-winter-card::before/);
+  assert.match(cssSource, /\.friends-winter-card::after/);
+  assert.match(cssSource, /\.friends-winter-avatar/);
+  assert.match(cssSource, /\.friends-winter-link-panel/);
+  assert.match(cssSource, /\.friends-winter-link-panel__chrome/);
+  assert.match(friendsSource, /friends-winter-copy-button/);
+  assert.match(cssSource, /\.friends-winter-copy-button\s*\{[\s\S]*?margin-left:\s*auto/);
+  assert.match(cssSource, /\.friends-winter-link-panel__chrome::after\s*\{[\s\S]*?position:\s*absolute/);
+  assert.doesNotMatch(cssSource, /46\.2%\s*46\.8%/);
+  assert.doesNotMatch(friendsSource, /border-\[#F0E3D8\]|rgba\(255,248,241/);
+});
+
+test("gives the about page a sakura theme with falling petals", () => {
+  const aboutSource = readSource("pages/AboutSitePage.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(aboutSource, /sakura-petal-field/);
+  assert.match(aboutSource, /sakura-petal--/);
+  assert.doesNotMatch(aboutSource, /spring-garden-frame|spring-blossom-cluster|spring-branch|spring-paper-edge/);
+  assert.match(aboutSource, /sakura-petal--eighteen/);
+  assert.doesNotMatch(cssSource, /\.spring-garden-frame|\.spring-blossom-cluster|\.spring-branch|\.spring-paper-edge/);
+  assert.match(cssSource, /--sakura-pink/);
+  assert.match(cssSource, /@keyframes\s+sakuraPetalFall/);
+  assert.match(cssSource, /\.sakura-petal-field/);
+  assert.match(cssSource, /\.sakura-petal::before/);
+  assert.match(cssSource, /\.sakura-petal\s*\{[\s\S]*?animation:\s*sakuraPetalFall var\(--fall-duration,\s*9s\)/);
+  assert.match(cssSource, /\.seasonal-page--spring\s*\{[\s\S]*?linear-gradient\(135deg,[\s\S]*?linear-gradient\(180deg/);
+});
+
 test("moves the data center entry to the homepage follow-up card", () => {
   const navbarSource = readSource("components/Navbar.jsx");
   const storySource = readSource("components/Story.jsx");
@@ -363,12 +624,16 @@ test("does not render moments as a separate homepage section", () => {
   assert.doesNotMatch(homePageSource, /MomentsHome/);
 });
 
-test("themes the moments and friends footer for their page palettes", () => {
+test("themes the seasonal page footers for their page palettes", () => {
   const footerSource = readSource("components/Footer.jsx");
 
-  assert.match(footerSource, /moments:\s*\{/);
-  assert.match(footerSource, /friends:\s*\{/);
-  assert.match(footerSource, /pathname\.startsWith\("\/moments"\)/);
+  assert.match(footerSource, /spring:\s*\{/);
+  assert.match(footerSource, /summer:\s*\{/);
+  assert.match(footerSource, /autumn:\s*\{/);
+  assert.match(footerSource, /winter:\s*\{/);
+  assert.match(footerSource, /pathname\.startsWith\("\/about"\)/);
+  assert.match(footerSource, /pathname\.startsWith\("\/glimmer"\)/);
+  assert.match(footerSource, /pathname\.startsWith\("\/bili"\)/);
   assert.match(footerSource, /pathname\.startsWith\("\/friends"\)/);
 });
 

@@ -33,6 +33,34 @@ const footerThemes = {
     icon: "text-[#2D2A3A] hover:text-[#7C5CFF]",
     tip: "border border-[#E8DFFB] bg-white/95 text-[#2D2A3A]",
   },
+  spring: {
+    shell:
+      "border-t border-[#F8CAD8] bg-gradient-to-r from-[#FFF8F6] via-[#FFFDF7] to-[#F1FFF0] text-[#4E3542]",
+    copy: "text-[#7A6470]",
+    icon: "text-[#5F4B52] hover:text-[#E9789A]",
+    tip: "border border-[#F8CAD8] bg-[#FFFDF9]/95 text-[#5F4B52]",
+  },
+  summer: {
+    shell:
+      "border-t border-[#BDECF0] bg-gradient-to-r from-[#F8FFFB] via-[#EEFCFF] to-[#FFFDF3] text-[#284D55]",
+    copy: "text-[#55727A]",
+    icon: "text-[#284D55] hover:text-[#2DB8C7]",
+    tip: "border border-[#BDECF0] bg-[#F9FFFE]/95 text-[#284D55]",
+  },
+  autumn: {
+    shell:
+      "border-t border-[#F2D2A6] bg-gradient-to-r from-[#FFF8ED] via-[#FFF3DE] to-[#FFF8F1] text-[#4E3228]",
+    copy: "text-[#7A5C4B]",
+    icon: "text-[#4E3228] hover:text-[#C45A36]",
+    tip: "border border-[#F2D2A6] bg-[#FFF8EE]/95 text-[#4E3228]",
+  },
+  winter: {
+    shell:
+      "border-t border-[#CFE5F7] bg-gradient-to-r from-[#F8FCFF] via-[#FFFFFF] to-[#EEF7FF] text-[#2D465B]",
+    copy: "text-[#60788C]",
+    icon: "text-[#2D465B] hover:text-[#6EA9D6]",
+    tip: "border border-[#CFE5F7] bg-[#FAFDFF]/95 text-[#2D465B]",
+  },
   ai: {
     shell: "border-t border-[#F2E6C9] bg-[#FFF8E7] text-[#2B2B2B]",
     copy: "text-[#6B7280]",
@@ -64,14 +92,18 @@ const footerThemes = {
 
 const Footer = () => {
   const { pathname } = useLocation();
-  const variant = pathname.startsWith("/bili")
-    ? "bili"
+  const variant = pathname.startsWith("/about")
+    ? "spring"
+    : pathname.startsWith("/glimmer")
+      ? "summer"
+      : pathname.startsWith("/bili")
+        ? "autumn"
     : pathname.startsWith("/ai-traffic")
       ? "ai"
       : pathname.startsWith("/guestbook")
         ? "guestbook"
         : pathname.startsWith("/friends")
-          ? "friends"
+          ? "winter"
           : pathname.startsWith("/moments") || pathname.startsWith("/glimmer")
             ? "moments"
             : "default";

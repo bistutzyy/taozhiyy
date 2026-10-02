@@ -2,22 +2,46 @@ import { Link } from "react-router-dom";
 import { galleryAlbums } from "../data/galleryAlbums";
 import { moments } from "../data/moments";
 
+const OCEAN_ASSET_BASE =
+  "/seasonal/ocean";
+
 const momentDateTime = (moment) => {
   const [month, day] = moment.date.split(".");
   return `${moment.year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
 
 const GlimmerPage = () => (
-  <div className="glimmer-page">
-    <div className="glimmer-page-bg" aria-hidden="true">
-      <span className="glimmer-page-glow glimmer-page-glow--rose" />
-      <span className="glimmer-page-glow glimmer-page-glow--mint" />
-      <span className="glimmer-page-glow glimmer-page-glow--sun" />
+  <div className="glimmer-page seasonal-page seasonal-page--summer">
+    <div className="seasonal-scene seasonal-scene--summer" aria-hidden="true">
+      <div className="summer-ocean-stage">
+        <div className="summer-ocean-media">
+          <video
+            className="summer-ocean-video"
+            playsInline
+            autoPlay
+            loop
+            muted
+            poster={`${OCEAN_ASSET_BASE}/ocean.png`}
+          >
+            <source src={`${OCEAN_ASSET_BASE}/ocean.mp4`} type="video/mp4" />
+            <source src={`${OCEAN_ASSET_BASE}/ocean.webm`} type="video/webm" />
+          </video>
+          <div className="summer-ocean-overlay" />
+        </div>
+        <img
+          className="summer-ocean-frame"
+          src={`${OCEAN_ASSET_BASE}/overlay-hero.png`}
+          alt=""
+          loading="eager"
+          decoding="async"
+        />
+      </div>
     </div>
 
-    <header className="glimmer-page-hero">
+    <header className="glimmer-page-hero seasonal-hero seasonal-hero--summer">
+      <p className="seasonal-hero__kicker">Summer Glimmer</p>
       <h1>浮光集</h1>
-      <p className="glimmer-page-subtitle">
+      <p className="glimmer-page-subtitle seasonal-hero__text">
         一面收住照片，一面摊开短句。把看见的、想起的，都放在这里。
       </p>
     </header>

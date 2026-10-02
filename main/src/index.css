@@ -552,22 +552,22 @@ body {
   }
 
   .floating-nav-bili {
-    @apply rounded-2xl border border-[#E8DFFB] bg-white/80 shadow-[0_12px_32px_rgba(124,92,255,0.14)] backdrop-blur-md;
+    @apply rounded-2xl border border-[#F1D3A8] bg-white/80 shadow-[0_12px_32px_rgba(188,110,38,0.14)] backdrop-blur-md;
     background-image: linear-gradient(
       135deg,
-      rgba(234, 246, 255, 0.92) 0%,
-      rgba(255, 234, 244, 0.92) 48%,
-      rgba(243, 232, 255, 0.92) 100%
+      rgba(255, 244, 224, 0.94) 0%,
+      rgba(255, 251, 241, 0.94) 48%,
+      rgba(236, 209, 170, 0.92) 100%
     );
   }
 
   .floating-nav-friends {
-    @apply rounded-2xl border border-[#CFE4DB] shadow-[0_14px_34px_rgba(16,42,36,0.12)] backdrop-blur-md;
+    @apply rounded-2xl border border-[#BBDCF4] shadow-[0_14px_34px_rgba(64,127,181,0.14)] backdrop-blur-md;
     background-image: linear-gradient(
       135deg,
-      rgba(248, 245, 238, 0.96) 0%,
-      rgba(240, 247, 242, 0.96) 52%,
-      rgba(234, 243, 239, 0.96) 100%
+      rgba(236, 248, 255, 0.96) 0%,
+      rgba(250, 253, 255, 0.94) 52%,
+      rgba(220, 239, 252, 0.94) 100%
     );
   }
 
@@ -592,12 +592,12 @@ body {
   }
 
   .floating-nav-moments {
-    @apply rounded-2xl border border-[#F2E6C9] shadow-[0_12px_30px_rgba(255,143,171,0.12)] backdrop-blur-sm;
+    @apply rounded-2xl border border-[#B9EDF3] shadow-[0_12px_30px_rgba(66,177,195,0.13)] backdrop-blur-sm;
     background-image: linear-gradient(
       135deg,
-      rgba(255, 249, 236, 0.95) 0%,
-      rgba(255, 238, 245, 0.95) 44%,
-      rgba(236, 251, 246, 0.95) 100%
+      rgba(244, 253, 255, 0.88) 0%,
+      rgba(255, 255, 255, 0.82) 48%,
+      rgba(229, 248, 252, 0.86) 100%
     );
   }
 
@@ -605,8 +605,8 @@ body {
     @apply rounded-2xl border border-[#F2E6C9] shadow-[0_12px_30px_rgba(255,143,171,0.12)] backdrop-blur-sm;
     background-image: linear-gradient(
       135deg,
-      rgba(255, 250, 243, 0.96) 0%,
-      rgba(255, 238, 245, 0.95) 46%,
+      rgba(255, 232, 241, 0.96) 0%,
+      rgba(255, 247, 250, 0.95) 46%,
       rgba(246, 251, 255, 0.95) 100%
     );
   }
@@ -3454,6 +3454,14 @@ body {
   }
 }
 
+.bangumi-mini-grid {
+  align-items: stretch;
+}
+
+.bangumi-mini-card {
+  max-width: 180px;
+}
+
 /* Mobile nav drawer (portal, <=768px via md:hidden on root) */
 .nav-mobile-root {
   position: fixed;
@@ -3941,30 +3949,38 @@ body {
 .nav-hover-btn-light,
 .nav-hover-btn--ai,
 .nav-hover-btn--guestbook,
-.nav-hover-btn--gallery,
-.nav-hover-btn--about,
-.nav-hover-btn--moments {
+.nav-hover-btn--gallery {
   color: #2b2b2b;
 }
 .nav-hover-btn-light::after,
 .nav-hover-btn--ai::after,
 .nav-hover-btn--guestbook::after,
-.nav-hover-btn--gallery::after,
-.nav-hover-btn--about::after,
-.nav-hover-btn--moments::after {
+.nav-hover-btn--gallery::after {
   background-color: #ff8fab;
 }
+.nav-hover-btn--about {
+  color: #46313b;
+}
+.nav-hover-btn--about::after {
+  background-color: #ff8fab;
+}
+.nav-hover-btn--moments {
+  color: #264d5e;
+}
+.nav-hover-btn--moments::after {
+  background-color: #4fbfd1;
+}
 .nav-hover-btn--friends {
-  color: #102a24;
+  color: #1e4d70;
 }
 .nav-hover-btn--friends::after {
-  background-color: #6fae9b;
+  background-color: #74b8e8;
 }
 .nav-hover-btn--bili {
-  color: #2d2a3a;
+  color: #5a3520;
 }
 .nav-hover-btn--bili::after {
-  background-color: #7c5cff;
+  background-color: #d89145;
 }
 
 /* ── nav-menu-btn theme variants ────────────────────────────────────
@@ -3972,22 +3988,30 @@ body {
 .nav-menu-btn--light,
 .nav-menu-btn--ai,
 .nav-menu-btn--guestbook,
-.nav-menu-btn--gallery,
-.nav-menu-btn--about,
-.nav-menu-btn--moments {
+.nav-menu-btn--gallery {
   border-color: #f2e6c9;
   background: rgba(255, 255, 255, 0.9);
   color: #2b2b2b;
 }
+.nav-menu-btn--about {
+  border-color: #f5c9d7;
+  background: rgba(255, 246, 250, 0.9);
+  color: #46313b;
+}
+.nav-menu-btn--moments {
+  border-color: #b9edf3;
+  background: rgba(238, 254, 255, 0.9);
+  color: #264d5e;
+}
 .nav-menu-btn--friends {
-  border-color: #cfe4db;
-  background: rgba(255, 255, 255, 0.92);
-  color: #102a24;
+  border-color: #bbdcf4;
+  background: rgba(240, 249, 255, 0.92);
+  color: #1e4d70;
 }
 .nav-menu-btn--bili {
-  border-color: #e8dffb;
-  background: rgba(255, 255, 255, 0.75);
-  color: #2d2a3a;
+  border-color: #f1d3a8;
+  background: rgba(255, 247, 236, 0.82);
+  color: #5a3520;
 }
 
 .ai-traffic-shell,
@@ -4103,6 +4127,1353 @@ body {
   min-height: auto;
   padding-top: 1rem;
   color: #b76e79;
+}
+
+.seasonal-page {
+  --season-bg: linear-gradient(180deg, #fffaf7 0%, #fff 48%, #f8fbff 100%);
+  --season-wash:
+    radial-gradient(circle at 14% 16%, rgba(255, 181, 203, 0.26), transparent 24rem),
+    radial-gradient(circle at 84% 12%, rgba(187, 214, 255, 0.2), transparent 24rem);
+  --season-thread:
+    repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.3) 0 1px,
+      transparent 1px 7rem
+    );
+  position: relative;
+  isolation: isolate;
+  background: var(--season-bg);
+}
+
+.seasonal-page::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    var(--season-wash),
+    var(--season-thread);
+  opacity: 0.92;
+}
+
+.seasonal-page::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  left: 50%;
+  top: 5.6rem;
+  z-index: 0;
+  width: min(78vw, 58rem);
+  height: 15rem;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.46);
+  filter: blur(56px);
+}
+
+.seasonal-hero {
+  position: relative;
+  z-index: 2;
+  width: min(100% - 2rem, 1120px);
+  margin-inline: auto;
+  padding: clamp(1.35rem, 2.5vw, 2.25rem) clamp(1.15rem, 2.8vw, 2.4rem);
+  border: 1px solid var(--season-hero-line, rgba(255, 190, 208, 0.42));
+  border-radius: clamp(22px, 3vw, 34px);
+  background:
+    radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.88), transparent 28%),
+    linear-gradient(135deg, var(--season-hero-a, rgba(255, 246, 250, 0.88)), var(--season-hero-b, rgba(255, 255, 255, 0.68)));
+  box-shadow:
+    0 24px 70px var(--season-hero-shadow, rgba(175, 107, 128, 0.12)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+}
+
+.seasonal-hero::before,
+.seasonal-hero::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+}
+
+.seasonal-hero::before {
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.62), transparent 32%),
+    repeating-linear-gradient(118deg, var(--season-hero-thread, rgba(255, 183, 205, 0.13)) 0 1px, transparent 1px 5.4rem);
+  opacity: 0.86;
+}
+
+.seasonal-hero::after {
+  right: clamp(1rem, 4vw, 3rem);
+  top: 50%;
+  width: clamp(4.8rem, 10vw, 7.8rem);
+  height: clamp(4.8rem, 10vw, 7.8rem);
+  transform: translateY(-50%);
+  opacity: 0.84;
+}
+
+.seasonal-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.seasonal-hero__kicker {
+  margin: 0;
+  color: var(--season-hero-accent, #b76e79);
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+
+.seasonal-hero h1,
+.seasonal-hero__title {
+  color: var(--season-hero-title, #2b2b2b);
+  letter-spacing: 0;
+}
+
+.seasonal-hero__text {
+  color: var(--season-hero-copy, rgba(72, 79, 91, 0.78));
+}
+
+.seasonal-hero--spring {
+  --season-hero-a: rgba(255, 239, 245, 0.92);
+  --season-hero-b: rgba(246, 255, 242, 0.72);
+  --season-hero-line: rgba(255, 151, 184, 0.36);
+  --season-hero-shadow: rgba(200, 101, 137, 0.13);
+  --season-hero-thread: rgba(255, 151, 184, 0.13);
+  --season-hero-accent: #d85f86;
+  --season-hero-title: #5f4b52;
+  --season-hero-copy: rgba(95, 75, 82, 0.72);
+}
+
+.seasonal-hero--spring::after {
+  border-radius: 58% 42% 62% 38%;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.82) 0 0.46rem, transparent 0.52rem),
+    radial-gradient(ellipse at 32% 28%, rgba(255, 164, 196, 0.58) 0 1.15rem, transparent 1.22rem),
+    radial-gradient(ellipse at 68% 31%, rgba(255, 190, 211, 0.58) 0 1.05rem, transparent 1.12rem),
+    radial-gradient(ellipse at 70% 68%, rgba(255, 219, 229, 0.72) 0 1rem, transparent 1.08rem),
+    radial-gradient(ellipse at 30% 68%, rgba(255, 207, 224, 0.68) 0 1.04rem, transparent 1.1rem);
+  filter: drop-shadow(0 0.9rem 1.4rem rgba(255, 143, 171, 0.16));
+}
+
+.seasonal-hero--summer {
+  --season-hero-a: rgba(237, 255, 249, 0.92);
+  --season-hero-b: rgba(255, 251, 224, 0.7);
+  --season-hero-line: rgba(93, 188, 205, 0.34);
+  --season-hero-shadow: rgba(80, 177, 196, 0.13);
+  --season-hero-thread: rgba(93, 188, 205, 0.12);
+  --season-hero-accent: #3fa8b8;
+  --season-hero-title: #51646a;
+  --season-hero-copy: rgba(81, 100, 106, 0.72);
+}
+
+.seasonal-hero--summer::after {
+  border: 1px solid rgba(74, 184, 201, 0.24);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, transparent 42%, rgba(255, 255, 255, 0.7) 44% 48%, transparent 50%),
+    radial-gradient(circle, transparent 58%, rgba(79, 190, 205, 0.2) 59% 61%, transparent 63%),
+    linear-gradient(135deg, rgba(115, 219, 220, 0.2), rgba(255, 229, 122, 0.18));
+  box-shadow:
+    -2.2rem 1.4rem 0 -1.9rem rgba(255, 224, 126, 0.72),
+    1.9rem -1rem 0 -1.65rem rgba(101, 207, 215, 0.5);
+}
+
+.seasonal-hero--autumn {
+  --season-hero-a: rgba(255, 251, 244, 0.94);
+  --season-hero-b: rgba(255, 241, 222, 0.74);
+  --season-hero-line: rgba(198, 122, 73, 0.3);
+  --season-hero-shadow: rgba(154, 93, 45, 0.12);
+  --season-hero-thread: rgba(162, 115, 74, 0.1);
+  --season-hero-accent: #a8633e;
+  --season-hero-title: #3d342f;
+  --season-hero-copy: rgba(61, 52, 47, 0.72);
+}
+
+.seasonal-hero--autumn::after {
+  border: 1px solid rgba(178, 109, 65, 0.2);
+  border-radius: 24px 999px 24px 999px;
+  background:
+    linear-gradient(135deg, rgba(189, 86, 62, 0.26), rgba(246, 183, 93, 0.28)),
+    repeating-linear-gradient(90deg, rgba(122, 82, 54, 0.1) 0 1px, transparent 1px 1.25rem);
+  transform: translateY(-50%) rotate(-8deg);
+  box-shadow:
+    inset 0 0 0 0.5rem rgba(255, 255, 255, 0.34),
+    0 1.1rem 2.3rem rgba(156, 91, 43, 0.12);
+}
+
+.seasonal-hero--winter {
+  --season-hero-a: rgba(249, 253, 255, 0.95);
+  --season-hero-b: rgba(231, 246, 255, 0.78);
+  --season-hero-line: rgba(137, 188, 225, 0.42);
+  --season-hero-shadow: rgba(91, 140, 183, 0.14);
+  --season-hero-thread: rgba(117, 174, 217, 0.1);
+  --season-hero-accent: #6ea8d7;
+  --season-hero-title: #2d4050;
+  --season-hero-copy: rgba(64, 88, 108, 0.72);
+}
+
+.seasonal-hero--winter::after {
+  content: "❄";
+  display: grid;
+  place-items: center;
+  color: rgba(84, 151, 202, 0.55);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  line-height: 1;
+  text-shadow:
+    0 0 0.8rem rgba(255, 255, 255, 0.96),
+    0 0 2rem rgba(152, 209, 250, 0.38);
+}
+
+.seasonal-page--spring {
+  --sakura-pink: #ff7fa3;
+  --sakura-petal: #ffd9e5;
+  --sakura-blush: #fff1f5;
+  --sakura-leaf: #dff4d7;
+  --season-bg:
+    radial-gradient(circle at 48% 5rem, rgba(255, 204, 213, 0.48), transparent 19rem),
+    linear-gradient(135deg, rgba(255, 224, 236, 0.82) 0%, rgba(255, 250, 247, 0.9) 44%, rgba(232, 250, 226, 0.72) 100%),
+    linear-gradient(180deg, #fff0f3 0%, #fffaf8 46%, #f6fff1 100%);
+  --season-wash:
+    radial-gradient(circle at 13% 12%, rgba(255, 143, 171, 0.32), transparent 23rem),
+    radial-gradient(circle at 84% 16%, rgba(217, 245, 200, 0.36), transparent 24rem),
+    radial-gradient(circle at 50% 92%, rgba(255, 204, 213, 0.2), transparent 30rem);
+  --season-thread:
+    repeating-linear-gradient(118deg, rgba(255, 143, 171, 0.13) 0 1px, transparent 1px 7rem),
+    repeating-linear-gradient(0deg, rgba(217, 245, 200, 0.12) 0 1px, transparent 1px 4.4rem);
+}
+
+.seasonal-page--spring .seasonal-scene {
+  z-index: 3;
+}
+
+.seasonal-page--summer {
+  --season-bg:
+    linear-gradient(180deg, #f8fffb 0%, #eefcff 46%, #fffdf6 100%);
+  --season-wash:
+    radial-gradient(circle at 12% 18%, rgba(107, 203, 210, 0.25), transparent 24rem),
+    radial-gradient(circle at 86% 12%, rgba(255, 226, 126, 0.23), transparent 24rem),
+    radial-gradient(circle at 72% 76%, rgba(123, 188, 255, 0.18), transparent 30rem);
+  --season-thread:
+    repeating-linear-gradient(110deg, rgba(71, 184, 202, 0.12) 0 1px, transparent 1px 6.8rem),
+    repeating-linear-gradient(0deg, rgba(255, 226, 126, 0.11) 0 1px, transparent 1px 4.8rem);
+}
+
+.seasonal-page--autumn {
+  --season-bg:
+    radial-gradient(circle at 50% 3rem, rgba(255, 249, 239, 0.96), transparent 24rem),
+    linear-gradient(180deg, #fffdf9 0%, #fffaf3 48%, #fff6e9 100%);
+  --season-wash:
+    radial-gradient(circle at 14% 14%, rgba(246, 190, 116, 0.2), transparent 24rem),
+    radial-gradient(circle at 86% 10%, rgba(209, 94, 74, 0.1), transparent 22rem),
+    radial-gradient(circle at 72% 86%, rgba(151, 110, 71, 0.1), transparent 30rem);
+  --season-thread:
+    repeating-linear-gradient(112deg, rgba(82, 68, 55, 0.055) 0 1px, transparent 1px 7.2rem),
+    repeating-linear-gradient(0deg, rgba(222, 171, 105, 0.07) 0 1px, transparent 1px 4.6rem);
+}
+
+.seasonal-page--winter {
+  --season-bg:
+    linear-gradient(180deg, #fbfdff 0%, #ffffff 48%, #f5faff 100%);
+  --season-wash:
+    radial-gradient(circle at 12% 16%, rgba(219, 238, 255, 0.34), transparent 24rem),
+    radial-gradient(circle at 88% 14%, rgba(238, 247, 255, 0.45), transparent 24rem);
+  --season-thread:
+    repeating-linear-gradient(112deg, rgba(151, 181, 208, 0.04) 0 1px, transparent 1px 8rem);
+}
+
+.bili-hub-backdrop {
+  background:
+    radial-gradient(circle at 16% 17%, rgba(245, 158, 11, 0.28), transparent 22rem),
+    radial-gradient(circle at 82% 18%, rgba(239, 68, 68, 0.16), transparent 24rem),
+    linear-gradient(145deg, #fff7ea 0%, #fff0dc 48%, #fff8ee 100%);
+}
+
+.friends-page-backdrop {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(172, 205, 232, 0.36), transparent 22rem),
+    radial-gradient(circle at 88% 14%, rgba(225, 241, 255, 0.46), transparent 24rem),
+    linear-gradient(180deg, #f8fcff 0%, #ffffff 48%, #eef7ff 100%);
+}
+
+.glimmer-page.seasonal-page--summer {
+  background: #eefcff;
+}
+
+.glimmer-page.seasonal-page--summer::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(246, 255, 255, 0.78) 74%, rgba(240, 255, 255, 0.9)),
+    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.34), transparent 22rem),
+    radial-gradient(circle at 88% 24%, rgba(255, 242, 184, 0.24), transparent 24rem),
+    repeating-linear-gradient(118deg, rgba(108, 196, 218, 0.08) 0, rgba(108, 196, 218, 0.08) 1px, transparent 1px, transparent 8.5rem);
+  opacity: 0.95;
+}
+
+.seasonal-scene {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.seasonal-scene span {
+  position: absolute;
+  display: block;
+}
+
+.about-route-shadow,
+.about-route-error {
+  position: relative;
+  z-index: 2;
+}
+
+.spring-petal {
+  width: 1.15rem;
+  height: 0.72rem;
+  border-radius: 70% 12% 70% 18%;
+  background: linear-gradient(135deg, rgba(255, 187, 208, 0.92), rgba(255, 237, 243, 0.52));
+  box-shadow: 0 0.7rem 2rem rgba(255, 143, 171, 0.18);
+}
+
+.spring-petal--one {
+  left: 11vw;
+  top: 12rem;
+  transform: rotate(28deg);
+}
+
+.spring-petal--two {
+  right: 13vw;
+  top: 8.8rem;
+  transform: rotate(-18deg) scale(0.86);
+}
+
+.spring-petal--three {
+  right: 23vw;
+  bottom: 12vh;
+  transform: rotate(42deg) scale(0.7);
+}
+
+.sakura-petal-field {
+  position: fixed;
+  inset: -12vh 0 0;
+  overflow: hidden;
+  opacity: 0.92;
+}
+
+.sakura-petal {
+  top: -4rem;
+  width: 0.92rem;
+  height: 0.7rem;
+  transform-origin: 62% 42%;
+  border-radius: 76% 8% 72% 20%;
+  background:
+    radial-gradient(circle at 32% 31%, rgba(255, 255, 255, 0.82), transparent 32%),
+    linear-gradient(135deg, rgba(255, 225, 234, 0.96), rgba(255, 127, 163, 0.58));
+  box-shadow:
+    0 0.45rem 1.15rem rgba(255, 127, 163, 0.15),
+    inset -0.18rem -0.06rem 0 rgba(205, 86, 123, 0.1);
+  filter: saturate(1.02);
+  mix-blend-mode: multiply;
+  animation: sakuraPetalFall var(--fall-duration, 9s) ease-in-out infinite;
+  animation-delay: var(--fall-delay, 0s);
+}
+
+.sakura-petal::before {
+  content: "";
+  position: absolute;
+  left: 0.22rem;
+  top: 0.31rem;
+  width: 0.52rem;
+  height: 1px;
+  transform: rotate(-24deg);
+  background: rgba(181, 72, 109, 0.22);
+}
+
+.sakura-petal--one {
+  left: 9vw;
+  --fall-duration: 9s;
+  --fall-delay: -2s;
+  --drift-mid: 3vw;
+  --drift-end: -5vw;
+}
+
+.sakura-petal--two {
+  left: 23vw;
+  --fall-duration: 10.5s;
+  --fall-delay: -8s;
+  --drift-mid: -4vw;
+  --drift-end: 5vw;
+  transform: scale(0.72);
+}
+
+.sakura-petal--three {
+  left: 39vw;
+  --fall-duration: 9.6s;
+  --fall-delay: -5s;
+  --drift-mid: 5vw;
+  --drift-end: -3vw;
+  transform: scale(1.16);
+}
+
+.sakura-petal--four {
+  left: 57vw;
+  --fall-duration: 11s;
+  --fall-delay: -11s;
+  --drift-mid: -5vw;
+  --drift-end: 6vw;
+  transform: scale(0.86);
+}
+
+.sakura-petal--five {
+  left: 72vw;
+  --fall-duration: 8.8s;
+  --fall-delay: -4s;
+  --drift-mid: 4vw;
+  --drift-end: -6vw;
+}
+
+.sakura-petal--six {
+  left: 86vw;
+  --fall-duration: 10s;
+  --fall-delay: -9s;
+  --drift-mid: -3vw;
+  --drift-end: 4vw;
+  transform: scale(0.68);
+}
+
+.sakura-petal--seven {
+  left: 48vw;
+  --fall-duration: 11.8s;
+  --fall-delay: -14s;
+  --drift-mid: 2vw;
+  --drift-end: -7vw;
+  transform: scale(0.78);
+}
+
+.sakura-petal--eight {
+  left: 15vw;
+  --fall-duration: 10.8s;
+  --fall-delay: -13s;
+  --drift-mid: 7vw;
+  --drift-end: -2vw;
+  transform: scale(0.58);
+}
+
+.sakura-petal--nine {
+  left: 34vw;
+  --fall-duration: 8.4s;
+  --fall-delay: -7s;
+  --drift-mid: -2vw;
+  --drift-end: 8vw;
+  transform: scale(0.64);
+}
+
+.sakura-petal--ten {
+  left: 66vw;
+  --fall-duration: 12s;
+  --fall-delay: -15s;
+  --drift-mid: 6vw;
+  --drift-end: -5vw;
+  transform: scale(0.95);
+}
+
+.sakura-petal--eleven {
+  left: 93vw;
+  --fall-duration: 10.2s;
+  --fall-delay: -6s;
+  --drift-mid: -7vw;
+  --drift-end: 2vw;
+  transform: scale(0.76);
+}
+
+.sakura-petal--twelve {
+  left: 4vw;
+  --fall-duration: 9.4s;
+  --fall-delay: -6.5s;
+  --drift-mid: 5vw;
+  --drift-end: -4vw;
+  transform: scale(0.82);
+}
+
+.sakura-petal--thirteen {
+  left: 29vw;
+  --fall-duration: 8.9s;
+  --fall-delay: -3.5s;
+  --drift-mid: -6vw;
+  --drift-end: 3vw;
+  transform: scale(0.7);
+}
+
+.sakura-petal--fourteen {
+  left: 43vw;
+  --fall-duration: 10.7s;
+  --fall-delay: -9.5s;
+  --drift-mid: 6vw;
+  --drift-end: -2vw;
+  transform: scale(1.05);
+}
+
+.sakura-petal--fifteen {
+  left: 61vw;
+  --fall-duration: 8.6s;
+  --fall-delay: -1.2s;
+  --drift-mid: -3vw;
+  --drift-end: 6vw;
+  transform: scale(0.62);
+}
+
+.sakura-petal--sixteen {
+  left: 77vw;
+  --fall-duration: 9.8s;
+  --fall-delay: -5.2s;
+  --drift-mid: 3vw;
+  --drift-end: -7vw;
+  transform: scale(0.9);
+}
+
+.sakura-petal--seventeen {
+  left: 88vw;
+  --fall-duration: 11.4s;
+  --fall-delay: -10.5s;
+  --drift-mid: -5vw;
+  --drift-end: 4vw;
+  transform: scale(0.66);
+}
+
+.sakura-petal--eighteen {
+  left: 53vw;
+  --fall-duration: 9.2s;
+  --fall-delay: -12s;
+  --drift-mid: 4vw;
+  --drift-end: -6vw;
+  transform: scale(0.78);
+}
+
+@keyframes sakuraPetalFall {
+  0% {
+    translate: 0 -10vh;
+    rotate: -18deg;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.78;
+  }
+  48% {
+    translate: var(--drift-mid, 4vw) 52vh;
+    rotate: 164deg;
+  }
+  72% {
+    opacity: 0.7;
+  }
+  100% {
+    translate: var(--drift-end, -7vw) 112vh;
+    rotate: 338deg;
+    opacity: 0;
+  }
+}
+
+.summer-ocean-stage {
+  position: fixed;
+  inset: 0;
+  min-height: 100dvh;
+  overflow: hidden;
+  opacity: 0.92;
+  filter: saturate(0.9) contrast(0.96);
+}
+
+.summer-ocean-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.58), transparent 17rem),
+    linear-gradient(180deg, rgba(77, 196, 218, 0.46), rgba(21, 134, 176, 0.42) 52%, rgba(9, 78, 130, 0.34));
+}
+
+.summer-ocean-video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%) scale(1.04);
+  object-fit: cover;
+  filter: brightness(1.06) saturate(0.76) contrast(0.93);
+}
+
+.summer-ocean-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(221, 244, 248, 0.5) 56%, rgba(236, 250, 252, 0.62)),
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.22), transparent 30rem),
+    linear-gradient(118deg, rgba(174, 229, 240, 0.14), rgba(235, 224, 178, 0.1) 52%, rgba(222, 239, 244, 0.12));
+}
+
+.summer-ocean-frame {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  min-width: 100%;
+  width: 100%;
+  height: auto;
+  opacity: 0.64;
+  filter:
+    brightness(1.05)
+    saturate(0.72)
+    drop-shadow(0 -1.4rem 2.2rem rgba(255, 255, 255, 0.18));
+}
+
+.bili-hub-page {
+  --autumn-paper: #efe3ce;
+  --autumn-paper-2: #e6d5b8;
+  --autumn-card: #f7efe0;
+  --autumn-ink: #2b1b14;
+  --autumn-ink-soft: #5c4a3c;
+  --autumn-pumpkin: #c6622b;
+  --autumn-pumpkin-dark: #9e4c1f;
+  --autumn-rust: #8c3b23;
+  --autumn-moss: #5b6e4d;
+  --autumn-mustard: #d9a441;
+  --autumn-line: rgba(43, 27, 20, 0.16);
+  --autumn-shadow: rgba(60, 35, 15, 0.14);
+  background:
+    radial-gradient(ellipse 70% 60% at 16% 0%, rgba(198, 98, 43, 0.18), transparent 62%),
+    radial-gradient(ellipse 60% 50% at 90% 10%, rgba(91, 110, 77, 0.14), transparent 60%),
+    linear-gradient(180deg, var(--autumn-paper) 0%, #f3e7d3 52%, #ead8ba 100%);
+  color: var(--autumn-ink);
+}
+
+.bili-hub-page .container,
+.bili-hub-page .acg-nav-shell,
+.bili-hub-page main,
+.bili-hub-page section {
+  position: relative;
+  z-index: 2;
+}
+
+.bili-hub-backdrop {
+  background:
+    repeating-linear-gradient(108deg, rgba(43, 27, 20, 0.035) 0 1px, transparent 1px 5.4rem),
+    radial-gradient(circle at 12% 20%, rgba(198, 98, 43, 0.12), transparent 22rem),
+    radial-gradient(circle at 88% 16%, rgba(217, 164, 65, 0.16), transparent 24rem);
+}
+
+.autumn-recipes-shell {
+  position: relative;
+  z-index: 3;
+  width: min(100%, 84rem);
+  margin: 0 auto;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.bili-hub-page #acg {
+  position: relative;
+  z-index: 2;
+  padding-block: clamp(2.2rem, 4vw, 4.4rem);
+}
+
+.bili-hub-page #acg > .container {
+  width: min(100%, 88rem);
+  max-width: none;
+  padding-inline: clamp(1.2rem, 4vw, 4rem);
+}
+
+.bili-hub-page #acg header p {
+  color: var(--autumn-rust);
+}
+
+.bili-hub-page #acg header h2,
+.bili-hub-page #acg .font-zentry {
+  color: var(--autumn-ink);
+}
+
+.bili-hub-page #acg h3[style] {
+  color: var(--autumn-pumpkin) !important;
+}
+
+.bili-hub-page .bangumi-mini-grid {
+  position: relative;
+  z-index: 2;
+  justify-content: center;
+}
+
+.bili-hub-page .bangumi-mini-card {
+  border-color: var(--autumn-line);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, var(--autumn-card), rgba(247, 239, 224, 0.86));
+  box-shadow: 0 0.55rem 1.2rem var(--autumn-shadow);
+}
+
+.bili-hub-page .bangumi-mini-card:hover {
+  border-color: rgba(198, 98, 43, 0.42);
+  box-shadow: 0 1rem 1.9rem var(--autumn-shadow);
+}
+
+.bili-hub-page .bangumi-mini-card h3 {
+  color: var(--autumn-ink);
+}
+
+.bili-hub-page .autumn-recipe-card > div:first-child {
+  background:
+    radial-gradient(circle at 24% 18%, rgba(217, 164, 65, 0.34), transparent 24%),
+    radial-gradient(circle at 78% 72%, rgba(91, 110, 77, 0.18), transparent 26%),
+    linear-gradient(155deg, rgba(198, 98, 43, 0.18), var(--autumn-paper-2));
+}
+
+.bili-hub-page .autumn-recipe-card > div:first-child > div {
+  background:
+    radial-gradient(circle at 26% 18%, rgba(247, 239, 224, 0.42), transparent 16%),
+    linear-gradient(180deg, rgba(198, 98, 43, 0.16), rgba(217, 164, 65, 0.12));
+}
+
+.bili-hub-page .autumn-recipe-card p {
+  color: var(--autumn-ink-soft);
+}
+
+.bili-hub-page .autumn-recipe-card .font-mono {
+  color: var(--autumn-rust);
+}
+
+.bili-hub-page .autumn-recipe-card a,
+.bili-hub-page .autumn-recipe-card button {
+  border-color: rgba(198, 98, 43, 0.42);
+  background: rgba(247, 239, 224, 0.8);
+  color: var(--autumn-pumpkin-dark);
+}
+
+.bili-hub-page .autumn-recipe-card a:hover,
+.bili-hub-page .autumn-recipe-card button:hover {
+  border-color: var(--autumn-pumpkin);
+  background: var(--autumn-pumpkin);
+  color: #fff8ef;
+}
+
+.autumn-recipe-card {
+  background: var(--autumn-card);
+  border: 1px solid var(--autumn-line);
+  border-radius: 14px;
+  box-shadow: 0 0.55rem 1.2rem var(--autumn-shadow);
+}
+
+.autumn-recipes-leaf-layer {
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.autumn-recipes-leaf {
+  position: absolute;
+  top: -10vh;
+  width: clamp(1.3rem, 2.4vw, 2.4rem);
+  height: clamp(1.3rem, 2.4vw, 2.4rem);
+  border-radius: 18%;
+  opacity: 0.82;
+  transform-origin: 50% 62%;
+  filter: drop-shadow(0 0.6rem 0.9rem rgba(60, 35, 15, 0.14));
+  animation: autumnRecipeLeafFall var(--leaf-duration, 14s) linear infinite;
+  animation-delay: var(--leaf-delay, 0s);
+}
+
+.autumn-recipes-leaf::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 62%;
+  height: 1px;
+  transform: translateX(-50%) rotate(90deg);
+  background: rgba(132, 76, 21, 0.32);
+}
+
+.autumn-recipes-leaf--yellow {
+  background:
+    radial-gradient(circle at 35% 22%, rgba(255, 244, 164, 0.92), transparent 18%),
+    linear-gradient(135deg, #f6c343 0%, #f7d96a 48%, #e4a12d 100%);
+  clip-path: polygon(50% 0, 61% 25%, 90% 14%, 74% 41%, 100% 52%, 69% 59%, 84% 87%, 57% 72%, 50% 100%, 43% 72%, 16% 87%, 31% 59%, 0 52%, 26% 41%, 10% 14%, 39% 25%);
+}
+
+.autumn-recipes-leaf--one {
+  left: 10vw;
+  --leaf-duration: 15s;
+  --leaf-delay: -7s;
+  --leaf-drift: 5vw;
+  transform: rotate(18deg);
+}
+
+.autumn-recipes-leaf--two {
+  left: 28vw;
+  --leaf-duration: 17s;
+  --leaf-delay: -11s;
+  --leaf-drift: -4vw;
+  transform: rotate(-24deg) scale(0.78);
+}
+
+.autumn-recipes-leaf--three {
+  left: 54vw;
+  --leaf-duration: 13s;
+  --leaf-delay: -4s;
+  --leaf-drift: 6vw;
+  transform: rotate(15deg) scale(0.88);
+}
+
+.autumn-recipes-leaf--four {
+  left: 76vw;
+  --leaf-duration: 16s;
+  --leaf-delay: -13s;
+  --leaf-drift: -5vw;
+  transform: rotate(-31deg) scale(0.72);
+}
+
+.autumn-recipes-leaf--five {
+  left: 90vw;
+  --leaf-duration: 18s;
+  --leaf-delay: -8s;
+  --leaf-drift: -8vw;
+  transform: rotate(28deg) scale(0.66);
+}
+
+@keyframes autumnRecipeLeafFall {
+  from {
+    translate: 0 -12vh;
+    rotate: 0deg;
+  }
+  to {
+    translate: var(--leaf-drift, 4vw) 118vh;
+    rotate: 340deg;
+  }
+}
+
+@media (max-width: 760px) {
+  .autumn-recipes-shell {
+    border-radius: 16px;
+  }
+
+  .autumn-recipes-leaf--five {
+    display: none;
+  }
+}
+
+.autumn-maple-canopy {
+  left: 50%;
+  top: 5.9rem;
+  width: min(86vw, 66rem);
+  height: 17rem;
+  transform: translateX(-50%) rotate(-1.4deg);
+  border-radius: 42% 58% 52% 48% / 34% 42% 58% 66%;
+  background:
+    radial-gradient(ellipse at 10% 40%, rgba(169, 58, 47, 0.1) 0 2.2rem, transparent 2.38rem),
+    radial-gradient(ellipse at 24% 23%, rgba(231, 139, 50, 0.14) 0 2.7rem, transparent 2.9rem),
+    radial-gradient(ellipse at 41% 32%, rgba(244, 184, 85, 0.16) 0 3rem, transparent 3.18rem),
+    radial-gradient(ellipse at 60% 20%, rgba(182, 68, 52, 0.09) 0 2.5rem, transparent 2.68rem),
+    radial-gradient(ellipse at 76% 36%, rgba(226, 156, 62, 0.12) 0 2.8rem, transparent 3rem),
+    radial-gradient(ellipse at 90% 28%, rgba(191, 78, 53, 0.08) 0 2rem, transparent 2.18rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.62), transparent 72%);
+  filter: blur(0.6px);
+  opacity: 0.86;
+}
+
+.autumn-maple-spray {
+  left: clamp(0.2rem, 4vw, 3.4rem);
+  top: 13.6rem;
+  width: min(38vw, 21rem);
+  height: 13rem;
+  transform: rotate(-6deg);
+  background:
+    radial-gradient(ellipse at 15% 34%, rgba(183, 62, 46, 0.42) 0 0.82rem, transparent 0.94rem),
+    radial-gradient(ellipse at 31% 18%, rgba(239, 148, 55, 0.36) 0 0.78rem, transparent 0.9rem),
+    radial-gradient(ellipse at 48% 43%, rgba(244, 188, 84, 0.34) 0 0.94rem, transparent 1.06rem),
+    radial-gradient(ellipse at 68% 21%, rgba(192, 75, 49, 0.34) 0 0.76rem, transparent 0.9rem),
+    radial-gradient(ellipse at 82% 53%, rgba(231, 137, 55, 0.3) 0 0.72rem, transparent 0.86rem),
+    linear-gradient(120deg, transparent 0 52%, rgba(121, 75, 46, 0.16) 52% 53%, transparent 53%);
+  filter: drop-shadow(0 1.2rem 1.6rem rgba(135, 76, 36, 0.1));
+  opacity: 0.74;
+}
+
+.autumn-maple-spray::before,
+.autumn-maple-spray::after {
+  content: "";
+  position: absolute;
+  width: 3rem;
+  height: 2.8rem;
+  border-radius: 18%;
+  background: linear-gradient(135deg, rgba(177, 57, 43, 0.66), rgba(242, 181, 74, 0.58));
+  clip-path: polygon(50% 0, 62% 25%, 90% 16%, 73% 42%, 100% 52%, 70% 59%, 83% 87%, 56% 72%, 50% 100%, 44% 72%, 17% 87%, 30% 59%, 0 52%, 27% 42%, 10% 16%, 38% 25%);
+}
+
+.autumn-maple-spray::before {
+  left: 22%;
+  top: 42%;
+  transform: rotate(21deg) scale(1.08);
+}
+
+.autumn-maple-spray::after {
+  right: 12%;
+  top: 56%;
+  transform: rotate(-18deg) scale(0.9);
+}
+
+.autumn-garden-screen {
+  left: 50%;
+  top: 8rem;
+  width: min(78vw, 58rem);
+  height: 18rem;
+  transform: translateX(-50%) rotate(0.6deg);
+  border: 1px solid rgba(139, 89, 53, 0.16);
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, transparent 0 49.5%, rgba(139, 89, 53, 0.09) 49.5% 50.5%, transparent 50.5%),
+    repeating-linear-gradient(90deg, rgba(139, 89, 53, 0.055) 0 1px, transparent 1px 6.8rem),
+    linear-gradient(180deg, rgba(255, 253, 244, 0.62), rgba(255, 238, 206, 0.18));
+  box-shadow:
+    0 2.4rem 6rem rgba(112, 66, 40, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+.autumn-ginkgo-fan {
+  right: clamp(1rem, 6vw, 5.5rem);
+  top: 7.6rem;
+  width: min(28vw, 18rem);
+  height: min(28vw, 18rem);
+  transform: rotate(9deg);
+  border-radius: 100% 100% 20% 20%;
+  background:
+    conic-gradient(from 216deg, transparent 0 21deg, rgba(244, 200, 92, 0.2) 22deg 38deg, transparent 39deg 50deg, rgba(244, 200, 92, 0.31) 51deg 68deg, transparent 69deg 82deg, rgba(244, 200, 92, 0.22) 83deg 101deg, transparent 102deg 123deg),
+    radial-gradient(circle at 50% 91%, rgba(149, 92, 39, 0.2), transparent 43%);
+  filter: drop-shadow(0 1.4rem 2.5rem rgba(154, 92, 38, 0.12));
+  opacity: 0.98;
+}
+
+.autumn-ginkgo-fan::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1.1rem;
+  width: 1px;
+  height: 5.4rem;
+  transform: translateX(-50%) rotate(-7deg);
+  background: linear-gradient(180deg, rgba(137, 83, 38, 0.38), transparent);
+}
+
+.autumn-lantern-glow {
+  left: clamp(1.2rem, 6vw, 5rem);
+  top: 10.6rem;
+  width: 9.5rem;
+  height: 12rem;
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(255, 207, 115, 0.44), rgba(244, 128, 70, 0.16) 46%, transparent 72%);
+  box-shadow: 0 0 4.5rem rgba(238, 146, 66, 0.2);
+}
+
+.autumn-lantern-glow::before,
+.autumn-lantern-glow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.autumn-lantern-glow::before {
+  top: -2.7rem;
+  width: 1px;
+  height: 3.5rem;
+  background: linear-gradient(180deg, transparent, rgba(132, 72, 37, 0.28));
+}
+
+.autumn-lantern-glow::after {
+  top: 1.7rem;
+  width: 4.4rem;
+  height: 6.6rem;
+  border: 1px solid rgba(157, 84, 46, 0.14);
+  border-radius: 999px;
+}
+
+.autumn-leaf {
+  width: 2.5rem;
+  height: 2.35rem;
+  border-radius: 18%;
+  background: linear-gradient(135deg, rgba(190, 70, 48, 0.78), rgba(247, 184, 80, 0.72));
+  clip-path: polygon(50% 0, 62% 25%, 90% 16%, 73% 42%, 100% 52%, 70% 59%, 83% 87%, 56% 72%, 50% 100%, 44% 72%, 17% 87%, 30% 59%, 0 52%, 27% 42%, 10% 16%, 38% 25%);
+  box-shadow: 0 1rem 2.2rem rgba(137, 76, 24, 0.18);
+}
+
+.autumn-leaf::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 1.4rem;
+  height: 1px;
+  transform: translateX(-50%) rotate(90deg);
+  background: rgba(91, 51, 22, 0.24);
+}
+
+.autumn-leaf--one {
+  right: 23vw;
+  top: 15rem;
+  transform: rotate(28deg);
+}
+
+.autumn-leaf--two {
+  left: 16vw;
+  bottom: 13vh;
+  transform: rotate(-32deg) scale(0.85);
+}
+
+.autumn-leaf--three {
+  right: 10vw;
+  bottom: 18vh;
+  transform: rotate(58deg) scale(0.72);
+}
+
+.winter-moon {
+  right: clamp(1.3rem, 10vw, 9rem);
+  top: 6.9rem;
+  width: min(20vw, 9.6rem);
+  height: min(20vw, 9.6rem);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 34%, rgba(255, 255, 255, 0.98), rgba(232, 244, 255, 0.86) 46%, rgba(204, 226, 247, 0.24) 68%, transparent 72%);
+  box-shadow:
+    0 0 0 1px rgba(154, 197, 232, 0.12),
+    0 0 3.8rem rgba(173, 213, 246, 0.42),
+    0 0 8rem rgba(173, 213, 246, 0.22);
+}
+
+.winter-snow-curtain {
+  left: 50%;
+  top: 5.5rem;
+  width: min(92vw, 70rem);
+  height: 26rem;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 8% 18%, rgba(145, 188, 222, 0.32) 0 0.18rem, transparent 0.22rem),
+    radial-gradient(circle at 22% 46%, rgba(255, 255, 255, 0.76) 0 0.13rem, transparent 0.17rem),
+    radial-gradient(circle at 36% 24%, rgba(145, 188, 222, 0.26) 0 0.16rem, transparent 0.2rem),
+    radial-gradient(circle at 54% 52%, rgba(255, 255, 255, 0.72) 0 0.14rem, transparent 0.18rem),
+    radial-gradient(circle at 72% 30%, rgba(145, 188, 222, 0.3) 0 0.17rem, transparent 0.22rem),
+    radial-gradient(circle at 88% 58%, rgba(255, 255, 255, 0.7) 0 0.12rem, transparent 0.16rem),
+    linear-gradient(180deg, rgba(214, 235, 255, 0.22), transparent 82%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.86) 64%, transparent 100%);
+  opacity: 0.86;
+}
+
+.winter-silver-branch {
+  left: clamp(-2rem, 1vw, 1rem);
+  top: 10.2rem;
+  width: min(46vw, 33rem);
+  height: 1px;
+  transform: rotate(-11deg);
+  background: linear-gradient(90deg, transparent, rgba(95, 143, 184, 0.56), rgba(255, 255, 255, 0.9));
+  filter: drop-shadow(0 0.9rem 1.7rem rgba(147, 189, 225, 0.2));
+}
+
+.winter-silver-branch::before,
+.winter-silver-branch::after {
+  content: "";
+  position: absolute;
+  width: 9.4rem;
+  height: 1px;
+  right: 18%;
+  transform-origin: right center;
+  background: linear-gradient(90deg, transparent, rgba(95, 143, 184, 0.52), rgba(255, 255, 255, 0.9));
+}
+
+.winter-silver-branch::before {
+  top: -2.8rem;
+  transform: rotate(29deg);
+}
+
+.winter-silver-branch::after {
+  top: 2.4rem;
+  transform: rotate(-35deg);
+}
+
+.winter-lace-snowflake {
+  right: clamp(1.1rem, 7vw, 6rem);
+  top: 12.7rem;
+  width: min(24vw, 10.2rem);
+  height: min(24vw, 10.2rem);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.96) 0 0.34rem, rgba(116, 178, 222, 0.38) 0.38rem 0.5rem, transparent 0.54rem),
+    radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.9) 0 0.17rem, transparent 0.22rem),
+    radial-gradient(circle at 50% 85%, rgba(255, 255, 255, 0.9) 0 0.17rem, transparent 0.22rem),
+    radial-gradient(circle at 19% 32%, rgba(255, 255, 255, 0.84) 0 0.14rem, transparent 0.19rem),
+    radial-gradient(circle at 81% 68%, rgba(255, 255, 255, 0.84) 0 0.14rem, transparent 0.19rem),
+    radial-gradient(circle at 81% 32%, rgba(116, 178, 222, 0.62) 0 0.14rem, transparent 0.19rem),
+    radial-gradient(circle at 19% 68%, rgba(116, 178, 222, 0.62) 0 0.14rem, transparent 0.19rem);
+  box-shadow:
+    0 0 2.4rem rgba(117, 181, 224, 0.32),
+    inset 0 0 2.2rem rgba(255, 255, 255, 0.18);
+  filter: drop-shadow(0 1.2rem 1.8rem rgba(110, 169, 214, 0.14));
+  opacity: 0.98;
+}
+
+.winter-lace-snowflake::before,
+.winter-lace-snowflake::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5.8rem;
+  max-width: 72%;
+  height: 1px;
+  transform-origin: center;
+  background:
+    linear-gradient(90deg, transparent, rgba(79, 149, 201, 0.72) 18%, rgba(255, 255, 255, 0.96) 50%, rgba(79, 149, 201, 0.72) 82%, transparent);
+}
+
+.winter-lace-snowflake::before {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.winter-lace-snowflake::after {
+  transform: translate(-50%, -50%) rotate(60deg);
+}
+
+.winter-snowflake-arm {
+  left: 50%;
+  top: 50%;
+  width: 5.8rem;
+  max-width: 72%;
+  height: 1px;
+  transform-origin: center;
+  background:
+    linear-gradient(90deg, transparent, rgba(79, 149, 201, 0.68) 18%, rgba(255, 255, 255, 0.92) 50%, rgba(79, 149, 201, 0.68) 82%, transparent);
+}
+
+.winter-snowflake-arm::before,
+.winter-snowflake-arm::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 1.45rem;
+  height: 1px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(78, 150, 203, 0.58));
+}
+
+.winter-snowflake-arm::before {
+  left: 0.7rem;
+  transform: translateY(-50%) rotate(35deg);
+  box-shadow: 0.55rem -0.55rem 0 -0.5px rgba(255, 255, 255, 0.76);
+}
+
+.winter-snowflake-arm::after {
+  right: 0.7rem;
+  transform: translateY(-50%) rotate(-35deg);
+  box-shadow: -0.55rem 0.55rem 0 -0.5px rgba(255, 255, 255, 0.76);
+}
+
+.winter-snowflake-arm--one {
+  transform: translate(-50%, -50%) rotate(120deg);
+}
+
+.winter-snowflake-arm--two {
+  transform: translate(-50%, -50%) rotate(30deg) scale(0.74);
+  opacity: 0.78;
+}
+
+.winter-snowflake-arm--three {
+  transform: translate(-50%, -50%) rotate(90deg) scale(0.74);
+  opacity: 0.78;
+}
+
+.winter-snow {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 0 0 1px rgba(148, 196, 255, 0.18),
+    0 0.7rem 1.7rem rgba(148, 196, 255, 0.22);
+}
+
+.winter-snow--one {
+  left: 10vw;
+  top: 11rem;
+  width: 0.62rem;
+  height: 0.62rem;
+}
+
+.winter-snow--two {
+  right: 19vw;
+  top: 18rem;
+  width: 0.46rem;
+  height: 0.46rem;
+}
+
+.winter-snow--three {
+  left: 24vw;
+  bottom: 13vh;
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.winter-frost-line {
+  left: 50%;
+  bottom: 5.5rem;
+  width: min(74vw, 48rem);
+  height: 1px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(90deg, transparent, rgba(126, 169, 205, 0.24), transparent);
+  box-shadow:
+    0 -1.2rem 0 rgba(126, 169, 205, 0.05),
+    0 -2.3rem 0 rgba(126, 169, 205, 0.04);
+}
+
+.winter-snowfall-field {
+  position: fixed;
+  inset: -12vh 0 0;
+  overflow: hidden;
+  opacity: 0.94;
+}
+
+.winter-floating-snow {
+  left: var(--snow-left, 0);
+  top: -3rem;
+  width: var(--snow-size, 1.34rem);
+  height: var(--snow-size, 1.34rem);
+  color: rgba(112, 166, 209, 0.58);
+  font-size: var(--snow-size, 1.34rem);
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    0 0 0.4rem rgba(255, 255, 255, 0.95),
+    0 0.55rem 1.35rem rgba(127, 181, 222, 0.22);
+  animation: winterSnowFloat var(--snow-duration, 10s) linear infinite;
+  animation-delay: var(--snow-delay, 0s);
+}
+
+.winter-floating-snow::before {
+  content: "❄";
+  display: block;
+  transform: rotate(var(--snow-rotate, 0deg));
+}
+
+@keyframes winterSnowFloat {
+  0% {
+    translate: 0 -8vh;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.86;
+  }
+  50% {
+    translate: calc(var(--snow-drift, 5vw) * 0.55) 52vh;
+    opacity: 0.74;
+  }
+  100% {
+    translate: var(--snow-drift, 5vw) 112vh;
+    opacity: 0;
+  }
+}
+
+.friends-winter-card {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 2.35rem;
+  border: 1px solid rgba(161, 199, 229, 0.44);
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(239, 248, 255, 0.78) 52%, rgba(255, 255, 255, 0.88)),
+    radial-gradient(circle at 16% 18%, rgba(206, 232, 255, 0.58), transparent 34%);
+  box-shadow:
+    0 18px 46px rgba(111, 154, 194, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(18px);
+}
+
+.friends-winter-hero--frameless {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.friends-winter-hero--frameless::before,
+.friends-winter-hero--frameless::after {
+  content: none;
+}
+
+.friends-winter-card::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.75), transparent 34%),
+    repeating-linear-gradient(135deg, rgba(132, 184, 224, 0.08) 0 1px, transparent 1px 1.9rem);
+  opacity: 0.72;
+}
+
+.friends-winter-card::after {
+  content: "❄";
+  pointer-events: none;
+  position: absolute;
+  right: 0.95rem;
+  bottom: 0.68rem;
+  z-index: 1;
+  color: rgba(84, 151, 202, 0.68);
+  font-size: 1rem;
+  line-height: 1;
+  text-shadow:
+    0 0 0.5rem rgba(255, 255, 255, 0.95),
+    0 0 1rem rgba(152, 209, 250, 0.42);
+}
+
+.friends-winter-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.friends-winter-card:hover {
+  border-color: rgba(104, 168, 215, 0.58);
+  box-shadow:
+    0 24px 58px rgba(94, 145, 191, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.friends-winter-avatar {
+  border: 1px solid rgba(181, 214, 239, 0.72);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(226, 242, 255, 0.86));
+  color: #6d91ad;
+  box-shadow:
+    0 10px 24px rgba(111, 154, 194, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+@media (max-width: 760px) {
+  .autumn-ginkgo-fan,
+  .autumn-lantern-glow,
+  .autumn-maple-spray,
+  .winter-lace-snowflake,
+  .winter-moon {
+    opacity: 0.56;
+    transform: scale(0.78);
+  }
+
+  .autumn-maple-canopy,
+  .winter-silver-branch {
+    opacity: 0.58;
+  }
 }
 
 .about-project-page {
@@ -5200,6 +6571,51 @@ body {
   border-bottom: 1px solid rgba(242, 230, 201, 0.9);
   background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(255, 246, 238, 0.92));
   padding: 0.9rem 1rem;
+}
+
+.friends-winter-link-panel {
+  position: relative;
+  border: 1px solid rgba(137, 188, 225, 0.48);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(249, 253, 255, 0.97), rgba(232, 246, 255, 0.86)),
+    repeating-linear-gradient(0deg, rgba(117, 174, 217, 0.09) 0 1px, transparent 1px 2.15rem);
+  box-shadow:
+    0 22px 58px rgba(91, 140, 183, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.friends-winter-link-panel::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0.7rem;
+  border: 1px solid rgba(181, 218, 244, 0.38);
+  border-radius: 18px;
+  opacity: 0.7;
+}
+
+.friends-winter-link-panel__chrome {
+  position: relative;
+  border-bottom: 1px solid rgba(137, 188, 225, 0.36);
+  background:
+    linear-gradient(90deg, rgba(226, 243, 255, 0.9), rgba(255, 255, 255, 0.76) 58%, rgba(238, 248, 255, 0.88));
+}
+
+.friends-winter-link-panel__chrome::after {
+  content: "❄";
+  position: absolute;
+  right: 1.15rem;
+  bottom: -2.55rem;
+  pointer-events: none;
+  color: rgba(84, 151, 202, 0.58);
+  font-size: 0.95rem;
+  text-shadow: 0 0 0.75rem rgba(255, 255, 255, 0.95);
+}
+
+.friends-winter-copy-button {
+  margin-left: auto;
 }
 
 @media (max-width: 767px) {
@@ -7700,24 +9116,20 @@ body {
 
 /* Combined gallery and note entry. Matches the approved preview. */
 .glimmer-page {
+  --glimmer-panel-transparent:
+    linear-gradient(
+      140deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 48%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
   position: relative;
   isolation: isolate;
   min-height: 100vh;
   overflow-x: hidden;
-  color: #3f3342;
-  padding: 6.8rem clamp(16px, 3vw, 46px) 64px;
-  background:
-    linear-gradient(132deg, rgba(255, 246, 250, 0.9), rgba(255, 255, 255, 0) 34%),
-    linear-gradient(208deg, rgba(236, 252, 248, 0.78), rgba(255, 255, 255, 0) 38%),
-    linear-gradient(28deg, rgba(246, 241, 255, 0.74), rgba(255, 255, 255, 0) 42%),
-    repeating-linear-gradient(
-      0deg,
-      rgba(208, 222, 232, 0.12) 0,
-      rgba(208, 222, 232, 0.12) 1px,
-      transparent 1px,
-      transparent 4.8rem
-    ),
-    linear-gradient(180deg, #ffffff 0%, #fffafb 44%, #f8fffc 100%);
+  color: #304759;
+  padding: 6.6rem clamp(16px, 3vw, 46px) 64px;
+  background: #eefcff;
 }
 
 .glimmer-page::before {
@@ -7727,60 +9139,22 @@ body {
   inset: 0;
   z-index: 0;
   background:
-    linear-gradient(112deg, transparent 0 18%, rgba(255, 214, 232, 0.18) 18.2%, transparent 19.2% 46%, rgba(204, 239, 229, 0.18) 46.4%, transparent 47.4% 71%, rgba(226, 214, 255, 0.16) 71.4%, transparent 72.4%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(236, 254, 255, 0.72) 76%, rgba(247, 255, 255, 0.9)),
     repeating-linear-gradient(
       118deg,
-      rgba(233, 206, 220, 0.12) 0,
-      rgba(233, 206, 220, 0.12) 1px,
+      rgba(103, 185, 209, 0.075) 0,
+      rgba(103, 185, 209, 0.075) 1px,
       transparent 1px,
       transparent 8.5rem
     );
-  opacity: 0.62;
+  opacity: 1;
 }
 
-.glimmer-page-bg,
 .glimmer-page-hero,
 .glimmer-albums,
 .glimmer-notes {
   position: relative;
-  z-index: 1;
-}
-
-.glimmer-page-bg {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.glimmer-page-glow {
-  position: absolute;
-  display: block;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 178, 211, 0.28), rgba(190, 232, 222, 0.28), rgba(206, 220, 255, 0.22), transparent);
-  opacity: 0.5;
-}
-
-.glimmer-page-glow--rose {
-  right: 9vw;
-  top: 8.8rem;
-  width: 17rem;
-  transform: rotate(-9deg);
-}
-
-.glimmer-page-glow--mint {
-  left: 11vw;
-  top: 20rem;
-  width: 13rem;
-  transform: rotate(8deg);
-}
-
-.glimmer-page-glow--sun {
-  right: 20vw;
-  bottom: 7rem;
-  width: 15rem;
-  transform: rotate(5deg);
+  z-index: 2;
 }
 
 .glimmer-page-hero,
@@ -7788,6 +9162,32 @@ body {
 .glimmer-notes {
   width: min(100%, 1120px);
   margin-inline: auto;
+}
+
+.glimmer-page-hero.seasonal-hero--summer {
+  display: flex;
+  min-height: clamp(22rem, 44vh, 34rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+  backdrop-filter: none;
+}
+
+.glimmer-page-hero.seasonal-hero--summer::before,
+.glimmer-page-hero.seasonal-hero--summer::after {
+  content: none;
+}
+
+.glimmer-page-hero.seasonal-hero--summer .seasonal-hero__kicker {
+  color: rgba(48, 97, 118, 0.78);
+  text-shadow:
+    0 0.22rem 0.95rem rgba(255, 255, 255, 0.58),
+    0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .glimmer-page-hero h1 {
@@ -7799,6 +9199,15 @@ body {
   letter-spacing: 0;
   line-height: 1.08;
   text-align: left;
+}
+
+.glimmer-page-hero.seasonal-hero--summer h1 {
+  color: rgba(37, 74, 93, 0.96);
+  font-size: clamp(50px, 7vw, 92px);
+  text-align: center;
+  text-shadow:
+    0 0.65rem 1.8rem rgba(255, 255, 255, 0.5),
+    0 0 1px rgba(255, 255, 255, 0.7);
 }
 
 .glimmer-page-subtitle {
@@ -7814,18 +9223,48 @@ body {
   background: linear-gradient(180deg, transparent 58%, rgba(255, 214, 232, 0.5) 58%);
 }
 
-.glimmer-albums {
-  margin-top: clamp(30px, 4vw, 50px);
+.glimmer-page-hero.seasonal-hero--summer .glimmer-page-subtitle {
+  max-width: 640px;
+  margin-top: 1.05rem;
+  color: rgba(43, 80, 98, 0.88);
+  text-align: center;
+  background: transparent;
+  text-shadow:
+    0 0.45rem 1.2rem rgba(255, 255, 255, 0.62),
+    0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+.glimmer-albums,
+.glimmer-notes {
+  position: relative;
+  overflow: hidden;
   padding: clamp(18px, 2.4vw, 28px);
-  border: 1px solid rgba(255, 180, 214, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(255, 246, 250, 0.48)),
-    rgba(255, 255, 255, 0.5);
-  box-shadow:
-    0 0.85rem 2.2rem rgba(188, 137, 165, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(15px) saturate(1.2);
+  background: var(--glimmer-panel-transparent);
+  background-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1rem 2.4rem rgba(49, 98, 116, 0.04);
+  backdrop-filter: none;
+}
+
+.glimmer-albums::before,
+.glimmer-notes::before {
+  content: none;
+}
+
+.glimmer-albums::after,
+.glimmer-notes::after {
+  content: none;
+}
+
+.glimmer-albums > *,
+.glimmer-notes > * {
+  position: relative;
+  z-index: 1;
+}
+
+.glimmer-albums {
+  margin-top: clamp(8px, 1.2vw, 18px);
 }
 
 .glimmer-section-head {
@@ -7838,14 +9277,14 @@ body {
 
 .glimmer-section-head h2 {
   margin: 0;
-  color: #655569;
+  color: #405a68;
   font-family: "ZCOOL XiaoWei", "KaiTi", "STKaiti", "Microsoft YaHei", serif;
   font-size: clamp(28px, 3vw, 40px);
   font-weight: 500;
 }
 
 .glimmer-section-head span {
-  color: #b991a0;
+  color: rgba(46, 134, 161, 0.72);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -7916,7 +9355,7 @@ body {
 }
 
 .glimmer-notes {
-  margin-top: clamp(34px, 5vw, 64px);
+  margin-top: clamp(28px, 4vw, 52px);
 }
 
 .glimmer-notes-grid {
