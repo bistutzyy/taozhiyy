@@ -25,13 +25,6 @@ const BiliHubPage = () => (
           <path fill="#f8e7cf" d="M1440 108C1680 156 1920 156 2160 108S2640 60 2880 108V240H1440Z" />
         </svg>
       </div>
-      <span className="autumn-recipes-leaf-layer">
-        <i className="autumn-recipes-leaf autumn-recipes-leaf--yellow autumn-recipes-leaf--one" />
-        <i className="autumn-recipes-leaf autumn-recipes-leaf--yellow autumn-recipes-leaf--two" />
-        <i className="autumn-recipes-leaf autumn-recipes-leaf--yellow autumn-recipes-leaf--three" />
-        <i className="autumn-recipes-leaf autumn-recipes-leaf--yellow autumn-recipes-leaf--four" />
-        <i className="autumn-recipes-leaf autumn-recipes-leaf--yellow autumn-recipes-leaf--five" />
-      </span>
     </div>
 
     <div className="autumn-recipes-shell">
