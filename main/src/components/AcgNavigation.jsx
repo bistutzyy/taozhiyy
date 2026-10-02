@@ -6,6 +6,7 @@ import {
   makePosterDataUri,
   resolveCoverSrc,
 } from "../lib/posterPlaceholder";
+import { preloadBangumiList } from "../lib/homeWarmup.js";
 import { getBangumiList } from "../services/acgApi";
 
 const BANGUMI_CARD =
@@ -104,7 +105,7 @@ const AcgNavigation = () => {
     (async () => {
       setLoading(true);
       setBangumiExpanded(false);
-      const bangumi = await getBangumiList();
+      const bangumi = await preloadBangumiList();
       if (!cancelled) {
         setBangumiList(Array.isArray(bangumi) ? bangumi : []);
         setLoading(false);

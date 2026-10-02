@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import SeasonLoader from "../components/SeasonLoader";
 import ServerInfoPanel from "../components/ServerInfoPanel";
+import { peekAboutPreview } from "../lib/homeWarmup.js";
 import { rewriteAboutPreviewAssets } from "./aboutPreviewAssets.js";
 
 const ABOUT_PREVIEW_URL = "/about-preview.html";
@@ -189,11 +189,21 @@ const AboutSitePage = () => {
     setServerStatusReady(false);
     shadow.innerHTML = "";
 
-    fetch(getAboutPreviewUrl(), { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.text();
-      })
+    const warmed = peekAboutPreview();
+    const htmlPromise = warmed
+      ? warmed.then((html) => {
+          if (html) return html;
+          return fetch(getAboutPreviewUrl(), { cache: "no-store" }).then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.text();
+          });
+        })
+      : fetch(getAboutPreviewUrl(), { cache: "no-store" }).then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.text();
+        });
+
+    htmlPromise
       .then((html) => {
         if (!alive) return;
         shadow.innerHTML = prepareMarkup(html);
@@ -231,7 +241,6 @@ const AboutSitePage = () => {
 
   return (
     <section className="about-route-page seasonal-page seasonal-page--spring" aria-label="关于我">
-      <SeasonLoader season="spring" />
       <div className="seasonal-scene seasonal-scene--spring" aria-hidden="true">
         <span className="spring-petal spring-petal--one" />
         <span className="spring-petal spring-petal--two" />
