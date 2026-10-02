@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import SeasonLoader from "../components/SeasonLoader";
 import { galleryAlbums } from "../data/galleryAlbums";
 import { moments } from "../data/moments";
 
@@ -13,7 +12,6 @@ const momentDateTime = (moment) => {
 
 const GlimmerPage = () => (
   <div className="glimmer-page seasonal-page seasonal-page--summer">
-    <SeasonLoader season="summer" />
     <div className="seasonal-scene seasonal-scene--summer" aria-hidden="true">
       <div className="summer-ocean-stage">
         <div className="summer-ocean-media">

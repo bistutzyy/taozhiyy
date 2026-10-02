@@ -1,9 +1,7 @@
 import AcgNavigation from "../components/AcgNavigation";
-import SeasonLoader from "../components/SeasonLoader";
 
 const BiliHubPage = () => (
   <div className="bili-hub-page seasonal-page seasonal-page--autumn relative min-h-screen overflow-hidden px-3 pb-20 pt-24">
-    <SeasonLoader season="autumn" />
     <div
       className="bili-hub-backdrop pointer-events-none fixed inset-0 -z-10"
       aria-hidden
