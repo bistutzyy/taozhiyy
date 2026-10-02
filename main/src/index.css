@@ -4104,6 +4104,10 @@ body {
   background: #fff8f1;
 }
 
+.about-route-page.seasonal-page--spring {
+  background: #fff8f1;
+}
+
 .about-route-shadow {
   display: block;
   width: 100%;
@@ -4656,7 +4660,7 @@ body {
   inset: 0;
   min-height: 100dvh;
   overflow: hidden;
-  opacity: 0.92;
+  background-color: #f4f8f8;
   filter: saturate(0.9) contrast(0.96);
 }
 
