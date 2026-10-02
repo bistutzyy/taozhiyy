@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FiCopy, FiExternalLink } from "react-icons/fi";
 
 import FriendsApplicationBoard from "../components/FriendsApplicationBoard";
+import SeasonLoader from "../components/SeasonLoader";
 import { friendCards } from "../data/friendCards";
 import { cosAsset } from "../lib/cosAsset.js";
 
@@ -63,6 +64,7 @@ const FriendsPage = () => {
 
   return (
     <section className="friends-page seasonal-page seasonal-page--winter relative min-h-screen overflow-hidden pb-24 pt-20 text-[#2B2B2B] md:pt-24">
+      <SeasonLoader season="winter" />
       <div className="seasonal-scene seasonal-scene--winter" aria-hidden="true">
         <span className="winter-snowfall-field">
           {winterSnowflakes.map((snowflake) => (

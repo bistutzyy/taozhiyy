@@ -9860,3 +9860,142 @@ body {
     transform: rotate(-1.5deg);
   }
 }
+
+.season-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.season-loader.is-out {
+  transform: translateY(-100%);
+  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.season-loader.is-fade .season-loader__inner {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.season-loader__motif {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.season-loader__inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.season-loader__kicker {
+  margin: 0;
+  letter-spacing: 0.28em;
+  font-size: 12px;
+}
+
+.season-loader__avatar {
+  width: 5.6rem;
+  height: 5.6rem;
+  margin: 16px auto 0;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 12px 28px rgba(60, 40, 30, 0.12);
+}
+
+.season-loader__track {
+  width: min(220px, 56vw);
+  height: 2px;
+  margin: 26px auto 0;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(80, 60, 50, 0.12);
+}
+
+.season-loader__track i {
+  display: block;
+  height: 100%;
+  width: 0;
+}
+
+.season-loader__count {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 2px;
+  margin: 16px 0 0;
+  font-size: 48px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.season-loader__count span {
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.55;
+}
+
+.season-loader--spring { background: #fff8f1; color: #6a4e57; }
+.season-loader--spring .season-loader__track i { background: #ff7fa3; }
+.season-loader--summer { background: #f4f8f8; color: #254a5d; }
+.season-loader--summer .season-loader__track i { background: #7ec8d4; }
+.season-loader--autumn { background: linear-gradient(180deg, #fffaf6, #fff3e6); color: #6b5144; }
+.season-loader--autumn .season-loader__track i { background: #e0a15a; }
+.season-loader--winter { background: linear-gradient(180deg, #fbfdff, #f3f8ff); color: #2d4050; }
+.season-loader--winter .season-loader__track i { background: #8eb8dc; }
+
+.season-loader__petal {
+  position: absolute;
+  top: -8vh;
+  width: 14px;
+  height: 9px;
+  border-radius: 70% 12% 70% 18%;
+  background: linear-gradient(135deg, #ffb7cb, #fff1f5);
+  animation: seasonLoaderPetal 7s linear infinite;
+}
+
+.season-loader__wave {
+  position: absolute;
+  left: 0;
+  width: 200%;
+  animation: seasonLoaderSwell 16s linear infinite;
+}
+
+.season-loader__wave svg,
+.season-loader__wave {
+  display: block;
+  height: 100%;
+}
+
+.season-loader__wave--back { bottom: 8%; height: 150px; opacity: 0.8; }
+.season-loader__wave--front {
+  bottom: -4%;
+  height: 180px;
+  animation-duration: 12s;
+  animation-direction: reverse;
+}
+
+.season-loader .winter-floating-snow {
+  position: absolute;
+}
+
+@keyframes seasonLoaderPetal {
+  to { transform: translateY(110vh) rotate(180deg); }
+}
+
+@keyframes seasonLoaderSwell {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .season-loader__petal,
+  .season-loader__wave,
+  .season-loader .winter-floating-snow {
+    animation: none;
+  }
+}

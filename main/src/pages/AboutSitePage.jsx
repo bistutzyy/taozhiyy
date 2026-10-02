@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import SeasonLoader from "../components/SeasonLoader";
 import ServerInfoPanel from "../components/ServerInfoPanel";
 import { rewriteAboutPreviewAssets } from "./aboutPreviewAssets.js";
 
@@ -230,6 +231,7 @@ const AboutSitePage = () => {
 
   return (
     <section className="about-route-page seasonal-page seasonal-page--spring" aria-label="关于我">
+      <SeasonLoader season="spring" />
       <div className="seasonal-scene seasonal-scene--spring" aria-hidden="true">
         <span className="spring-petal spring-petal--one" />
         <span className="spring-petal spring-petal--two" />
