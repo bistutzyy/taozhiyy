@@ -21,7 +21,7 @@ const GlimmerPage = () => (
             autoPlay
             loop
             muted
-            poster={`${OCEAN_ASSET_BASE}/ocean.png`}
+            preload="auto"
           >
             <source src={`${OCEAN_ASSET_BASE}/ocean.mp4`} type="video/mp4" />
             <source src={`${OCEAN_ASSET_BASE}/ocean.webm`} type="video/webm" />

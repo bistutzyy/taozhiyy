@@ -143,16 +143,7 @@ const AcgNavigation = () => {
           </h2>
         </header>
 
-        {loading ? (
-          <div className="bangumi-mini-grid grid grid-cols-[repeat(auto-fill,minmax(150px,180px))] justify-start gap-5 p-2">
-            {[0, 1, 2, 3].map((k) => (
-              <div
-                key={k}
-                className="h-64 animate-pulse rounded-2xl border border-white/60 bg-white/40 backdrop-blur-md"
-              />
-            ))}
-          </div>
-        ) : (
+        {!loading && (
           <>
             <div ref={bangumiSectionRef} className="mb-12 scroll-mt-28 px-1">
               <SectionTitle accent="#7C5CFF">追番大追击</SectionTitle>

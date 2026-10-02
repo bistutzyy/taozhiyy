@@ -186,7 +186,7 @@ const AboutSitePage = () => {
     let cleanup = () => {};
 
     setServerStatusReady(false);
-    shadow.innerHTML = '<div class="about-route-loading">正在打开关于本站...</div>';
+    shadow.innerHTML = "";
 
     fetch(getAboutPreviewUrl(), { cache: "no-store" })
       .then((res) => {

@@ -252,6 +252,19 @@ test("gives the autumn preview a light autumn recipes inspired background", () =
   assert.doesNotMatch(cssSource, /\.autumn-shiro|\.autumn-paper-grid|\.autumn-floating-note|\.autumn-aurora/);
 });
 
+test("does not flash an opening veil on the spring summer or autumn pages", () => {
+  const aboutSource = readSource("pages/AboutSitePage.jsx");
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
+  const acgSource = readSource("components/AcgNavigation.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.doesNotMatch(aboutSource, /正在打开关于本站/);
+  assert.doesNotMatch(glimmerSource, /poster=/);
+  assert.doesNotMatch(acgSource, /animate-pulse/);
+  assert.match(cssSource, /\.summer-ocean-stage\s*\{[\s\S]*?background-color:\s*#f4f8f8/);
+  assert.match(cssSource, /\.about-route-page\.seasonal-page--spring\s*\{[\s\S]*?background:\s*#fff8f1/);
+});
+
 test("gives the bili page an autumn wave background in the summer ocean motion", () => {
   const biliSource = readSource("pages/BiliHubPage.jsx");
   const cssSource = readSource("index.css");
