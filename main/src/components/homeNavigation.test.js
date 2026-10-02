@@ -252,6 +252,26 @@ test("gives the autumn preview a light autumn recipes inspired background", () =
   assert.doesNotMatch(cssSource, /\.autumn-shiro|\.autumn-paper-grid|\.autumn-floating-note|\.autumn-aurora/);
 });
 
+test("opens each season with the homepage avatar and keeps the season word", () => {
+  const loaderSource = readSource("components/SeasonLoader.jsx");
+  const aboutSource = readSource("pages/AboutSitePage.jsx");
+  const glimmerSource = readSource("pages/GlimmerPage.jsx");
+  const biliSource = readSource("pages/BiliHubPage.jsx");
+  const friendsSource = readSource("pages/FriendsPage.jsx");
+
+  assert.match(aboutSource, /<SeasonLoader season="spring" \/>/);
+  assert.match(glimmerSource, /<SeasonLoader season="summer" \/>/);
+  assert.match(biliSource, /<SeasonLoader season="autumn" \/>/);
+  assert.match(friendsSource, /<SeasonLoader season="winter" \/>/);
+  assert.match(loaderSource, /img\/logo\.png/);
+  assert.match(loaderSource, /SPRING/);
+  assert.match(loaderSource, /SUMMER/);
+  assert.match(loaderSource, /AUTUMN/);
+  assert.match(loaderSource, /WINTER/);
+  assert.match(loaderSource, /winter-floating-snow/);
+  assert.doesNotMatch(loaderSource, /关于|浮光|哔哩|友链/);
+});
+
 test("does not flash an opening veil on the spring summer or autumn pages", () => {
   const aboutSource = readSource("pages/AboutSitePage.jsx");
   const glimmerSource = readSource("pages/GlimmerPage.jsx");
