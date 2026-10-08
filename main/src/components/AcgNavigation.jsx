@@ -13,7 +13,7 @@ const BANGUMI_CARD =
   "bangumi-mini-card autumn-recipe-card group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#7C5CFF]/15 bg-white/50 shadow-[0_8px_28px_rgba(124,92,255,0.08)] backdrop-blur-xl transition-all duration-300 hover:border-[#FF6BAA]/35 hover:shadow-[0_12px_34px_rgba(255,107,170,0.12)] active:border-[#00C2FF]/40";
 
 const CANDY_BTN =
-  "inline-block w-fit rounded-full border border-[#7C5CFF]/45 bg-white/30 px-3 py-1.5 font-mono text-[10px] uppercase text-[#7C5CFF] backdrop-blur-sm transition-all duration-300 hover:border-[#7C5CFF] hover:bg-[#7C5CFF] hover:text-white active:scale-[0.98]";
+  "mt-auto inline-block w-fit rounded-full border border-[#7C5CFF]/45 bg-white/30 px-3 py-1.5 font-mono text-[10px] uppercase text-[#7C5CFF] backdrop-blur-sm transition-all duration-300 hover:border-[#7C5CFF] hover:bg-[#7C5CFF] hover:text-white active:scale-[0.98]";
 
 const MOBILE_BANGUMI_LIMIT = 3;
 
@@ -68,12 +68,12 @@ const BangumiCard = ({ item }) => (
           href={item.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${CANDY_BTN} mt-4`}
+          className={CANDY_BTN}
         >
           Let&apos;s watch
         </a>
       ) : (
-        <button type="button" className={`${CANDY_BTN} mt-4`}>
+        <button type="button" className={CANDY_BTN}>
           Let&apos;s watch
         </button>
       )}
