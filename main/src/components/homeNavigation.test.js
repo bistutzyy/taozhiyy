@@ -102,6 +102,7 @@ test("removes the bili seasonal hero copy and proportionally scales the original
   assert.match(acgSource, /bangumi-mini-card/);
   assert.match(acgSource, /rounded-2xl/);
   assert.match(acgSource, /repeat\(auto-fill,\s*minmax\(150px,\s*180px\)\)/);
+  assert.match(acgSource, /CANDY_BTN\s*=[\s\S]*?mt-auto/);
   assert.doesNotMatch(acgSource, /bangumi-polaroid/);
   assert.match(cssSource, /\.bangumi-mini-grid/);
   assert.match(cssSource, /\.bangumi-mini-card/);
@@ -402,6 +403,13 @@ test("moves server status into the about page in place of the sites section", ()
   assert.match(aboutPageSource, /<ServerInfoPanel \/>/);
   assert.match(aboutPageSource, /slot="server-status"/);
   assert.doesNotMatch(trafficSource, /ServerInfoPanel/);
+});
+
+test("keeps the about preview loading state silent", () => {
+  const aboutPageSource = readSource("pages/AboutSitePage.jsx");
+
+  assert.doesNotMatch(aboutPageSource, /正在打开关于本站/);
+  assert.match(aboutPageSource, /shadow\.innerHTML\s*=\s*""/);
 });
 
 test("keeps the about preview production-safe", () => {

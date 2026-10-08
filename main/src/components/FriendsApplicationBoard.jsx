@@ -21,10 +21,8 @@ import {
 } from "./friendsApplicationThreads";
 
 const FRIENDS_CHANNEL = "friends";
-const FRIENDS_COMMENT_COLUMNS = 3;
-const FRIENDS_COMMENT_ROWS = 2;
 const FRIENDS_COMMENT_FETCH_SIZE = 50;
-const FRIENDS_COMMENT_PAGE = FRIENDS_COMMENT_COLUMNS * FRIENDS_COMMENT_ROWS;
+const FRIENDS_COMMENT_PAGE = 6;
 const FRIEND_COMMENT_MAX_LENGTH = 500;
 const FRIEND_REPLY_MAX_LENGTH = 300;
 
@@ -32,19 +30,15 @@ const FRIEND_COMMENT_PLACEHOLDER =
   "写下你的留言、站点介绍，或者想对桃之夭夭说的话...";
 
 const FRIEND_COMMENT_TONES = [
-  "border-[#FFE066]/80 bg-[#FFF9DB]/80",
-  "border-[#A5D8FF]/80 bg-[#F3FAFF]/85",
-  "border-[#FFC9C9]/80 bg-[#FFF0F6]/85",
-  "border-[#B2F2BB]/80 bg-[#EBFBEE]/85",
-  "border-[#D0BFFF]/80 bg-[#F3F0FF]/85",
+  "friends-comment-card--blue",
+  "friends-comment-card--violet",
+  "friends-comment-card--mint",
+  "friends-comment-card--rose",
+  "friends-comment-card--gold",
 ];
 
-const commentToneClass = (index) => {
-  if (FRIEND_COMMENT_TONES.length % FRIENDS_COMMENT_COLUMNS !== 0) {
-    return FRIEND_COMMENT_TONES[index % FRIEND_COMMENT_TONES.length];
-  }
-  return FRIEND_COMMENT_TONES[(index + 1) % FRIEND_COMMENT_TONES.length];
-};
+const commentToneClass = (index) =>
+  FRIEND_COMMENT_TONES[index % FRIEND_COMMENT_TONES.length];
 
 const nameFromUser = (user) => {
   const displayName = user?.displayName?.trim();
@@ -82,31 +76,28 @@ const expandedStateForFriendsThreads = (items = []) =>
     items.map((item) => [item.id, (item.replyCount || 0) > 0]),
   );
 
-const visibleFriendsEntries = (items = [], steps = 1) => {
-  const equalCount = items.length - (items.length % FRIENDS_COMMENT_COLUMNS);
-  const requested = Math.max(steps, 1) * FRIENDS_COMMENT_PAGE;
-  const visibleEqual = Math.min(requested, equalCount);
-  const includeRemainder =
-    items.length > equalCount &&
-    requested > equalCount &&
-    (steps > 1 || equalCount === 0);
-  return items.slice(0, includeRemainder ? items.length : visibleEqual);
-};
+const visibleFriendsEntries = (items = [], steps = 1) =>
+  items.slice(0, Math.max(steps, 1) * FRIENDS_COMMENT_PAGE);
 
-const CommentAvatar = ({ item, name }) => {
+const CommentAvatar = ({ item, name, compact = false }) => {
   const avatar = item?.avatar;
   const label = name || item?.nickname || "友链伙伴";
 
   return (
-    <div className="shrink-0">
+    <div
+      className={clsx(
+        "friends-comment-avatar",
+        compact && "friends-comment-avatar--reply",
+      )}
+    >
       {avatar ? (
         <img
           src={avatar}
           alt={label}
-          className="h-12 w-12 rounded-full border-2 border-white object-cover shadow-[0_10px_24px_rgba(95,75,82,0.14)]"
+          className="friends-comment-avatar__image"
         />
       ) : (
-        <div className="grid h-12 w-12 place-items-center rounded-full border-2 border-white bg-[linear-gradient(135deg,#FFE8A3,#A5D8FF)] text-sm font-black text-[#5F4B52] shadow-[0_10px_24px_rgba(95,75,82,0.14)]">
+        <div className="friends-comment-avatar__fallback">
           {avatarInitial(label)}
         </div>
       )}
@@ -318,7 +309,7 @@ const FriendsApplicationBoard = () => {
             </h2>
           </div>
           <p className="text-sm font-semibold text-[#7B5C61]">
-            {visibleEntries.length} 条留言
+            {commentTotal || visibleEntries.length} 条留言
           </p>
         </div>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-[#6B7280]">
@@ -428,7 +419,7 @@ const FriendsApplicationBoard = () => {
       )}
 
       {visibleEntries.length > 0 && (
-        <div className="friends-comments-even relative left-1/2 mt-8 grid w-[96.625rem] max-w-none -translate-x-1/2 grid-cols-3 items-stretch gap-5">
+        <div className="friends-comments-timeline mt-8">
         {visibleEntries.map((item, index) => {
           const tone = commentToneClass(index);
           const isExpanded = !!expandedThreads[item.id];
@@ -441,15 +432,15 @@ const FriendsApplicationBoard = () => {
             <article
               key={item.id}
               className={clsx(
-                "flex h-full",
-                activeReplyInThread ? "relative z-40" : "relative z-0",
+                "friends-comment-thread",
+                activeReplyInThread && "friends-comment-thread--active",
               )}
             >
-              <div className="flex h-full w-full items-start gap-3 md:gap-4">
+              <div className="contents">
                 <CommentAvatar item={item} />
                 <div
                   className={clsx(
-                    "flex h-full min-w-0 flex-1 flex-col rounded-[22px] border p-4 shadow-[0_14px_32px_rgba(95,75,82,0.08)] backdrop-blur md:p-5",
+                    "friends-comment-card",
                     tone,
                   )}
                 >
@@ -565,7 +556,7 @@ const FriendsApplicationBoard = () => {
                 )}
 
                 {isExpanded && replies.length > 0 && (
-                  <div className="mt-4 space-y-3 border-l-4 border-white/80 pl-4">
+                  <div className="friends-comment-replies">
                     {replies.map((reply) => {
                       const isReplyingToReply = replyTargetId === reply.id;
                       const replyOffset =
@@ -575,14 +566,14 @@ const FriendsApplicationBoard = () => {
                         <div
                           key={reply.id}
                           className={clsx(
-                            "space-y-3",
-                            isReplyingToReply && "relative z-30",
+                            "friends-comment-reply",
+                            isReplyingToReply && "friends-comment-reply--active",
                           )}
-                          style={{ marginLeft: replyOffset }}
+                          style={{ "--reply-indent": `${replyOffset}px` }}
                         >
-                          <div className="flex items-start gap-3">
-                            <CommentAvatar item={reply} />
-                            <div className="min-w-0 flex-1 rounded-[18px] border border-white/70 bg-white/58 p-4">
+                          <div className="contents">
+                            <CommentAvatar item={reply} compact />
+                            <div className="friends-comment-reply-card">
                               <div className="flex items-start justify-between gap-3">
                                 <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#8A7C74]">
                                   <span className="font-bold text-[#5F4B52]">
@@ -616,7 +607,7 @@ const FriendsApplicationBoard = () => {
                           </div>
 
                           {isReplyingToReply && (
-                            <div className="relative z-30 rounded-[18px] border border-white/70 bg-white/54 p-4 sm:ml-[60px]">
+                            <div className="friends-comment-reply-form relative z-30 rounded-[18px] border border-white/70 bg-white/54 p-4">
                               {!user ? (
                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                   <p className="text-sm text-[#6B7280]">
@@ -691,7 +682,7 @@ const FriendsApplicationBoard = () => {
       )}
 
       {!loading && hasHiddenComments && (
-        <div className="relative left-1/2 mt-5 flex w-[96.625rem] max-w-none -translate-x-1/2 flex-col items-center gap-2">
+        <div className="friends-comments-more mt-5 flex flex-col items-center gap-2">
           <button
             type="button"
             onClick={() => setVisibleSteps((steps) => steps + 1)}
