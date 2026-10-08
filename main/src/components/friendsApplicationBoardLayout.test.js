@@ -48,6 +48,24 @@ test("shows friend comments as a single glass timeline", () => {
   assert.doesNotMatch(source, /w-\[96\.625rem\]/);
 });
 
+test("themes the friend comment boxes for winter without copying the link panel", () => {
+  const source = readSource("components/FriendsApplicationBoard.jsx");
+  const cssSource = readSource("index.css");
+
+  assert.match(source, /friends-comment-form-panel/);
+  assert.match(source, /friends-comment-form-note/);
+  assert.match(cssSource, /\.friends-comment-form-panel/);
+  assert.match(cssSource, /\.friends-comment-form-note/);
+  assert.match(cssSource, /\.friends-comment-card\s*\{[\s\S]*?--friend-comment-paper/);
+  assert.match(cssSource, /\.friends-comment-card\s*\{[\s\S]*?--friend-comment-ice/);
+  assert.match(cssSource, /\.friends-comment-card::after/);
+  assert.match(cssSource, /\.friends-comment-reply-card\s*\{[\s\S]*?--friend-comment-paper/);
+  assert.doesNotMatch(
+    cssSource,
+    /\.friends-comment-card\s*\{[\s\S]*?friends-winter-link-panel/,
+  );
+});
+
 test("mixes friend comment cards across a palette that does not repeat every column", () => {
   const source = readSource("components/FriendsApplicationBoard.jsx");
   const cssSource = readSource("index.css");

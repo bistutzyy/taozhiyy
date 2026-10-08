@@ -326,9 +326,9 @@ const FriendsApplicationBoard = () => {
 
       <form onSubmit={onSubmit} className="relative z-20 mx-auto mt-6 max-w-[920px]">
         <div>
-          <div className="min-w-0 flex-1 rounded-[22px] border border-[#D8E9F8] bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(241,248,255,0.72))] p-4 shadow-[0_16px_36px_rgba(95,75,82,0.08)] backdrop-blur md:p-5">
+          <div className="friends-comment-form-panel min-w-0 flex-1 rounded-[22px] border border-[#D8E9F8] bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(241,248,255,0.72))] p-4 shadow-[0_16px_36px_rgba(95,75,82,0.08)] backdrop-blur md:p-5">
             <div className="mb-4">
-              <div className="mb-3 flex flex-col gap-3 rounded-[16px] border border-dashed border-[#D8E9F8] bg-white/65 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="friends-comment-form-note mb-3 flex flex-col gap-3 rounded-[16px] border border-dashed border-[#D8E9F8] bg-white/65 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm leading-7 text-[#6B7280]">
                   {user
                     ? `当前以 ${displayName} 身份登录，友链留言仍需要填写公开昵称和私密邮箱。`

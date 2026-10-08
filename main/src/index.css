@@ -6571,6 +6571,42 @@ body {
   gap: clamp(1.15rem, 2.4vw, 1.9rem);
 }
 
+.friends-comment-form-panel {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(137, 188, 225, 0.42) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.96), transparent 30%),
+    radial-gradient(circle at 92% 22%, rgba(187, 225, 252, 0.32), transparent 28%),
+    linear-gradient(135deg, rgba(250, 253, 255, 0.9), rgba(232, 245, 253, 0.7)) !important;
+  box-shadow:
+    0 1.15rem 2.8rem rgba(83, 128, 171, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.friends-comment-form-panel::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 0 32%, rgba(255, 255, 255, 0.36) 32% 33%, transparent 33% 66%, rgba(142, 191, 226, 0.13) 66% 67%, transparent 67%),
+    repeating-linear-gradient(0deg, rgba(121, 174, 213, 0.08) 0 1px, transparent 1px 2.15rem);
+  opacity: 0.8;
+}
+
+.friends-comment-form-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.friends-comment-form-note {
+  border-color: rgba(143, 191, 226, 0.42) !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.74), rgba(235, 248, 255, 0.52)) !important;
+  color: rgba(62, 84, 111, 0.86);
+}
+
 .friends-comment-thread {
   display: grid;
   grid-template-columns: clamp(3.3rem, 5vw, 4.7rem) minmax(0, 1fr);
@@ -6633,21 +6669,25 @@ body {
 .friends-comment-card,
 .friends-comment-reply-card {
   --friend-comment-accent: 116, 192, 252;
+  --friend-comment-paper: rgba(246, 252, 255, 0.78);
+  --friend-comment-ice: rgba(134, 190, 229, 0.34);
   position: relative;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid rgba(var(--friend-comment-accent), 0.38);
+  border: 1px solid var(--friend-comment-ice);
   background:
-    radial-gradient(circle at 88% 16%, rgba(var(--friend-comment-accent), 0.24), transparent 22%),
-    linear-gradient(135deg, rgba(37, 43, 65, 0.68), rgba(93, 91, 122, 0.5));
-  color: rgba(249, 252, 255, 0.93);
+    radial-gradient(circle at 92% 14%, rgba(var(--friend-comment-accent), 0.18), transparent 24%),
+    linear-gradient(135deg, var(--friend-comment-paper), rgba(229, 244, 253, 0.54));
+  color: rgba(44, 66, 92, 0.94);
   box-shadow:
-    0 1.2rem 3.2rem rgba(28, 36, 58, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(18px);
+    0 1.15rem 2.9rem rgba(64, 111, 154, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
 }
 
 .friends-comment-card {
+  --friend-comment-paper: rgba(246, 252, 255, 0.78);
+  --friend-comment-ice: rgba(134, 190, 229, 0.34);
   border-radius: 24px;
   padding: clamp(1rem, 2vw, 1.45rem);
 }
@@ -6658,34 +6698,46 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.13), transparent 42%),
-    radial-gradient(circle at 8% 100%, rgba(255, 255, 255, 0.1), transparent 28%);
+    linear-gradient(115deg, rgba(255, 255, 255, 0.52), transparent 34%),
+    repeating-linear-gradient(0deg, rgba(129, 178, 215, 0.08) 0 1px, transparent 1px 2rem);
+}
+
+.friends-comment-card::after {
+  content: "❄";
+  pointer-events: none;
+  position: absolute;
+  right: 1rem;
+  bottom: 0.75rem;
+  z-index: 1;
+  color: rgba(80, 149, 201, 0.24);
+  font-size: 1.15rem;
+  text-shadow: 0 0 0.85rem rgba(255, 255, 255, 0.95);
 }
 
 .friends-comment-card > * {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .friends-comment-card p,
 .friends-comment-card span,
 .friends-comment-card textarea {
-  color: rgba(248, 251, 255, 0.9);
+  color: rgba(54, 76, 102, 0.9);
 }
 
 .friends-comment-card p.mt-1,
 .friends-comment-card .text-\[\#9AA4B2\] {
-  color: rgba(225, 234, 246, 0.64);
+  color: rgba(91, 122, 150, 0.62);
 }
 
 .friends-comment-card .font-bold,
 .friends-comment-card .text-\[\#5F4B52\] {
-  color: rgba(126, 161, 255, 0.98);
+  color: rgba(53, 116, 165, 0.96);
 }
 
 .friends-comment-card .rounded-full {
-  border-color: rgba(255, 255, 255, 0.3);
-  background-color: rgba(255, 255, 255, 0.13);
+  border-color: rgba(137, 188, 225, 0.34);
+  background-color: rgba(255, 255, 255, 0.42);
 }
 
 .friends-comment-card--blue {
@@ -6713,7 +6765,7 @@ body {
   gap: 1rem;
   margin-top: 1.15rem;
   padding-left: clamp(0.9rem, 2vw, 1.4rem);
-  border-left: 4px solid rgba(255, 255, 255, 0.72);
+  border-left: 4px solid rgba(137, 188, 225, 0.42);
 }
 
 .friends-comment-reply {
@@ -6729,16 +6781,17 @@ body {
 }
 
 .friends-comment-reply-card {
+  --friend-comment-paper: rgba(255, 255, 255, 0.58);
   border-radius: 18px;
   padding: clamp(0.85rem, 1.6vw, 1rem);
   background:
-    radial-gradient(circle at 92% 20%, rgba(var(--friend-comment-accent), 0.2), transparent 24%),
-    linear-gradient(135deg, rgba(61, 67, 91, 0.54), rgba(112, 107, 137, 0.36));
+    radial-gradient(circle at 92% 20%, rgba(var(--friend-comment-accent), 0.16), transparent 24%),
+    linear-gradient(135deg, var(--friend-comment-paper), rgba(229, 244, 253, 0.38));
 }
 
 .friends-comment-reply-card p,
 .friends-comment-reply-card span {
-  color: rgba(242, 247, 255, 0.82);
+  color: rgba(63, 87, 113, 0.82);
 }
 
 .friends-comment-reply-form {
