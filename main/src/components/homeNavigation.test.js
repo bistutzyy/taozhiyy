@@ -253,29 +253,22 @@ test("gives the autumn preview a light autumn recipes inspired background", () =
   assert.doesNotMatch(cssSource, /\.autumn-shiro|\.autumn-paper-grid|\.autumn-floating-note|\.autumn-aurora/);
 });
 
-test("opens the homepage with the build figure and drops the four season loaders", () => {
-  const introSource = readSource("components/HomeIntro.jsx");
-  const warmupSource = readSource("lib/homeWarmup.js");
+test("opens the homepage without the startup animation overlay", () => {
   const homeSource = readSource("pages/HomePage.jsx");
   const aboutSource = readSource("pages/AboutSitePage.jsx");
   const glimmerSource = readSource("pages/GlimmerPage.jsx");
   const biliSource = readSource("pages/BiliHubPage.jsx");
   const friendsSource = readSource("pages/FriendsPage.jsx");
+  const warmupSource = readSource("lib/homeWarmup.js");
   const cssSource = readSource("index.css");
 
-  assert.match(homeSource, /<HomeIntro \/>/);
-  assert.match(warmupSource, /build\/hero\.png/);
-  assert.match(introSource, /等待中\.\.\./);
-  assert.match(introSource, /setEntering\(true\)/);
-  assert.match(introSource, /entering \? "开始进入中\.\.\." : "等待中\.\.\."/);
-  assert.match(introSource, /sessionStorage\.getItem\(HOME_INTRO_SEEN_KEY\)/);
-  assert.match(introSource, /sessionStorage\.setItem\(HOME_INTRO_SEEN_KEY,\s*"1"\)/);
-  assert.match(introSource, /useState\(\(\) => \(hasSeenHomeIntro\(\) \? "done" : "run"\)\)/);
-  assert.doesNotMatch(introSource, /欢迎！|logo\.png|破译/);
-  assert.match(cssSource, /@keyframes homeIntroLeaveLeft/);
-  assert.match(cssSource, /translate3d\(-100%, 0, 0\)/);
-  assert.match(cssSource, /translate3d\(100%, 0, 0\)/);
-  assert.doesNotMatch(cssSource, /translateY\(-100%\)/);
+  assert.equal(existsSync(resolve(sourceRoot, "components/HomeIntro.jsx")), false);
+  assert.doesNotMatch(warmupSource, /HOME_FIGURE_SRC|preloadHomeEntry|build\/hero\.png/);
+  assert.doesNotMatch(homeSource, /HomeIntro/);
+  assert.doesNotMatch(homeSource, /<HomeIntro \/>/);
+  assert.doesNotMatch(cssSource, /\.home-intro\b/);
+  assert.doesNotMatch(cssSource, /homeIntroLeaveLeft|homeIntroLeaveRight/);
+  assert.doesNotMatch(cssSource, /translate3d\(-100%, 0, 0\)|translate3d\(100%, 0, 0\)/);
   assert.doesNotMatch(aboutSource, /SeasonLoader/);
   assert.doesNotMatch(glimmerSource, /SeasonLoader/);
   assert.doesNotMatch(biliSource, /SeasonLoader/);
