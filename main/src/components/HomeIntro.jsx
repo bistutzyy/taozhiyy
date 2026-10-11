@@ -2,15 +2,42 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { HOME_FIGURE_SRC, preloadHomeEntry } from "../lib/homeWarmup.js";
 
+const HOME_INTRO_SEEN_KEY = "taozhiyy.homeIntro.seen";
+
+const hasSeenHomeIntro = () => {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.sessionStorage.getItem(HOME_INTRO_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const markHomeIntroSeen = () => {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(HOME_INTRO_SEEN_KEY, "1");
+  } catch {
+    // Storage can be unavailable in private or restricted browser contexts.
+  }
+};
+
 const HomeIntro = () => {
-  const [phase, setPhase] = useState("run");
+  const [phase, setPhase] = useState(() => (hasSeenHomeIntro() ? "done" : "run"));
   const [percent, setPercent] = useState(0);
   const [entering, setEntering] = useState(false);
 
   useEffect(() => {
+    if (hasSeenHomeIntro()) {
+      preloadHomeEntry();
+      setPhase("done");
+      return undefined;
+    }
+
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
       preloadHomeEntry();
+      markHomeIntroSeen();
       setPhase("done");
       return undefined;
     }
@@ -38,6 +65,7 @@ const HomeIntro = () => {
         return;
       }
       setEntering(true);
+      markHomeIntroSeen();
       openTimer = window.setTimeout(() => setPhase("open"), 700);
     };
     frame = requestAnimationFrame(step);
