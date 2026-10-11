@@ -56,10 +56,21 @@ test("themes the friend comment boxes for winter without copying the link panel"
   assert.match(source, /friends-comment-form-note/);
   assert.match(cssSource, /\.friends-comment-form-panel/);
   assert.match(cssSource, /\.friends-comment-form-note/);
+  const formPanelBlock = cssSource.match(
+    /\.friends-comment-form-panel\s*\{(?<rules>[\s\S]*?)\n\}/,
+  );
+  const commentCardBlock = cssSource.match(
+    /\.friends-comment-card,\s*\n\.friends-comment-reply-card\s*\{(?<rules>[\s\S]*?)\n\}/,
+  );
+  assert.ok(formPanelBlock, "missing friend comment form panel CSS");
+  assert.ok(commentCardBlock, "missing friend comment card CSS");
   assert.match(cssSource, /\.friends-comment-card\s*\{[\s\S]*?--friend-comment-paper/);
   assert.match(cssSource, /\.friends-comment-card\s*\{[\s\S]*?--friend-comment-ice/);
   assert.match(cssSource, /\.friends-comment-card::after/);
   assert.match(cssSource, /\.friends-comment-reply-card\s*\{[\s\S]*?--friend-comment-paper/);
+  assert.match(formPanelBlock.groups.rules, /overflow:\s*visible/);
+  assert.match(commentCardBlock.groups.rules, /overflow:\s*visible/);
+  assert.doesNotMatch(formPanelBlock.groups.rules, /overflow:\s*hidden/);
   assert.doesNotMatch(
     cssSource,
     /\.friends-comment-card\s*\{[\s\S]*?friends-winter-link-panel/,
