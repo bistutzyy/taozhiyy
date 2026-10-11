@@ -274,4 +274,11 @@ export const friendCards = [
     avatar: "https://img.lonelybing.top/file/%E5%A4%B4%E5%83%8F/1789400498937.jpg",
     note: "FRIEND",
   },
+  {
+    name: "RAGNote",
+    desc: "Life is code. I will debug it.",
+    url: "https://ragnote.top/",
+    avatar: "https://ragnote.top/Avatar.png",
+    note: "FRIEND",
+  },
 ];
