@@ -9,10 +9,17 @@ const readSource = (path) => readFileSync(resolve(sourceRoot, path), "utf8");
 
 test("raises the active friends reply thread above following cards for emoji panels", () => {
   const source = readSource("components/FriendsApplicationBoard.jsx");
+  const emojiSource = readSource("components/EmojiPicker.jsx");
+  const cssSource = readSource("index.css");
 
   assert.match(source, /activeReplyInThread/);
   assert.match(source, /activeReplyInThread\s*&&\s*"friends-comment-thread--active"/);
   assert.match(source, /isReplyingToReply\s*&&\s*"friends-comment-reply--active"/);
+  assert.match(
+    cssSource,
+    /\.friends-comment-card,\s*\r?\n\.friends-comment-reply-card\s*\{[^}]*overflow:\s*visible/,
+  );
+  assert.match(emojiSource, /z-\[90\]/);
 });
 
 test("loads every friends comment instead of five-item pages", () => {

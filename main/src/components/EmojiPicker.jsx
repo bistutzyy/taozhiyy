@@ -25,7 +25,7 @@ const EmojiPicker = ({ disabled = false, label = "添加表情", onPick }) => {
       {open && !disabled && (
         <div
           id={panelId}
-          className="absolute left-0 top-[calc(100%+10px)] z-30 w-[min(82vw,320px)] rounded-[22px] border border-[#F2E6C9] bg-white/95 p-3 shadow-[0_18px_44px_rgba(95,75,82,0.18)] backdrop-blur"
+          className="absolute left-0 top-[calc(100%+10px)] z-[90] w-[min(82vw,320px)] rounded-[22px] border border-[#F2E6C9] bg-white/95 p-3 shadow-[0_18px_44px_rgba(95,75,82,0.18)] backdrop-blur"
         >
           <p className="mb-2 px-1 text-xs font-bold text-[#8A7C74]">
             选择表情
