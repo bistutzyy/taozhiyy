@@ -268,6 +268,9 @@ test("opens the homepage with the build figure and drops the four season loaders
   assert.match(introSource, /等待中\.\.\./);
   assert.match(introSource, /setEntering\(true\)/);
   assert.match(introSource, /entering \? "开始进入中\.\.\." : "等待中\.\.\."/);
+  assert.match(introSource, /sessionStorage\.getItem\(HOME_INTRO_SEEN_KEY\)/);
+  assert.match(introSource, /sessionStorage\.setItem\(HOME_INTRO_SEEN_KEY,\s*"1"\)/);
+  assert.match(introSource, /useState\(\(\) => \(hasSeenHomeIntro\(\) \? "done" : "run"\)\)/);
   assert.doesNotMatch(introSource, /欢迎！|logo\.png|破译/);
   assert.match(cssSource, /@keyframes homeIntroLeaveLeft/);
   assert.match(cssSource, /translate3d\(-100%, 0, 0\)/);
@@ -377,7 +380,7 @@ test("moves the data center entry to the homepage follow-up card", () => {
 
 test("keeps the homepage data-center entry readable without button overlap", () => {
   const cssSource = readSource("index.css");
-  const signoffBlock = cssSource.match(/\.story-envelope-signoff\s*\{(?<rules>[\s\S]*?)\n  \}/);
+  const signoffBlock = cssSource.match(/\.story-envelope-signoff\s*\{(?<rules>[\s\S]*?)\n\s{2}\}/);
 
   assert.ok(signoffBlock, "missing story envelope signoff CSS block");
   assert.match(signoffBlock.groups.rules, /margin-bottom:\s*clamp\(1\.65rem,\s*2\.6vw,\s*2\.2rem\)/);
