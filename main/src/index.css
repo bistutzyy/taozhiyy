@@ -6573,7 +6573,7 @@ body {
 
 .friends-comment-form-panel {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-color: rgba(137, 188, 225, 0.42) !important;
   background:
     radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.96), transparent 30%),
@@ -6589,6 +6589,7 @@ body {
   pointer-events: none;
   position: absolute;
   inset: 0;
+  border-radius: inherit;
   background:
     linear-gradient(115deg, transparent 0 32%, rgba(255, 255, 255, 0.36) 32% 33%, transparent 33% 66%, rgba(142, 191, 226, 0.13) 66% 67%, transparent 67%),
     repeating-linear-gradient(0deg, rgba(121, 174, 213, 0.08) 0 1px, transparent 1px 2.15rem);
@@ -6673,7 +6674,7 @@ body {
   --friend-comment-ice: rgba(134, 190, 229, 0.34);
   position: relative;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--friend-comment-ice);
   background:
     radial-gradient(circle at 92% 14%, rgba(var(--friend-comment-accent), 0.18), transparent 24%),
