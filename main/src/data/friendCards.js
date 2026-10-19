@@ -281,4 +281,11 @@ export const friendCards = [
     avatar: "https://ragnote.top/Avatar.png",
     note: "FRIEND",
   },
+  {
+    name: "zuige's blog",
+    desc: "嵌入式开发 玩机折腾 技术随手记的小博客",
+    url: "https://blog.zuiges.com",
+    avatar: "https://blog.zuiges.com/img/avatar.jpg",
+    note: "FRIEND",
+  },
 ];
