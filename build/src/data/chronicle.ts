@@ -13,6 +13,11 @@ export const categories: { id: ArchiveCategory | 'all'; label: Copy }[] = [
 ];
 
 const notes: Record<string, EntryNotes> = {
+  'site-growth-16-lottery-wallpaper-source': {
+    category: 'engineering', title: ['抽奖机抽不出图的那一天', 'The day the lottery lost its pictures'],
+    tags: ['Lottery', 'API', 'Diagnosis'],
+    note: ['接口一直是 200，池子里也一直有记录，但每条都是死链——图源域名已经指向别人的服务器。换成 Lolicon 直连，并让失效图源自动下线。', 'The API returned 200 and the pool kept returning rows, but every row was a dead link: the image domain now pointed at someone else. Switched to Lolicon and let retired sources remove themselves.'],
+  },
   'site-growth-15-time-archive': {
     category: 'design', title: ['目录不是故事的讲法', 'A table of contents is not a story'],
     tags: ['Archive', 'Motion', 'Typography'],
