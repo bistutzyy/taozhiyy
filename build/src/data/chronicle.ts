@@ -13,6 +13,36 @@ export const categories: { id: ArchiveCategory | 'all'; label: Copy }[] = [
 ];
 
 const notes: Record<string, EntryNotes> = {
+  'site-growth-15-time-archive': {
+    category: 'design', title: ['目录不是故事的讲法', 'A table of contents is not a story'],
+    tags: ['Archive', 'Motion', 'Typography'],
+    note: ['记录页从一列文章卡片，变成一条会跟着滚动延伸的时间轴。分类、搜索、阅读索引和可放大的页面留影一起进来，终于能看出时间在往前走。', 'The log page turns from a list of cards into a timeline that extends as you scroll, with filters, search, a reading index, and zoomable page snapshots.'],
+  },
+  'site-growth-14-four-seasons-theme': {
+    category: 'design', title: ['四个页面，四种天气', 'Four pages, four kinds of weather'],
+    tags: ['Seasons', 'Sakura', 'Ocean', 'Snow'],
+    note: ['关于我、浮光集、哔哩哔哩、友链各自有了春樱、夏海、秋叶、冬雪。装饰只留在背景和页头，内容卡片保持原来的样子。', 'About, Glimmer, Bilibili, and Friends take on spring sakura, summer ocean, autumn leaves, and winter snow. Decoration stays in the background and headers.'],
+  },
+  'site-growth-13-glimmer-gallery-moments': {
+    category: 'design', title: ['两个入口，合成一个', 'Two entrances into one'],
+    tags: ['Glimmer', 'Albums', 'Moments'],
+    note: ['相册集和碎语原本各占一个导航位置，内容都不多。合并成浮光集之后，上半是拍立得相册墙，下半是贴纸碎语，导航反而清爽了。', 'Albums and Moments each held a nav slot with little content. Merged into Glimmer: a polaroid wall above, sticky-note moments below, and a cleaner navigation.'],
+  },
+  'site-growth-12-friend-comments-waterfall': {
+    category: 'design', title: ['评论区的形态，是被使用推着改的', 'A comment board shaped by use'],
+    tags: ['Comments', 'Masonry', 'Avatars'],
+    note: ['从单列到瀑布流走了五轮，最后停在每列两条、颜色交错。头像防盗链和统一占位这两件小事，比布局更影响观感。', 'Five rounds from a single column to masonry, settling on two seeded cards per column with alternating colors. Avatar hotlinking and placeholders mattered more than layout.'],
+  },
+  'site-growth-11-guestbook-script-attack': {
+    category: 'engineering', title: ['先关掉入口，再慢慢看清楚', 'Close the door, then look closely'],
+    tags: ['Security', 'XSS', 'Guestbook'],
+    note: ['首页留言收到一批脚本化提交。处理顺序是先在后端停掉写入，再确认有没有真的落库，最后回到渲染方式本身。', 'A burst of scripted submissions hit the guestbook. The order: stop writes in the backend, then establish what actually landed, then revisit the render path itself.'],
+  },
+  'site-growth-10-pull-deploy-and-friend-pr': {
+    category: 'engineering', title: ['把发布交还给服务器', 'Handing deployment back to the server'],
+    tags: ['Deploy', 'Pull', 'Secrets'],
+    note: ['发布链路从“GitHub 连进服务器”改成“服务器自己来取”。分支保护一开，站长后台发布友链也顺势改成自动开 PR。', 'Deployment flipped from GitHub pushing into the server to the server pulling. With branch protection on, friend-link publishing now opens a pull request instead.'],
+  },
   'site-growth-09-about-quizcard-showcase': {
     category: 'feature', title: ['让作品，真正被看见', 'Giving the work a place to live'],
     tags: ['About', 'AI QuizCard', 'Showcase'],
