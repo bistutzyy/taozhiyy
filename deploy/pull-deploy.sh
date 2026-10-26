@@ -266,6 +266,10 @@ main() {
     exit 0
   fi
 
+  # Build steps (content:build) rewrite tracked artifacts such as
+  # build/src/data/content.json, which leaves the work tree dirty. Reset
+  # first so branch switching never aborts on local changes.
+  run_as_deploy_user git -C "$REPO_DIR" reset --hard "$remote_ref"
   run_as_deploy_user git -C "$REPO_DIR" checkout -B "$BRANCH" "$remote_ref"
   run_as_deploy_user git -C "$REPO_DIR" reset --hard "$remote_ref"
   run_as_deploy_user git -C "$REPO_DIR" clean -fdx
