@@ -57,8 +57,9 @@ fi
 chown -R "$DEPLOY_USER:$DEPLOY_USER" "$REPO_DIR"
 
 runuser -u "$DEPLOY_USER" -- git -C "$REPO_DIR" fetch --prune origin "$BRANCH"
-runuser -u "$DEPLOY_USER" -- git -C "$REPO_DIR" checkout -B "$BRANCH" "origin/$BRANCH"
+# Generated build artifacts dirty the work tree; reset before switching branches.
 runuser -u "$DEPLOY_USER" -- git -C "$REPO_DIR" reset --hard "origin/$BRANCH"
+runuser -u "$DEPLOY_USER" -- git -C "$REPO_DIR" checkout -B "$BRANCH" "origin/$BRANCH"
 
 install -m 0755 "$REPO_DIR/deploy/pull-deploy.sh" "$DEPLOY_SCRIPT"
 install -m 0644 "$REPO_DIR/deploy/taozhiyy-pull-deploy.service" /etc/systemd/system/taozhiyy-pull-deploy.service

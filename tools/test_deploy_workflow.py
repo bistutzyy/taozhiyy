@@ -86,6 +86,32 @@ class DeployWorkflowTests(unittest.TestCase):
         self.assertNotIn("read_env_value", text)
         self.assertNotIn("secrets.", text)
 
+    def test_pull_deploy_resets_dirty_tree_before_switching_branch(self):
+        text = PULL_DEPLOY_PATH.read_text(encoding="utf-8")
+        reset_at = text.find('run_as_deploy_user git -C "$REPO_DIR" reset --hard "$remote_ref"')
+        checkout_at = text.find('run_as_deploy_user git -C "$REPO_DIR" checkout -B "$BRANCH" "$remote_ref"')
+
+        self.assertNotEqual(reset_at, -1, "pull deploy must reset the work tree")
+        self.assertNotEqual(checkout_at, -1, "pull deploy must switch branch")
+        self.assertLess(
+            reset_at,
+            checkout_at,
+            "reset --hard must run before checkout so generated artifacts cannot block the pull",
+        )
+
+    def test_pull_deploy_installer_resets_dirty_tree_before_switching_branch(self):
+        installer = INSTALL_PULL_DEPLOY_PATH.read_text(encoding="utf-8")
+        reset_at = installer.find('reset --hard "origin/$BRANCH"')
+        checkout_at = installer.find('checkout -B "$BRANCH" "origin/$BRANCH"')
+
+        self.assertNotEqual(reset_at, -1, "installer must reset the work tree")
+        self.assertNotEqual(checkout_at, -1, "installer must switch branch")
+        self.assertLess(
+            reset_at,
+            checkout_at,
+            "installer must reset --hard before checkout so a dirty tree cannot block installation",
+        )
+
     def test_pull_deploy_installer_installs_systemd_timer(self):
         installer = INSTALL_PULL_DEPLOY_PATH.read_text(encoding="utf-8")
         service = PULL_SERVICE_PATH.read_text(encoding="utf-8")
