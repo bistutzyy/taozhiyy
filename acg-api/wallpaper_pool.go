@@ -16,9 +16,11 @@ import (
 )
 
 const (
-	wallpaperAPIMaxItems       = 1000
-	wallpaperAPIRefreshCount   = 10
-	wallpaperHTTPClientTimeout = 10 * time.Second
+	wallpaperAPIMaxItems        = 1000
+	wallpaperAPIRefreshCount    = 10
+	wallpaperHTTPClientTimeout  = 20 * time.Second
+	wallpaperUpstreamSource     = "lolicon"
+	wallpaperUpstreamImageProxy = "i.pixiv.re"
 )
 
 var fallbackWallpaperItems = []wallpaperItem{
@@ -70,6 +72,12 @@ func startWallpaperPoolLoop(db *sql.DB) {
 }
 
 func runWallpaperPoolSync(db *sql.DB) {
+	// Retire sources that are no longer reachable before touching upstream, so a
+	// failing fetch can never keep dead image links live.
+	if err := deactivateWallpaperSourcesOutside(db, enabledWallpaperSources); err != nil {
+		log.Println("sync: wallpaper retire error:", err)
+		return
+	}
 	items, err := fetchLegalWallpaperItems(wallpaperAPIRefreshCount)
 	if err != nil {
 		log.Println("sync: wallpaper fetch skipped:", err)
@@ -87,30 +95,61 @@ func runWallpaperPoolSync(db *sql.DB) {
 }
 
 func fetchLegalWallpaperItems(limit int) ([]wallpaperItem, error) {
-	return fetchWaifuWallpapers(limit)
+	return fetchLoliconWallpapers(limit)
 }
 
-type waifuSearchResponse struct {
-	Items []waifuImage `json:"items"`
+// enabledWallpaperSources lists the upstream sources still worth drawing from.
+// Rows from any retired source are deactivated so dead links never reach visitors.
+var enabledWallpaperSources = []string{wallpaperUpstreamSource}
+
+func deactivateWallpaperSourcesOutside(db *sql.DB, enabled []string) error {
+	if len(enabled) == 0 {
+		return nil
+	}
+	placeholders := make([]string, len(enabled))
+	args := make([]any, len(enabled))
+	for i, source := range enabled {
+		placeholders[i] = "?"
+		args[i] = source
+	}
+	_, err := db.Exec(
+		`UPDATE wallpaper_pool SET status='inactive'
+		 WHERE kind='api' AND status='active' AND source NOT IN (`+strings.Join(placeholders, ",")+`)`,
+		args...,
+	)
+	return err
 }
 
-type waifuImage struct {
-	ID         int           `json:"id"`
-	URL        string        `json:"url"`
-	Source     string        `json:"source"`
-	IsNsfw     bool          `json:"isNsfw"`
-	IsAnimated bool          `json:"isAnimated"`
-	Width      int           `json:"width"`
-	Height     int           `json:"height"`
-	Artists    []waifuArtist `json:"artists"`
+type loliconSearchResponse struct {
+	Error string        `json:"error"`
+	Data  []loliconItem `json:"data"`
 }
 
-type waifuArtist struct {
-	Name string `json:"name"`
+type loliconImageURLs struct {
+	Original string `json:"original"`
+	Regular  string `json:"regular"`
+	Small    string `json:"small"`
+	Thumb    string `json:"thumb"`
 }
 
-func fetchWaifuWallpapers(limit int) ([]wallpaperItem, error) {
-	endpoint := buildWaifuWallpaperEndpoint(limit)
+type loliconItem struct {
+	PID    int              `json:"pid"`
+	P      int              `json:"p"`
+	UID    int              `json:"uid"`
+	Title  string           `json:"title"`
+	Author string           `json:"author"`
+	R18    bool             `json:"r18"`
+	Width  int              `json:"width"`
+	Height int              `json:"height"`
+	URLs   loliconImageURLs `json:"urls"`
+}
+
+// fetchLoliconWallpapers pulls landscape SFW illustrations from the Lolicon API.
+// Images are referenced through the i.pixiv.re mirror, which returns usable
+// bytes even with a foreign Referer, so the browser can load them directly
+// without the backend proxying or re-hosting anything.
+func fetchLoliconWallpapers(limit int) ([]wallpaperItem, error) {
+	endpoint := buildLoliconWallpaperEndpoint(limit)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -118,62 +157,67 @@ func fetchWaifuWallpapers(limit int) ([]wallpaperItem, error) {
 	req.Header.Set("User-Agent", "taozhiyy-wallpaper-pool/1.0")
 	req.Header.Set("Accept", "application/json")
 
-	var body waifuSearchResponse
+	var body loliconSearchResponse
 	if err := doWallpaperJSON(req, &body); err != nil {
 		return nil, err
 	}
+	if strings.TrimSpace(body.Error) != "" {
+		return nil, errors.New("lolicon: " + body.Error)
+	}
 
 	now := time.Now().UTC()
-	items := make([]wallpaperItem, 0, len(body.Items))
-	for _, image := range body.Items {
-		item, ok := waifuImageToWallpaperItem(image, now)
+	items := make([]wallpaperItem, 0, len(body.Data))
+	for _, image := range body.Data {
+		item, ok := loliconItemToWallpaperItem(image, now)
 		if !ok {
 			continue
 		}
 		items = append(items, item)
 	}
 	if len(items) == 0 {
-		return nil, errors.New("waifu.im returned no eligible landscape images")
+		return nil, errors.New("lolicon returned no eligible landscape images")
 	}
 	return items, nil
 }
 
-func buildWaifuWallpaperEndpoint(limit int) string {
+func buildLoliconWallpaperEndpoint(limit int) string {
 	if limit <= 0 {
 		limit = 1
 	}
 	query := url.Values{}
-	query.Set("IncludedTags", "waifu")
-	query.Set("IsNsfw", "False")
-	query.Set("IsAnimated", "False")
-	query.Set("Orientation", "Landscape")
-	query.Set("PageSize", fmt.Sprint(limit))
-	query.Set("PageNumber", fmt.Sprint(rand.Intn(5)+1))
-	return "https://api.waifu.im/images?" + query.Encode()
+	query.Set("num", fmt.Sprint(limit))
+	query.Set("r18", "0")
+	query.Set("size", "regular")
+	query.Set("aspect_ratio", "horizontal")
+	query.Set("proxy", wallpaperUpstreamImageProxy)
+	return "https://api.lolicon.app/setu/v2?" + query.Encode()
 }
 
-func waifuImageToWallpaperItem(image waifuImage, now time.Time) (wallpaperItem, bool) {
-	if strings.TrimSpace(image.URL) == "" || image.IsNsfw || image.IsAnimated {
+func loliconItemToWallpaperItem(image loliconItem, now time.Time) (wallpaperItem, bool) {
+	if image.R18 {
 		return wallpaperItem{}, false
 	}
-	if image.Width <= image.Height {
+	regular := firstWallpaperValue(image.URLs.Regular, image.URLs.Original, image.URLs.Small)
+	if strings.TrimSpace(regular) == "" {
 		return wallpaperItem{}, false
 	}
-	author := "waifu.im"
-	for _, artist := range image.Artists {
-		if strings.TrimSpace(artist.Name) != "" {
-			author = artist.Name
-			break
-		}
+	if image.Width > 0 && image.Height > 0 && image.Width <= image.Height {
+		return wallpaperItem{}, false
+	}
+	preview := firstWallpaperValue(image.URLs.Small, regular)
+	author := firstWallpaperValue(image.Author, "Pixiv")
+	sourceURL := "https://api.lolicon.app/"
+	if image.PID > 0 {
+		sourceURL = fmt.Sprintf("https://www.pixiv.net/artworks/%d", image.PID)
 	}
 	return wallpaperItem{
-		ID:          stableWallpaperID("waifuim", fmt.Sprint(image.ID), image.URL),
-		URL:         image.URL,
-		PreviewURL:  image.URL,
-		Source:      "waifu.im",
+		ID:          stableWallpaperID(wallpaperUpstreamSource, fmt.Sprintf("%d-%d", image.PID, image.P), regular),
+		URL:         regular,
+		PreviewURL:  preview,
+		Source:      wallpaperUpstreamSource,
 		Author:      author,
-		SourceURL:   firstWallpaperValue(image.Source, "https://www.waifu.im/"),
-		LicenseNote: "Waifu.im Terms of Service",
+		SourceURL:   sourceURL,
+		LicenseNote: "Pixiv artwork served through the Lolicon API",
 		Kind:        "api",
 		Status:      "active",
 		AddedAt:     now,
