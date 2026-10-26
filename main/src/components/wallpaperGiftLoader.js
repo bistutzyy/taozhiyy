@@ -10,6 +10,14 @@ export const wallpaperUnavailableGift = {
 const getFallbackWallpaper = (pickFallback) =>
   typeof pickFallback === "function" ? pickFallback() : wallpaperUnavailableGift;
 
+// The lottery card should show the lightweight preview; the full-size image is
+// only opened on demand. Upstream "regular" walls can exceed 1MB, which reads as
+// a broken image on slow connections.
+export function pickWallpaperPosterImage(wallpaper) {
+  if (!wallpaper) return "";
+  return wallpaper.previewUrl || wallpaper.url || "";
+}
+
 export async function loadWallpaperGift({
   apiOnly = false,
   requestWallpaper,

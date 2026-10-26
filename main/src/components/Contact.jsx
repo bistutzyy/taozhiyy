@@ -10,7 +10,7 @@ import {
   DEFAULT_WALLPAPER_ASPECT_RATIO,
   getWallpaperCardStyle,
 } from "./wallpaperFrameLayout";
-import { loadWallpaperGift } from "./wallpaperGiftLoader";
+import { loadWallpaperGift, pickWallpaperPosterImage } from "./wallpaperGiftLoader";
 import { cosAsset } from "../lib/cosAsset.js";
 
 const SOURCE_ASSET_BASE = cosAsset(
@@ -283,7 +283,7 @@ const Contact = () => {
   const resultPoster =
     activePrize.id === "wallpaper"
       ? {
-          image: activeWallpaper?.url || "",
+          image: pickWallpaperPosterImage(activeWallpaper),
           label: activeWallpaper?.label || fallbackWallpaper.label,
           meta: activeWallpaper?.album || fallbackWallpaper.album,
         }
