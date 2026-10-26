@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -9,6 +11,47 @@ import (
 
 	_ "modernc.org/sqlite"
 )
+
+func TestWarmWallpaperPreviewsFetchesPreviewImageFirst(t *testing.T) {
+	var paths []string
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		if r.Header.Get("Referer") == "" {
+			t.Errorf("expected a Referer header while warming, got none")
+		}
+		w.Header().Set("Content-Type", "image/jpeg")
+		_, _ = w.Write([]byte("fake-image"))
+	}))
+	defer server.Close()
+
+	warmWallpaperPreviewsWith(server.Client(), []wallpaperItem{
+		{ID: "with-preview", URL: server.URL + "/full.jpg", PreviewURL: server.URL + "/small.jpg"},
+		{ID: "without-preview", URL: server.URL + "/fallback.jpg"},
+		{ID: "no-links"},
+	})
+
+	if len(paths) != 2 {
+		t.Fatalf("expected 2 warmed images, got %d (%v)", len(paths), paths)
+	}
+	if paths[0] != "/small.jpg" {
+		t.Fatalf("expected the preview image to be warmed, got %q", paths[0])
+	}
+	if paths[1] != "/fallback.jpg" {
+		t.Fatalf("expected url fallback when no preview exists, got %q", paths[1])
+	}
+}
+
+func TestWarmWallpaperPreviewsToleratesFailures(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer server.Close()
+
+	warmWallpaperPreviewsWith(server.Client(), []wallpaperItem{
+		{ID: "blocked", URL: server.URL + "/blocked.jpg"},
+		{ID: "skips-insecure", URL: "http://example.test/insecure.jpg"},
+	})
+}
 
 func openWallpaperTestDB(t *testing.T) *sql.DB {
 	t.Helper()

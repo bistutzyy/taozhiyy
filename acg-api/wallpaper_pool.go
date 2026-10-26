@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -16,9 +17,14 @@ import (
 )
 
 const (
-	wallpaperAPIMaxItems        = 1000
+	// Keep the pool small so almost every draw lands on a row whose preview was
+	// already warmed; a 1000-row pool means most draws hit a cold upstream cache.
+	wallpaperAPIMaxItems        = 120
 	wallpaperAPIRefreshCount    = 10
 	wallpaperHTTPClientTimeout  = 20 * time.Second
+	wallpaperWarmClientTimeout  = 8 * time.Second
+	wallpaperWarmReferer        = "https://taozhiyy.top/"
+	wallpaperWarmMaxBytes       = 2 << 20
 	wallpaperUpstreamSource     = "lolicon"
 	wallpaperUpstreamImageProxy = "i.pixiv.re"
 )
@@ -91,11 +97,42 @@ func runWallpaperPoolSync(db *sql.DB) {
 		log.Println("sync: wallpaper db error:", err)
 		return
 	}
+	warmWallpaperPreviews(items)
 	log.Printf("sync: wallpaper done (%d new candidates)\n", len(items))
 }
 
 func fetchLegalWallpaperItems(limit int) ([]wallpaperItem, error) {
 	return fetchLoliconWallpapers(limit)
+}
+
+// warmWallpaperPreviews pulls each new preview image once so the upstream mirror
+// has it cached before a visitor draws it. The mirror fetches from Pixiv on first
+// request, which costs several seconds; warming turns that into server-side
+// inbound traffic instead of visitor waiting time.
+func warmWallpaperPreviews(items []wallpaperItem) {
+	warmWallpaperPreviewsWith(&http.Client{Timeout: wallpaperWarmClientTimeout}, items)
+}
+
+func warmWallpaperPreviewsWith(client *http.Client, items []wallpaperItem) {
+	for _, item := range items {
+		link := firstWallpaperValue(item.PreviewURL, item.URL)
+		if !strings.HasPrefix(link, "https://") {
+			continue
+		}
+		req, err := http.NewRequest(http.MethodGet, link, nil)
+		if err != nil {
+			continue
+		}
+		req.Header.Set("User-Agent", "taozhiyy-wallpaper-pool/1.0")
+		req.Header.Set("Referer", wallpaperWarmReferer)
+		res, err := client.Do(req)
+		if err != nil {
+			log.Println("sync: wallpaper warm skipped:", err)
+			continue
+		}
+		_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, wallpaperWarmMaxBytes))
+		res.Body.Close()
+	}
 }
 
 // enabledWallpaperSources lists the upstream sources still worth drawing from.
