@@ -89,10 +89,10 @@ func TestDrawWallpaperReturnsActiveItem(t *testing.T) {
 			ID:          "active-one",
 			URL:         "https://example.com/active.jpg",
 			PreviewURL:  "https://example.com/active-preview.jpg",
-			Source:      "waifu.im",
+			Source:      wallpaperUpstreamSource,
 			Author:      "tester",
 			SourceURL:   "https://example.com/source",
-			LicenseNote: "Waifu.im Terms of Service",
+			LicenseNote: "Pixiv artwork served through the Lolicon API",
 			Kind:        "api",
 			Status:      "active",
 			AddedAt:     now,
@@ -108,7 +108,7 @@ func TestDrawWallpaperReturnsActiveItem(t *testing.T) {
 	if item.URL != "https://example.com/active.jpg" {
 		t.Fatalf("unexpected drawn wallpaper url: %s", item.URL)
 	}
-	if item.Source != "waifu.im" {
+	if item.Source != wallpaperUpstreamSource {
 		t.Fatalf("unexpected source: %s", item.Source)
 	}
 }
@@ -131,12 +131,12 @@ func TestDrawAPIWallpaperIgnoresLocalFallbackRows(t *testing.T) {
 		},
 		{
 			ID:          "api-one",
-			URL:         "https://cdn.waifu.im/6321.png",
-			PreviewURL:  "https://cdn.waifu.im/6321.png",
-			Source:      "waifu.im",
+			URL:         "https://i.pixiv.re/img-master/img/2020/12/04/11/42/53/86081607_p0_master1200.jpg",
+			PreviewURL:  "https://i.pixiv.re/c/540x540_70/img-master/img/2020/12/04/11/42/53/86081607_p0_master1200.jpg",
+			Source:      wallpaperUpstreamSource,
 			Author:      "tester",
-			SourceURL:   "https://www.pixiv.net/en/artworks/89217805",
-			LicenseNote: "Waifu.im Terms of Service",
+			SourceURL:   "https://www.pixiv.net/artworks/86081607",
+			LicenseNote: "Pixiv artwork served through the Lolicon API",
 			Kind:        "api",
 			Status:      "active",
 			AddedAt:     now,
@@ -152,8 +152,8 @@ func TestDrawAPIWallpaperIgnoresLocalFallbackRows(t *testing.T) {
 	if item.Kind != "api" {
 		t.Fatalf("expected api item, got kind %q", item.Kind)
 	}
-	if item.Source != "waifu.im" {
-		t.Fatalf("expected waifu.im source, got %q", item.Source)
+	if item.Source != wallpaperUpstreamSource {
+		t.Fatalf("expected %s source, got %q", wallpaperUpstreamSource, item.Source)
 	}
 	if strings.Contains(item.URL, "myqcloud.com") {
 		t.Fatalf("expected non-COS api wallpaper, got %s", item.URL)
@@ -173,72 +173,136 @@ func TestAPIFallbackWallpaperIsNotCOS(t *testing.T) {
 	}
 }
 
-func TestWaifuWallpaperEndpointUsesLandscapeSFWFilters(t *testing.T) {
-	waifuURL, err := url.Parse(buildWaifuWallpaperEndpoint(3))
+func TestLoliconWallpaperEndpointRequestsLandscapeSFWImages(t *testing.T) {
+	endpoint, err := url.Parse(buildLoliconWallpaperEndpoint(4))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := waifuURL.Host; got != "api.waifu.im" {
-		t.Fatalf("expected waifu api host, got %q", got)
+	if got := endpoint.Host; got != "api.lolicon.app" {
+		t.Fatalf("expected lolicon api host, got %q", got)
 	}
-	query := waifuURL.Query()
-	if got := strings.ToLower(query.Get("IncludedTags")); !strings.Contains(got, "waifu") {
-		t.Fatalf("expected IncludedTags to include waifu, got %q", got)
+	query := endpoint.Query()
+	if got := query.Get("num"); got != "4" {
+		t.Fatalf("expected num=4, got %q", got)
 	}
-	if got := strings.ToLower(query.Get("IsNsfw")); got != "false" {
-		t.Fatalf("expected IsNsfw=false, got %q", got)
+	if got := query.Get("r18"); got != "0" {
+		t.Fatalf("expected r18=0, got %q", got)
 	}
-	if got := strings.ToLower(query.Get("IsAnimated")); got != "false" {
-		t.Fatalf("expected IsAnimated=false, got %q", got)
+	if got := query.Get("aspect_ratio"); got != "horizontal" {
+		t.Fatalf("expected aspect_ratio=horizontal, got %q", got)
 	}
-	if got := strings.ToLower(query.Get("Orientation")); got != "landscape" {
-		t.Fatalf("expected Orientation=Landscape, got %q", got)
+	if got := query.Get("size"); got != "regular" {
+		t.Fatalf("expected size=regular, got %q", got)
 	}
-	if got := query.Get("PageSize"); got != "3" {
-		t.Fatalf("expected PageSize=3, got %q", got)
+	if got := query.Get("proxy"); got != wallpaperUpstreamImageProxy {
+		t.Fatalf("expected proxy=%s, got %q", wallpaperUpstreamImageProxy, got)
 	}
 }
 
-func TestWaifuImageToWallpaperItemMapsLandscapeImage(t *testing.T) {
-	now := time.Date(2026, 6, 5, 8, 0, 0, 0, time.UTC)
-	item, ok := waifuImageToWallpaperItem(waifuImage{
-		ID:         6321,
-		URL:        "https://cdn.waifu.im/6321.png",
-		Source:     "https://www.pixiv.net/en/artworks/89217805",
-		IsNsfw:     false,
-		IsAnimated: false,
-		Width:      1926,
-		Height:     1233,
-		Artists: []waifuArtist{
-			{Name: "FALL"},
+func TestLoliconItemMapsLandscapeImage(t *testing.T) {
+	now := time.Date(2026, 10, 26, 8, 0, 0, 0, time.UTC)
+	item, ok := loliconItemToWallpaperItem(loliconItem{
+		PID:    86081607,
+		P:      0,
+		Author: "FALL",
+		Width:  1926,
+		Height: 1233,
+		URLs: loliconImageURLs{
+			Regular: "https://i.pixiv.re/img-master/img/regular.jpg",
+			Small:   "https://i.pixiv.re/c/540x540_70/img-master/img/small.jpg",
 		},
 	}, now)
 	if !ok {
-		t.Fatal("expected valid waifu image to map into wallpaper item")
+		t.Fatal("expected landscape image to map into wallpaper item")
 	}
-	if item.Source != "waifu.im" {
-		t.Fatalf("expected waifu.im source, got %q", item.Source)
+	if item.Source != wallpaperUpstreamSource {
+		t.Fatalf("expected %s source, got %q", wallpaperUpstreamSource, item.Source)
 	}
 	if item.Author != "FALL" {
-		t.Fatalf("expected first artist name, got %q", item.Author)
+		t.Fatalf("expected upstream author, got %q", item.Author)
 	}
-	if item.URL != "https://cdn.waifu.im/6321.png" {
+	if item.URL != "https://i.pixiv.re/img-master/img/regular.jpg" {
 		t.Fatalf("unexpected image url: %s", item.URL)
+	}
+	if item.PreviewURL != "https://i.pixiv.re/c/540x540_70/img-master/img/small.jpg" {
+		t.Fatalf("expected lightweight preview url, got %s", item.PreviewURL)
+	}
+	if item.SourceURL != "https://www.pixiv.net/artworks/86081607" {
+		t.Fatalf("unexpected source url: %s", item.SourceURL)
 	}
 	if item.Kind != "api" {
 		t.Fatalf("expected api kind, got %q", item.Kind)
 	}
+	if strings.Contains(item.URL, "waifu.im") {
+		t.Fatalf("wallpaper must not point at the retired waifu.im CDN: %s", item.URL)
+	}
 }
 
-func TestWaifuImageToWallpaperItemRejectsPortraitImage(t *testing.T) {
-	if _, ok := waifuImageToWallpaperItem(waifuImage{
-		ID:         9001,
-		URL:        "https://cdn.waifu.im/9001.png",
-		IsNsfw:     false,
-		IsAnimated: false,
-		Width:      1200,
-		Height:     2000,
-	}, time.Now().UTC()); ok {
+func TestLoliconItemRejectsPortraitAndR18(t *testing.T) {
+	now := time.Now().UTC()
+	portrait := loliconItem{
+		PID:    9001,
+		Width:  1200,
+		Height: 2000,
+		URLs:   loliconImageURLs{Regular: "https://i.pixiv.re/portrait.jpg"},
+	}
+	if _, ok := loliconItemToWallpaperItem(portrait, now); ok {
 		t.Fatal("expected portrait image to be rejected for wallpaper usage")
+	}
+	nsfw := portrait
+	nsfw.Width, nsfw.Height, nsfw.R18 = 2000, 1200, true
+	if _, ok := loliconItemToWallpaperItem(nsfw, now); ok {
+		t.Fatal("expected r18 image to be rejected")
+	}
+}
+
+func TestDeactivateWallpaperSourcesOutsideRetiresDeadSources(t *testing.T) {
+	testDB := openWallpaperTestDB(t)
+	now := time.Date(2026, 6, 5, 8, 0, 0, 0, time.UTC)
+	if err := insertWallpaperItems(testDB, []wallpaperItem{
+		{
+			ID:      "dead-one",
+			URL:     "https://cdn.waifu.im/6321.png",
+			Source:  "waifu.im",
+			Kind:    "api",
+			Status:  "active",
+			AddedAt: now,
+		},
+		{
+			ID:      "alive-one",
+			URL:     "https://i.pixiv.re/alive.jpg",
+			Source:  wallpaperUpstreamSource,
+			Kind:    "api",
+			Status:  "active",
+			AddedAt: now,
+		},
+	}, now); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := deactivateWallpaperSourcesOutside(testDB, enabledWallpaperSources); err != nil {
+		t.Fatal(err)
+	}
+
+	var deadStatus, aliveStatus string
+	if err := testDB.QueryRow(`SELECT status FROM wallpaper_pool WHERE id='dead-one'`).Scan(&deadStatus); err != nil {
+		t.Fatal(err)
+	}
+	if err := testDB.QueryRow(`SELECT status FROM wallpaper_pool WHERE id='alive-one'`).Scan(&aliveStatus); err != nil {
+		t.Fatal(err)
+	}
+	if deadStatus != "inactive" {
+		t.Fatalf("expected retired source to be deactivated, got %q", deadStatus)
+	}
+	if aliveStatus != "active" {
+		t.Fatalf("expected enabled source to stay active, got %q", aliveStatus)
+	}
+
+	item, err := drawAPIWallpaperItem(testDB)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if item.ID != "alive-one" {
+		t.Fatalf("expected only the live source to be drawable, got %q", item.ID)
 	}
 }
