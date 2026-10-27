@@ -288,4 +288,11 @@ export const friendCards = [
     avatar: "https://blog.zuiges.com/img/avatar.jpg",
     note: "FRIEND",
   },
+  {
+    name: "saktawdi",
+    desc: "saktaの博客",
+    url: "https://sakta.top/blog",
+    avatar: "https://api.sakta.top/profile/upload/2024/01/11/favicon_20240111232512A001.png",
+    note: "FRIEND",
+  },
 ];
