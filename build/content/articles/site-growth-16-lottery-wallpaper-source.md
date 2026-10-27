@@ -3,11 +3,11 @@ date: 2026-10-26
 slug: site-growth-16-lottery-wallpaper-source
 title_zh: 建站成长记录 16｜抽奖机突然抽不出图：一次图源失效的排查
 title_en: Site Growth Log 16 | When the Lottery Stopped Showing Pictures: Tracing a Dead Image Source
-excerpt_zh: 首页抽奖还能转出结果，图片却永远是破图。这篇记录排查的三层结论：接口是好的、图池六月份就停止更新、第三方图源域名已经指向了别人的服务器；以及最后为什么选择「换源 + 直连」而不是转存 COS。
-excerpt_en: The homepage lottery still returned results, but every picture was broken. This post records three layers of diagnosis — the API was fine, the pool had frozen in June, and the third-party domain now pointed at someone else's server — plus why the fix was a new source with direct linking instead of mirroring into COS.
-words: 3300
-reads: 15
-minutes: 11
+excerpt_zh: 首页抽奖还能转出结果，图片却永远是破图。这篇记录排查的三层结论：接口是好的、图池六月份就停止更新、第三方图源域名已经指向了别人的服务器；以及换源之后为什么还是慢——社区镜像的回源冷启动，最终把图源换成静态 CDN，首屏从 3–8 秒降到 1 秒内。
+excerpt_en: The homepage lottery still returned results, but every picture was broken. This post records three layers of diagnosis — the API was fine, the pool had frozen in June, and the third-party domain now pointed at someone else's server — then why a new source was still slow, and how swapping to a static CDN took first paint from 3–8 s down to under one second.
+words: 4200
+reads: 32
+minutes: 14
 ---
 
 # 建站成长记录 16：抽奖机突然抽不出图
@@ -125,11 +125,46 @@ WHERE kind='api' AND status='active' AND source NOT IN (...)
 | 慢图 | 约 1/12 会命中一张上游本来就慢的图，重抽即可 |
 | 站点页面 | `/`、`/friends`、`/glimmer`、`/build/` 全部 200 |
 
+看起来问题解决了。其实没有。
+
+## 后续：镜像的冷启动才是真凶
+
+上线之后还是慢。有人反馈"高清壁纸半天加载不出来"，我自己复测，一张图卡了 104 秒。
+
+把同一张图分别打到两个镜像上：
+
+| 镜像 | 冷图耗时 |
+| --- | --- |
+| `i.pixiv.re` | 3–8 秒，偶发 100 秒+ |
+| `i.pixiv.nl` | 3–8 秒，同样会超时 |
+| `i.pixiv.cat` | 直接不可用 |
+
+两个镜像表现一致，说明不是某一家的问题：**这类社区镜像都是"第一次被请求才回源 Pixiv 抓图"**，所以必然有冷启动。开不开代理都一样，因为慢的不是链路，是回源。
+
+换镜像解决不了，于是又换了一次源。
+
+这次换成 `t.alcy.cc`：它的 `/pc` 会 302 到一个**静态 webp**（实测 0.9 秒、236KB）。静态文件没有回源过程，这才是真正去掉了那几秒。
+
+实现上只做了一件小事：请求 `/pc` 时**不跟随重定向**，只读 `Location` 头，把它拼成绝对地址入池，全程不下载图片。
+
+再验收一次：
+
+| 项 | 结果 |
+| --- | --- |
+| 连续抽取 | 8/8 全部为静态源 |
+| 图片加载 | 0.75–1.13 秒，中位 0.95 秒 |
+| 失败 | 0 |
+
+同一批测试，从"3–8 秒、偶发 104 秒"，变成"稳定 1 秒以内"。
+
+这里还补了两条护栏：图池上限从 1000 收到 120（让抽取落在近期条目上），以及同步时服务器把新图各拉一次做预热——预热属于入站流量，不产生出网计费。
+
 ## 这次学到的
 
 - **"有数据"和"数据可用"是两件事。** 接口一直返回 200，池子里一直有记录，但每一条都是死链。健康检查只看接口状态，是发现不了这种故障的。
+- **"能拿到图"和"能很快拿到图"也是两件事。** 第二次踩的坑就在这里：JSON API 元数据很漂亮、图片也确实能出来，但图床冷启动 3–8 秒，用户体感就是坏的。选源要测的是首屏时间，不是响应码。
 - **静默失败最贵。** 每小时同步失败一次，日志里只有一行 `sync skipped`，没人看。真正的告警应该是"图源连续 N 次失败"，而不是"服务还活着"。
-- **外部依赖要有"可控下线"的开关。** 这次不是靠改代码删数据，而是靠配置一个启用列表，让失效源自动退场。
+- **外部依赖要有"可控下线"的开关。** 这次不是靠改代码删数据，而是靠配置一个启用列表，让失效源自动退场——所以三次换源，旧数据都是自动退场的。
 - **成本决定架构。** 转存 COS 技术上更稳，但对小站是长期账单；直连第三方更脆，但零成本。这次选了后者，并且把"失效会被自动踢掉"补上，作为对脆性的对冲。
 
 ---en---
@@ -249,9 +284,44 @@ Measured after the change:
 | Slow images | roughly 1 in 12 hits an upstream that is simply slow; redraw works |
 | Site pages | `/`, `/friends`, `/glimmer`, `/build/` all 200 |
 
+It looked solved. It was not.
+
+## Follow-up: the mirror's cold start was the real culprit
+
+After shipping, it was still slow. Someone reported that the HD wallpaper took forever, and my own retest hung on one image for 104 seconds.
+
+The same image, requested through two mirrors:
+
+| Mirror | Cold image |
+| --- | --- |
+| `i.pixiv.re` | 3–8 s, occasionally 100 s+ |
+| `i.pixiv.nl` | 3–8 s, also times out |
+| `i.pixiv.cat` | dead |
+
+Both mirrors behave the same, so it is not one bad provider: **these community mirrors only fetch from Pixiv on first request.** Cold start is structural. It makes no difference whether a proxy is on, because the slow part is the upstream fetch, not the route.
+
+Swapping mirrors could not fix it, so I swapped sources again.
+
+This time to `t.alcy.cc`: its `/pc` answers with a 302 to a **static webp** (measured 0.9 s, 236 KB). A static file has no origin fetch behind it, which is what removes those seconds.
+
+The implementation change is small: request `/pc` **without following redirects**, read only the `Location` header, resolve it to an absolute URL, and store that. No image is downloaded during sync.
+
+Acceptance again:
+
+| Check | Result |
+| --- | --- |
+| Consecutive draws | 8/8 static source |
+| Image load | 0.75–1.13 s, median 0.95 s |
+| Failures | 0 |
+
+The same test went from "3–8 s, occasionally 104 s" to "consistently under one second".
+
+Two guard rails came with it: the pool cap dropped from 1000 to 120 so draws land on recent rows, and sync now warms each new image server-side — inbound traffic, no egress billing.
+
 ## What this taught me
 
 - **"Has data" and "has usable data" are different facts.** The API kept returning 200, the pool kept returning rows, and every row was a dead link. A health check that only looks at status codes cannot see this failure.
+- **"Can fetch it" and "can fetch it fast" are different facts too.** That was the second trap: beautiful JSON metadata, images that do arrive, and a 3–8 s cold start that users experience as broken. What matters when choosing a source is first-paint time, not response codes.
 - **Silent failure is the expensive kind.** One hourly sync failed with a single `sync skipped` log line that nobody read. The alert worth having is "the source failed N times in a row", not "the service is up".
-- **External dependencies need a controlled off-switch.** The fix was not deleting rows by hand but configuring an enabled list, so a retired source removes itself.
+- **External dependencies need a controlled off-switch.** The fix was not deleting rows by hand but configuring an enabled list, so a retired source removes itself — which is why all three source swaps retired the old data automatically.
 - **Cost decides architecture.** Mirroring to COS is technically sturdier but is a recurring bill for a small site; direct linking is more fragile but free. I chose the latter and added "dead sources get kicked out automatically" as the hedge against that fragility.
