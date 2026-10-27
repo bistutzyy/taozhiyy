@@ -1,4 +1,5 @@
 import './style.css';
+import './digital.css';
 import { createIcons, Aperture, Box, LayoutGrid, Search, Scan, Plus, Minus, Orbit, ArrowUpRight, ArrowLeft, ArrowRight, Sparkle, X, SearchX, ExternalLink, CodeXml } from 'lucide';
 import { projects, filterProjects, nextProject } from './catalog.js';
 

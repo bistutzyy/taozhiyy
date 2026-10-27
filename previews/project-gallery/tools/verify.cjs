@@ -16,6 +16,7 @@ const fs = require('node:fs');
     const debug = () => page.evaluate(() => window.__galleryDebug());
     let state = await debug();
     assert.equal(state.loaded, 6);
+    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor), 'rgb(232, 234, 237)', 'digital gallery uses a neutral silver surface');
     const stillFrames = state.frameCount;
     await page.waitForTimeout(800);
     assert.ok((await debug()).frameCount - stillFrames < 3, 'idle canvas must stop rendering');

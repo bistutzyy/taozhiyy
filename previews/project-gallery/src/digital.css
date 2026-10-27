@@ -1,0 +1,49 @@
+:root{color:#25282f;background:#e8eaed;--ink:#25282f;--muted:#737983;--pink:#b7445b;--line:#c5c9d0;--paper:#f5f6f7;--green:#30343c;font-family:"Segoe UI","Microsoft YaHei",sans-serif}
+.site-header{background:#e8eaedf2;border-bottom:1px solid #c8ccd266}
+.brand{font-family:"Segoe UI",sans-serif;font-weight:650;font-size:21px}
+.brand small,.intro p,.eyebrow{color:#6c727d}
+.brand-mark{border-color:#b9bec7;color:#343943;border-radius:4px}
+.preview-badge{border-color:#bfc4ce;color:#686d77}
+.view-switch{background:#dce0e5;border-color:#bfc5ce;border-radius:4px}
+.view-switch button{border-radius:2px}
+.view-switch button[aria-pressed=true]{background:#2c3038;color:#f4f5f7;box-shadow:none}
+.icon-button:hover{background:#d3d8e0}
+.icon-button[aria-pressed=true]{color:#a62f49;background:#f2dce3}
+h1{font-family:"Microsoft YaHei","Segoe UI",sans-serif;font-weight:650;font-size:46px;line-height:1.25;margin:15px 0 15px}
+.intro{top:122px;background:#e8eaed;box-shadow:0 0 0 10px #e8eaed}.intro p{font-size:12px}.eyebrow{font-family:Consolas,monospace;font-weight:400;font-size:9px}
+.collection-filters button{color:#6b717c}.collection-filters{margin-top:18px}
+.collection-filters button[aria-pressed=true]{color:#a72f49;border-color:#b7445b}
+.exhibit-meta strong{font-family:Consolas,monospace;font-weight:400;color:#333842;font-size:31px}
+.exhibit-meta i{color:#aab0bb}.exhibit-meta>span,.exhibit-meta small{color:#787e89;font-family:Consolas,monospace}
+.scene-tools{background:#f1f3f6ed;border-color:#bcc3ce;box-shadow:0 6px 24px #2027350a;border-radius:3px}
+.scene-tools>span{background:#ccd1d9}
+.exhibit-selection{border-color:#b7beca}
+.exhibit-selection::before{background:#e8eaedf5}
+.selected-number{font-family:Consolas,monospace;font-weight:300;color:#858c99;border-color:#b8bfc9}
+.selected-content h2{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-weight:600;font-size:22px}
+.selected-content p{color:#656c77}.selected-meta{color:#a2384f}
+.text-action{border-color:#565c68}.text-action:hover{color:#b7445b;border-color:#b7445b}
+.previous-next button{border-color:#abb3bf;border-radius:3px}
+.exhibit-footer{background:#dfe3e9f5;border-color:#bfc6d0}
+.footer-label,.footer-note{color:#69717f;font-family:Consolas,monospace}
+.footer-label span{color:#89919e}
+.dock-item{border-color:#aeb7c3;background:#edf0f3;border-radius:2px}
+.dock-item[aria-pressed=true]{border-color:#b7445b;background:#f2d7df}
+.list-mode{background:#e8eaed}#catalogue{scrollbar-color:#a4adbb transparent}
+.catalogue-search{border-color:#bdc4cf}
+.project-card{background:#f4f5f7;border-color:#c3c9d2;border-radius:3px}
+.project-card:hover{border-color:#a14559}.card-cover{border-color:#c5cad2}
+.project-card h2{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-weight:600;font-size:21px}
+.project-card p{color:#636b77}.card-meta{color:#a23e53}.card-bottom{border-color:#d2d7df;color:#78808d}
+#project-dialog{background:#f5f6f8;border-color:#c3cad5;color:#25282f;border-radius:4px;box-shadow:0 22px 100px #1c23354a}
+#project-dialog::backdrop{background:#171b246b}
+.detail-toolbar{background:#f5f6f8f2;border-color:#cbd1db}.detail-toolbar>span{color:#6d7683}
+.detail-meta{color:#a83b52}#detail-title{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-weight:600}
+.detail-summary,.detail-section p{color:#626b78}.detail-links a{border-color:#b9c1cd;border-radius:3px}
+.detail-links a:first-child{background:#30343d;border-color:#30343d}
+.detail-cover{border-color:#c7cdd6;border-radius:2px}.detail-caption,.detail-toc{color:#7b8491}
+.detail-tags{color:#646e7d}.detail-tags span{background:#e3e7ed}
+#notice{background:#f4f6f9;color:#424b5c;border-color:#b9c3d0}
+@media(min-width:1600px){h1{font-size:50px}.intro{top:130px}}
+@media(max-width:1000px){h1{font-size:38px}.intro{top:109px}.exhibit-meta strong{font-size:27px}}
+@media(max-width:600px){h1{font-size:32px;margin:10px 0}.intro{top:96px}.intro p{font-size:10px}.eyebrow{font-size:7px}.collection-filters{margin-top:12px}.brand{font-size:18px}.exhibit-meta strong{font-size:22px}.exhibit-meta{top:120px}.selected-content h2{font-size:20px}.detail-toc{border-color:#cbd1db}}

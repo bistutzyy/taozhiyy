@@ -6,6 +6,8 @@ the fallback direction. The name is provisional. No production integration,
 publication, API credentials, account changes, or paid trial APIs.
 
 Implementation: standalone Vite + Three.js, using OrbitControls for exploration.
+Current design: neutral digital exhibition with graphite/silver walls and coral
+selection accents; replaces the earlier garden preview (see DESIGN.md).
 Project data is shared by scene, searchable catalogue, and native dialog details.
 Screenshots represent the actual linked websites, not claimed new products.
 

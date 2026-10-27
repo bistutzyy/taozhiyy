@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-const positions = [[-6, 2.7], [-4.7, -1.8], [-1.65, -4.3], [1.75, -4.3], [4.8, -1.7], [6.1, 2.8]];
+const positions = [[-7.3, 2.8], [-6.7, -2.5], [-2.2, -4.1], [2.4, -4.1], [6.9, -2.5], [7.1, 3.2]];
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export async function createGallery(canvas, projects, onSelect) {
@@ -11,10 +11,10 @@ export async function createGallery(canvas, projects, onSelect) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.NeutralToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = .95;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#eef3f1');
-  scene.fog = new THREE.Fog('#eef3f1', 45, 80);
+  scene.background = new THREE.Color('#e8eaed');
+  scene.fog = new THREE.Fog('#e8eaed', 40, 75);
   const camera = new THREE.OrthographicCamera(-13, 13, 8, -8, 0.1, 120);
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
@@ -29,8 +29,8 @@ export async function createGallery(canvas, projects, onSelect) {
   controls.minAzimuthAngle = -1.05;
   controls.maxAzimuthAngle = 1.05;
   controls.autoRotateSpeed = .24;
-  scene.add(new THREE.HemisphereLight('#ffffff', '#bacabc', 2.25));
-  const sun = new THREE.DirectionalLight('#fff6ec', 3.1);
+  scene.add(new THREE.HemisphereLight('#ffffff', '#929aa6', 1.7));
+  const sun = new THREE.DirectionalLight('#ffffff', 2.7);
   sun.position.set(-8, 18, 12);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -39,16 +39,15 @@ export async function createGallery(canvas, projects, onSelect) {
   sun.shadow.normalBias = .035;
   sun.shadow.radius = 3;
   scene.add(sun);
-  const fill = new THREE.DirectionalLight('#deeff5', 1.1);
+  const fill = new THREE.DirectionalLight('#e3eaff', 1.3);
   fill.position.set(10, 8, -6);
   scene.add(fill);
 
   const material = (color, roughness = .8, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness, metalness });
-  const white = material('#f7f8f3');
-  const stone = material('#e2e9e0');
-  const rose = material('#d9a7b2');
-  const mint = material('#8db4a3');
-  const brass = material('#ac9b78', .44, .42);
+  const white = material('#e6e8eb', .57, .18);
+  const stone = material('#373b42', .6, .25);
+  const aluminum = material('#b8bfc9', .28, .65);
+  const graphite = material('#202329', .64, .18);
   function mesh(geometry, mat, position, parent = scene) {
     const object = new THREE.Mesh(geometry, mat);
     object.position.set(...position);
@@ -60,30 +59,18 @@ export async function createGallery(canvas, projects, onSelect) {
   function box(size, mat, position, parent = scene, radius = .04) {
     return mesh(new RoundedBoxGeometry(...size, 2, radius), mat, position, parent);
   }
-  function cylinder(top, bottom, height, mat, position, parent = scene) {
-    return mesh(new THREE.CylinderGeometry(top, bottom, height, 64), mat, position, parent);
-  }
-  const ground = mesh(new THREE.PlaneGeometry(180, 180), material('#eef3f1'), [0, -.38, 0]);
+  const ground = mesh(new THREE.PlaneGeometry(180, 180), material('#dce0e5', .74), [0, -.12, 0]);
   ground.rotation.x = -Math.PI / 2;
   ground.castShadow = false;
-  cylinder(9.1, 9.2, .22, material('#bacfc1'), [0, -.16, 0]);
-  cylinder(9.04, 9.04, .24, white, [0, .01, 0]);
-  cylinder(7.9, 7.9, .015, material('#edf0e9'), [0, .14, 0]);
-  const rim = mesh(new THREE.TorusGeometry(8.65, .022, 8, 100), brass, [0, .15, 0]);
-  rim.rotation.x = Math.PI / 2;
-
-  // A small open architectural frame gives the exhibits a room without blocking them.
-  box([.24, 4.5, .24], rose, [-3.05, 2.4, -6.25]);
-  box([.24, 4.5, .24], rose, [3.05, 2.4, -6.25]);
-  const arch = mesh(new THREE.TorusGeometry(3.05, .12, 12, 64, Math.PI), rose, [0, 4.65, -6.25]);
-  arch.castShadow = true;
-  box([6.4, .13, .45], white, [0, 4.54, -6.25]);
-  const backRail = mesh(new THREE.TorusGeometry(8.35, .055, 8, 90, Math.PI), mint, [0, .88, 0]);
-  backRail.rotation.x = Math.PI / 2;
-  for (let i = 0; i <= 12; i++) {
-    const a = i / 12 * Math.PI;
-    cylinder(.035, .035, .72, mint, [8.35 * Math.cos(a), .53, -8.35 * Math.sin(a)]);
-  }
+  // Flush architectural paving replaces the miniature circular stage.
+  box([21, .08, 13], white, [0, -.035, -.3], scene, .005);
+  const seam = material('#bfc4cc', .85);
+  for (let x = -10; x <= 10; x += 2.5) box([.012, .004, 13], seam, [x, .008, -.3], scene, .001);
+  for (let z = -6.8; z <= 6.2; z += 2.6) box([21, .004, .012], seam, [0, .008, z], scene, .001);
+  box([10.4, .12, .12], aluminum, [.1, 6.1, -6.45], scene, .015);
+  box([.09, 6.1, .09], aluminum, [-5.1, 3.05, -6.45], scene, .01);
+  box([.09, 6.1, .09], aluminum, [5.3, 3.05, -6.45], scene, .01);
+  box([9.7, .025, .18], new THREE.MeshBasicMaterial({color:'#ffffff'}), [.1, 6.01, -6.43], scene, .005);
 
   function labelTexture(width, height, draw) {
     const c = document.createElement('canvas'); c.width = width; c.height = height;
@@ -93,53 +80,16 @@ export async function createGallery(canvas, projects, onSelect) {
     texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
     return texture;
   }
-  const sign = labelTexture(1024, 160, (ctx, w, h) => {
-    ctx.fillStyle = '#f7f8f3'; ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = '#607469'; ctx.textAlign = 'center';
-    ctx.font = '40px Georgia'; ctx.fillText('THE CURIOUS ROOM', w / 2, 67);
-    ctx.font = '17px sans-serif'; ctx.fillStyle = '#a77b87'; ctx.fillText('PROJECTS  /  MADE & FOUND  /  01', w / 2, 112);
-  });
-  mesh(new THREE.PlaneGeometry(4.7, .73), new THREE.MeshBasicMaterial({ map: sign }), [0, 5.15, -6.05]);
-
   const inscription = labelTexture(1024, 512, (ctx, w, h) => {
-    ctx.fillStyle = '#edf0e9'; ctx.fillRect(0, 0, w, h);
-    ctx.textAlign = 'center'; ctx.fillStyle = '#c5d4c8';
-    ctx.font = '60px Georgia'; ctx.fillText('A little room', w / 2, 195);
-    ctx.font = 'italic 58px Georgia'; ctx.fillText('for big ideas.', w / 2, 270);
-    ctx.font = '18px sans-serif'; ctx.fillStyle = '#a1b4a4'; ctx.fillText('TAOZHIYY   /   COLLECTION 01', w / 2, 345);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#7e858e';
+    ctx.font = '600 130px sans-serif'; ctx.fillText('COLLECTION', w / 2, 205);
+    ctx.font = '600 130px sans-serif'; ctx.fillText('01 / 06', w / 2, 355);
+    ctx.font = '22px monospace'; ctx.fillStyle = '#b64d60'; ctx.fillText('TAOZHIYY  /  WORKS & DISCOVERIES', w / 2, 425);
   });
-  const floorText = mesh(new THREE.PlaneGeometry(5.2, 2.6), new THREE.MeshBasicMaterial({ map: inscription }), [0, .157, 1.4]);
+  const floorText = mesh(new THREE.PlaneGeometry(5.4, 2.7), new THREE.MeshBasicMaterial({ map: inscription, transparent: true, depthWrite: false }), [-.8, .02, 3.3]);
   floorText.rotation.x = -Math.PI / 2;
   floorText.receiveShadow = false;
   floorText.castShadow = false;
-
-  // Low bench, book plinth, and foliage stay secondary to the project screenshots.
-  box([3.5, .28, .85], rose, [0, .85, 5.35], scene, .13);
-  box([.35, .55, .62], white, [-1.2, .46, 5.35]);
-  box([.35, .55, .62], white, [1.2, .46, 5.35]);
-  cylinder(.6, .62, .68, stone, [-3, .5, 4.3]);
-  [mint, white, rose].forEach((mat, i) => {
-    const book = box([.82, .105, .55], mat, [-3, .91 + i * .115, 4.3]);
-    book.rotation.y = i * .2 - .2;
-  });
-  function plant(x, z, scale = 1) {
-    const group = new THREE.Group(); group.position.set(x, .16, z); group.scale.setScalar(scale); scene.add(group);
-    cylinder(.37, .25, .6, white, [0, .3, 0], group);
-    cylinder(.31, .31, .025, material('#899b7a'), [0, .61, 0], group);
-    const leafMat = new THREE.MeshStandardMaterial({ color: '#779b84', side: THREE.DoubleSide, roughness: .95 });
-    for (let i = 0; i < 7; i++) {
-      const a = i * 2.4;
-      const h = 1.0 + i % 3 * .23;
-      const stem = new THREE.CylinderGeometry(.012, .012, h, 6);
-      const stalk = mesh(stem, material('#77927a'), [.14 * Math.cos(a), .6 + h / 2, .14 * Math.sin(a)], group);
-      stalk.rotation.z = .2 * Math.cos(a); stalk.rotation.x = .2 * Math.sin(a);
-      const shape = new THREE.Shape();
-      shape.moveTo(0, 0); shape.bezierCurveTo(-.45, .24, -.35, .8, 0, 1); shape.bezierCurveTo(.35, .72, .48, .22, 0, 0);
-      const leaf = mesh(new THREE.ShapeGeometry(shape, 10), leafMat, [.2 * Math.cos(a), .8 + h * .45, .2 * Math.sin(a)], group);
-      leaf.rotation.set(-.5 + .3 * Math.sin(a), a, -.5 * Math.cos(a));
-    }
-  }
-  plant(-7.4, -.4, 1.05); plant(7.3, -3.9, 1.1); plant(3.9, 5.7, .75);
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
@@ -160,39 +110,36 @@ export async function createGallery(canvas, projects, onSelect) {
   projects.forEach((project, index) => {
     const [x, z] = positions[index];
     const group = new THREE.Group();
-    group.position.set(x, .16, z);
-    group.rotation.y = Math.atan2(-x, 19 - z);
+    group.position.set(x, .02, z);
+    group.rotation.y = Math.atan2(-x, 28 - z);
     scene.add(group);
-    const color = material(project.accent);
-    const base = box([2.6, .17, 1.25], stone, [0, .1, 0], group, .08);
-    box([2.2, .1, 1.0], white, [0, .23, 0], group);
-    cylinder(.045, .045, 1.2, brass, [-.72, .9, 0], group);
-    cylinder(.045, .045, 1.2, brass, [.72, .9, 0], group);
-    box([2.94, 2.9, .18], white, [0, 2.55, 0], group, .07);
-    box([.035, 2.55, .035], color, [-1.47, 2.55, .1], group, .01);
-    const screenMat = new THREE.MeshBasicMaterial({ color: '#e1e8df' });
-    const screen = mesh(new THREE.PlaneGeometry(2.69, 1.68), screenMat, [0, 2.98, .105], group);
+    const color = material('#c7556b', .48, .25);
+    box([3.98, 4.7, .34], index % 2 ? white : graphite, [0, 2.35, 0], group, .025);
+    box([.045, 4.7, .37], aluminum, [-1.99, 2.35, 0], group, .005);
+    box([.045, 4.7, .37], aluminum, [1.99, 2.35, 0], group, .005);
+    const base = box([3.98, .08, .38], stone, [0, .06, .02], group, .005);
+    box([3.68, 2.35, .08], graphite, [0, 3.22, .2], group, .01);
+    const screenMat = new THREE.MeshBasicMaterial({ color: '#c9cdd4' });
+    const screen = mesh(new THREE.PlaneGeometry(3.5, 2.1875), screenMat, [0, 3.22, .247], group);
     screen.castShadow = false;
     screen.userData.projectId = project.id;
     hits.push(screen);
     const plateTexture = labelTexture(1024, 310, (ctx, w, h) => {
-      ctx.fillStyle = '#f7f8f3'; ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = project.accent; ctx.font = '500 28px sans-serif';
+      ctx.fillStyle = index % 2 ? '#ad3e55' : '#ef9bad'; ctx.font = '500 28px monospace';
       ctx.fillText(`${String(index + 1).padStart(2, '0')}  /  ${project.kind === 'mine' ? 'SELF-MADE' : 'CURATED'}`, 38, 62);
-      ctx.fillStyle = '#354c41';
+      ctx.fillStyle = index % 2 ? '#25282f' : '#f2f3f5';
       ctx.font = '500 63px "Microsoft YaHei", sans-serif';
       let size = 63;
       while (ctx.measureText(project.title).width > w - 76 && size > 35) ctx.font = `500 ${--size}px "Microsoft YaHei", sans-serif`;
       ctx.fillText(project.title, 38, 154);
-      ctx.font = '29px sans-serif'; ctx.fillStyle = '#829386';
+      ctx.font = '29px sans-serif'; ctx.fillStyle = index % 2 ? '#666d77' : '#aeb5c0';
       ctx.fillText(project.category + '   /   ' + project.author, 38, 233);
     });
-    const plate = mesh(new THREE.PlaneGeometry(2.69, .815), new THREE.MeshBasicMaterial({ map: plateTexture }), [0, 1.65, .106], group);
+    const plate = mesh(new THREE.PlaneGeometry(3.5, 1.06), new THREE.MeshBasicMaterial({ map: plateTexture, transparent: true, depthWrite: false }), [0, 1.24, .18], group);
     plate.userData.projectId = project.id;
     plate.castShadow = false;
     hits.push(plate);
-    const glow = mesh(new THREE.RingGeometry(.11, .145, 28), new THREE.MeshBasicMaterial({ color: project.accent, side: THREE.DoubleSide }), [0, .31, .6], group);
-    glow.rotation.x = -Math.PI / 2;
+    const glow = box([.065, .38, .015], new THREE.MeshBasicMaterial({color:'#e16a82'}), [-1.82, 1.5, .2], group, .002);
     panels.set(project.id, { group, screen, base, color, glow });
     imagePromises.push(loader.loadAsync(project.cover).then(texture => {
       texture.colorSpace = THREE.SRGBColorSpace;
@@ -203,8 +150,8 @@ export async function createGallery(canvas, projects, onSelect) {
 
   function overview(immediate = false) {
     const mobile = innerWidth < 650;
-    const target = new THREE.Vector3(0, mobile ? 1.35 : 2.4, 0);
-    const position = new THREE.Vector3(mobile ? 5 : 7, 14, 24);
+    const target = new THREE.Vector3(0, mobile ? 2 : 3.1, 0);
+    const position = new THREE.Vector3(mobile ? 4 : 6, 12, 27);
     moveCamera(position, target, 1, immediate);
   }
   function moveCamera(position, target, zoom, immediate = false) {
@@ -221,8 +168,8 @@ export async function createGallery(canvas, projects, onSelect) {
     const panel = panels.get(id);
     if (!panel) return;
     if (close) {
-      const center = panel.group.localToWorld(new THREE.Vector3(0, 2.5, 0));
-      const offset = new THREE.Vector3(0, 7.5, 20).applyAxisAngle(new THREE.Vector3(0, 1, 0), panel.group.rotation.y);
+      const center = panel.group.localToWorld(new THREE.Vector3(0, 2.65, 0));
+      const offset = new THREE.Vector3(0, 3.5, 20).applyAxisAngle(new THREE.Vector3(0, 1, 0), panel.group.rotation.y);
       moveCamera(center.clone().add(offset), center, innerWidth < 650 ? 1.8 : 2.0);
     }
     wake();
@@ -265,7 +212,7 @@ export async function createGallery(canvas, projects, onSelect) {
   }
   function resize() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    const width = w < 650 ? 22 : w < 1000 ? 25 : 28.5;
+    const width = w < 650 ? 25 : w < 1000 ? 27 : 29;
     camera.left = -width / 2; camera.right = width / 2;
     camera.top = width / (w / h) / 2; camera.bottom = -camera.top;
     camera.updateProjectionMatrix(); renderer.setSize(w, h, false); wake();
