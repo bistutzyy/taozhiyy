@@ -4,9 +4,9 @@ import (
 	"crypto/sha1"
 	"database/sql"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -16,11 +16,17 @@ import (
 )
 
 const (
-	wallpaperAPIMaxItems        = 1000
+	// Keep the pool small so almost every draw lands on a row whose preview was
+	// already warmed; a 1000-row pool means most draws hit a cold upstream cache.
+	wallpaperAPIMaxItems        = 120
 	wallpaperAPIRefreshCount    = 10
-	wallpaperHTTPClientTimeout  = 20 * time.Second
-	wallpaperUpstreamSource     = "lolicon"
-	wallpaperUpstreamImageProxy = "i.pixiv.re"
+	wallpaperHTTPClientTimeout  = 15 * time.Second
+	wallpaperWarmClientTimeout  = 8 * time.Second
+	wallpaperWarmReferer        = "https://taozhiyy.top/"
+	wallpaperWarmMaxBytes       = 2 << 20
+	wallpaperUpstreamSource     = "alcy"
+	wallpaperUpstreamEndpoint   = "https://t.alcy.cc/pc"
+	wallpaperUpstreamAttempts   = 24
 )
 
 var fallbackWallpaperItems = []wallpaperItem{
@@ -91,11 +97,42 @@ func runWallpaperPoolSync(db *sql.DB) {
 		log.Println("sync: wallpaper db error:", err)
 		return
 	}
+	warmWallpaperPreviews(items)
 	log.Printf("sync: wallpaper done (%d new candidates)\n", len(items))
 }
 
 func fetchLegalWallpaperItems(limit int) ([]wallpaperItem, error) {
-	return fetchLoliconWallpapers(limit)
+	return fetchAlcyWallpapers(limit)
+}
+
+// warmWallpaperPreviews pulls each new preview image once so the upstream mirror
+// has it cached before a visitor draws it. The mirror fetches from Pixiv on first
+// request, which costs several seconds; warming turns that into server-side
+// inbound traffic instead of visitor waiting time.
+func warmWallpaperPreviews(items []wallpaperItem) {
+	warmWallpaperPreviewsWith(&http.Client{Timeout: wallpaperWarmClientTimeout}, items)
+}
+
+func warmWallpaperPreviewsWith(client *http.Client, items []wallpaperItem) {
+	for _, item := range items {
+		link := firstWallpaperValue(item.PreviewURL, item.URL)
+		if !strings.HasPrefix(link, "https://") {
+			continue
+		}
+		req, err := http.NewRequest(http.MethodGet, link, nil)
+		if err != nil {
+			continue
+		}
+		req.Header.Set("User-Agent", "taozhiyy-wallpaper-pool/1.0")
+		req.Header.Set("Referer", wallpaperWarmReferer)
+		res, err := client.Do(req)
+		if err != nil {
+			log.Println("sync: wallpaper warm skipped:", err)
+			continue
+		}
+		_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, wallpaperWarmMaxBytes))
+		res.Body.Close()
+	}
 }
 
 // enabledWallpaperSources lists the upstream sources still worth drawing from.
@@ -120,121 +157,90 @@ func deactivateWallpaperSourcesOutside(db *sql.DB, enabled []string) error {
 	return err
 }
 
-type loliconSearchResponse struct {
-	Error string        `json:"error"`
-	Data  []loliconItem `json:"data"`
+// newAlcyWallpaperClient deliberately does not follow redirects: the endpoint
+// answers with a 302 whose Location is a static .webp on the same host, and that
+// header is all we need. Downloading the redirect target would waste bandwidth
+// on every sync.
+func newAlcyWallpaperClient() *http.Client {
+	return &http.Client{
+		Timeout: wallpaperHTTPClientTimeout,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 }
 
-type loliconImageURLs struct {
-	Original string `json:"original"`
-	Regular  string `json:"regular"`
-	Small    string `json:"small"`
-	Thumb    string `json:"thumb"`
+// fetchAlcyWallpapers collects static wallpaper URLs from the Alcy endpoint.
+// Each draw of the endpoint yields a different curated .webp, so a handful of
+// requests is enough to refill the pool.
+func fetchAlcyWallpapers(limit int) ([]wallpaperItem, error) {
+	return fetchAlcyWallpapersWith(newAlcyWallpaperClient(), wallpaperUpstreamEndpoint, limit)
 }
 
-type loliconItem struct {
-	PID    int              `json:"pid"`
-	P      int              `json:"p"`
-	UID    int              `json:"uid"`
-	Title  string           `json:"title"`
-	Author string           `json:"author"`
-	R18    bool             `json:"r18"`
-	Width  int              `json:"width"`
-	Height int              `json:"height"`
-	URLs   loliconImageURLs `json:"urls"`
-}
-
-// fetchLoliconWallpapers pulls landscape SFW illustrations from the Lolicon API.
-// Images are referenced through the i.pixiv.re mirror, which returns usable
-// bytes even with a foreign Referer, so the browser can load them directly
-// without the backend proxying or re-hosting anything.
-func fetchLoliconWallpapers(limit int) ([]wallpaperItem, error) {
-	endpoint := buildLoliconWallpaperEndpoint(limit)
-	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
-	if err != nil {
-		return nil, err
+func fetchAlcyWallpapersWith(client *http.Client, endpoint string, limit int) ([]wallpaperItem, error) {
+	if limit <= 0 {
+		limit = 1
 	}
-	req.Header.Set("User-Agent", "taozhiyy-wallpaper-pool/1.0")
-	req.Header.Set("Accept", "application/json")
-
-	var body loliconSearchResponse
-	if err := doWallpaperJSON(req, &body); err != nil {
-		return nil, err
-	}
-	if strings.TrimSpace(body.Error) != "" {
-		return nil, errors.New("lolicon: " + body.Error)
-	}
-
 	now := time.Now().UTC()
-	items := make([]wallpaperItem, 0, len(body.Data))
-	for _, image := range body.Data {
-		item, ok := loliconItemToWallpaperItem(image, now)
-		if !ok {
+	seen := make(map[string]bool, limit)
+	items := make([]wallpaperItem, 0, limit)
+	for attempt := 0; attempt < wallpaperUpstreamAttempts && len(items) < limit; attempt++ {
+		link, err := resolveAlcyWallpaper(client, endpoint)
+		if err != nil || seen[link] {
 			continue
 		}
-		items = append(items, item)
+		seen[link] = true
+		items = append(items, wallpaperItem{
+			ID:          stableWallpaperID(wallpaperUpstreamSource, link, link),
+			URL:         link,
+			PreviewURL:  link,
+			Source:      wallpaperUpstreamSource,
+			Author:      "Alcy",
+			SourceURL:   link,
+			LicenseNote: "Wallpaper served by the Alcy wallpaper API",
+			Kind:        "api",
+			Status:      "active",
+			AddedAt:     now,
+		})
 	}
 	if len(items) == 0 {
-		return nil, errors.New("lolicon returned no eligible landscape images")
+		return nil, errors.New("alcy returned no usable wallpapers")
 	}
 	return items, nil
 }
 
-func buildLoliconWallpaperEndpoint(limit int) string {
-	if limit <= 0 {
-		limit = 1
+func resolveAlcyWallpaper(client *http.Client, endpoint string) (string, error) {
+	base, err := url.Parse(endpoint)
+	if err != nil {
+		return "", err
 	}
-	query := url.Values{}
-	query.Set("num", fmt.Sprint(limit))
-	query.Set("r18", "0")
-	query.Set("size", "regular")
-	query.Set("aspect_ratio", "horizontal")
-	query.Set("proxy", wallpaperUpstreamImageProxy)
-	return "https://api.lolicon.app/setu/v2?" + query.Encode()
-}
-
-func loliconItemToWallpaperItem(image loliconItem, now time.Time) (wallpaperItem, bool) {
-	if image.R18 {
-		return wallpaperItem{}, false
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return "", err
 	}
-	regular := firstWallpaperValue(image.URLs.Regular, image.URLs.Original, image.URLs.Small)
-	if strings.TrimSpace(regular) == "" {
-		return wallpaperItem{}, false
-	}
-	if image.Width > 0 && image.Height > 0 && image.Width <= image.Height {
-		return wallpaperItem{}, false
-	}
-	preview := firstWallpaperValue(image.URLs.Small, regular)
-	author := firstWallpaperValue(image.Author, "Pixiv")
-	sourceURL := "https://api.lolicon.app/"
-	if image.PID > 0 {
-		sourceURL = fmt.Sprintf("https://www.pixiv.net/artworks/%d", image.PID)
-	}
-	return wallpaperItem{
-		ID:          stableWallpaperID(wallpaperUpstreamSource, fmt.Sprintf("%d-%d", image.PID, image.P), regular),
-		URL:         regular,
-		PreviewURL:  preview,
-		Source:      wallpaperUpstreamSource,
-		Author:      author,
-		SourceURL:   sourceURL,
-		LicenseNote: "Pixiv artwork served through the Lolicon API",
-		Kind:        "api",
-		Status:      "active",
-		AddedAt:     now,
-	}, true
-}
-
-func doWallpaperJSON(req *http.Request, out any) error {
-	client := &http.Client{Timeout: wallpaperHTTPClientTimeout}
+	req.Header.Set("User-Agent", "taozhiyy-wallpaper-pool/1.0")
 	res, err := client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return fmt.Errorf("http %d", res.StatusCode)
+	_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, 2048))
+	if res.StatusCode < 300 || res.StatusCode >= 400 {
+		return "", fmt.Errorf("unexpected status %d", res.StatusCode)
 	}
-	return json.NewDecoder(res.Body).Decode(out)
+	location := strings.TrimSpace(res.Header.Get("Location"))
+	if location == "" {
+		return "", errors.New("redirect without location")
+	}
+	target, err := url.Parse(location)
+	if err != nil {
+		return "", err
+	}
+	resolved := base.ResolveReference(target)
+	if !strings.HasSuffix(strings.ToLower(resolved.Path), ".webp") {
+		return "", errors.New("unexpected wallpaper format")
+	}
+	return resolved.String(), nil
 }
 
 func insertWallpaperItems(db *sql.DB, items []wallpaperItem, now time.Time) error {
