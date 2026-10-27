@@ -111,12 +111,12 @@ const Footer = () => {
 
   return (
     <footer className={clsx("w-full py-4 md:py-5", theme.shell)}>
-      <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 md:flex-row">
-        <p className={clsx("text-center text-sm font-light md:text-left", theme.copy)}>
+      <div className="container mx-auto grid grid-cols-1 justify-items-center gap-4 px-4 md:grid-cols-3 md:items-center">
+        <p className={clsx("text-center text-sm font-light md:justify-self-start md:text-left", theme.copy)}>
           @bistutzyy
         </p>
 
-        <div className="flex justify-center gap-4 md:justify-start">
+        <div className="flex justify-center gap-4 md:justify-self-center">
           {socialLinks.map((link) => (
             <a
               key={link.label}
@@ -141,7 +141,7 @@ const Footer = () => {
           ))}
         </div>
 
-        <p className={clsx("text-center text-sm font-light md:text-right", theme.copy)}>
+        <p className={clsx("text-center text-sm font-light md:justify-self-end md:text-right", theme.copy)}>
           本站仅作学习使用，感谢开源
         </p>
       </div>

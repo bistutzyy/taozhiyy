@@ -10126,3 +10126,19 @@ body {
   }
 }
 
+/* Layout fix: a leftover desktop rule pinned the lever to grid-column 2, which
+   split the control panel into two tracks (an empty one plus the lever) and the
+   1rem gap pushed the stick ~8px right of the panel axis. Pin it back to the
+   single centred column. */
+.source-lottery-stage .source-machine-controls {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  justify-content: center;
+}
+
+.source-lottery-stage .source-machine-controls .source-arcade-lever {
+  grid-column: 1;
+  grid-row: auto;
+  justify-self: center;
+  width: 100%;
+}
