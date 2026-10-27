@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#eef3f1" />
+    <title>奇想馆 · 项目展馆预览</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7f8AAAAASUVORK5CYII=" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="scene-host"><canvas id="gallery-canvas" aria-label="三维项目展馆"></canvas></div>
+      <header class="site-header">
+        <a class="brand" href="https://taozhiyy.top/" target="_blank" rel="noopener noreferrer" aria-label="桃之夭夭主站"><span class="brand-mark"><i data-lucide="aperture"></i></span><span>taozhiyy<small>片段 01 / PROJECTS</small></span></a>
+        <div class="header-actions"><span class="preview-badge">本地预览</span><div class="view-switch" role="group" aria-label="展示方式"><button id="scene-view" type="button" aria-pressed="true"><i data-lucide="box"></i><span>展馆</span></button><button id="list-view" type="button" aria-pressed="false"><i data-lucide="layout-grid"></i><span>目录</span></button></div><button class="icon-button search-launch" id="search-launch" aria-label="搜索项目" title="搜索项目"><i data-lucide="search"></i></button></div>
+      </header>
+      <main>
+        <div class="intro"><div class="eyebrow"><span class="accent-rule"></span>A COLLECTION OF CURIOSITIES</div><h1>奇想馆<span>.</span></h1><p>一些亲手做的，一些偶然遇见的。</p><div class="collection-filters" role="group" aria-label="项目来源"><button data-kind="all" aria-pressed="true">全部 <span>06</span></button><button data-kind="mine" aria-pressed="false">我的作品</button><button data-kind="shared" aria-pressed="false">精选分享</button></div></div>
+        <div class="exhibit-meta"><span>TAOZHIYY COLLECTION</span><strong>01 <i>/</i> 06</strong><small>CREATED & COLLECTED</small></div>
+        <div class="scene-tools" aria-label="展馆视角"><button class="icon-button" id="reset-camera" title="展馆全景" aria-label="展馆全景"><i data-lucide="scan"></i></button><span></span><button class="icon-button" id="zoom-in" title="拉近视角" aria-label="拉近视角"><i data-lucide="plus"></i></button><button class="icon-button" id="zoom-out" title="拉远视角" aria-label="拉远视角"><i data-lucide="minus"></i></button><span></span><button class="icon-button" id="orbit-toggle" title="自动环看" aria-label="自动环看" aria-pressed="false"><i data-lucide="orbit"></i></button></div>
+        <section id="catalogue" aria-label="项目目录" hidden><label class="catalogue-search"><i data-lucide="search"></i><input id="project-search" type="search" placeholder="查找项目、作者或标签" aria-label="搜索项目" autocomplete="off"/><span id="result-count"></span></label><div id="project-grid"></div><div id="empty-state" hidden><i data-lucide="search-x"></i><h2>还没有找到这个项目</h2><button id="clear-search">查看全部项目</button></div></section>
+        <div class="exhibit-selection" id="exhibit-selection"><div id="selected-info"></div><div class="selection-actions"><button class="text-action" id="open-project">查看项目 <i data-lucide="arrow-up-right"></i></button><div class="previous-next"><button class="icon-button" id="previous" title="上一个项目" aria-label="上一个项目"><i data-lucide="arrow-left"></i></button><button class="icon-button" id="next" title="下一个项目" aria-label="下一个项目"><i data-lucide="arrow-right"></i></button></div></div></div>
+      </main>
+      <footer class="exhibit-footer"><span class="footer-label">THE CURIOUS ROOM <span>VOL. 01</span></span><div id="project-dock" aria-label="快速选择项目"></div><span class="footer-note">MADE WITH CURIOSITY<i data-lucide="sparkle"></i></span></footer>
+      <dialog id="project-dialog" aria-labelledby="detail-title"><div class="detail-toolbar"><span>PROJECT NOTES</span><button class="icon-button" id="close-dialog" aria-label="关闭项目详情" title="关闭"><i data-lucide="x"></i></button></div><div id="project-detail"></div></dialog>
+      <div id="notice" role="status" aria-live="polite"></div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

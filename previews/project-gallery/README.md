@@ -1,0 +1,27 @@
+# Project gallery: local design preview
+
+Approved scope: a small interactive 3D exhibition combining spatial exploration
+with project panels and accessible HTML project details. Magic Portfolio remains
+the fallback direction. The name is provisional. No production integration,
+publication, API credentials, account changes, or paid trial APIs.
+
+Implementation: standalone Vite + Three.js, using OrbitControls for exploration.
+Project data is shared by scene, searchable catalogue, and native dialog details.
+Screenshots represent the actual linked websites, not claimed new products.
+
+Checklist:
+- [x] Define catalogue and filtering tests, then implementation.
+- [x] Capture local compressed covers with source attribution.
+- [x] Build a full-viewport light exhibition and HTML controls/details.
+- [x] Verify canvas pixels, camera motion, selection, filtering, dialog keyboard
+      behavior, mobile framing, image loads, and reduced-motion fallback.
+- [x] Run build and leave a loopback preview server available for review.
+
+Run `npm ci`, `npm test`, and `npm run dev -- --port 5196 --strictPort` here.
+This folder is deliberately outside `main/`, `build/`, and deployment scripts.
+
+Captures: `tools/capture-covers.cjs` uses Playwright and Sharp from the bundled
+Codex runtime through NODE_PATH. `tools/verify.cjs` uses the same runtime.
+Public external screenshots are credited within each project's source link;
+reference projects remain attributed to their respective authors. They are
+illustrative entries in a local preview, not redistributed source code.
