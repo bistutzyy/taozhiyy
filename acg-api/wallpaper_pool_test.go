@@ -2,13 +2,56 @@ package main
 
 import (
 	"database/sql"
-	"net/url"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
 	_ "modernc.org/sqlite"
 )
+
+func TestWarmWallpaperPreviewsFetchesPreviewImageFirst(t *testing.T) {
+	var paths []string
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		if r.Header.Get("Referer") == "" {
+			t.Errorf("expected a Referer header while warming, got none")
+		}
+		w.Header().Set("Content-Type", "image/jpeg")
+		_, _ = w.Write([]byte("fake-image"))
+	}))
+	defer server.Close()
+
+	warmWallpaperPreviewsWith(server.Client(), []wallpaperItem{
+		{ID: "with-preview", URL: server.URL + "/full.jpg", PreviewURL: server.URL + "/small.jpg"},
+		{ID: "without-preview", URL: server.URL + "/fallback.jpg"},
+		{ID: "no-links"},
+	})
+
+	if len(paths) != 2 {
+		t.Fatalf("expected 2 warmed images, got %d (%v)", len(paths), paths)
+	}
+	if paths[0] != "/small.jpg" {
+		t.Fatalf("expected the preview image to be warmed, got %q", paths[0])
+	}
+	if paths[1] != "/fallback.jpg" {
+		t.Fatalf("expected url fallback when no preview exists, got %q", paths[1])
+	}
+}
+
+func TestWarmWallpaperPreviewsToleratesFailures(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer server.Close()
+
+	warmWallpaperPreviewsWith(server.Client(), []wallpaperItem{
+		{ID: "blocked", URL: server.URL + "/blocked.jpg"},
+		{ID: "skips-insecure", URL: "http://example.test/insecure.jpg"},
+	})
+}
 
 func openWallpaperTestDB(t *testing.T) *sql.DB {
 	t.Helper()
@@ -173,86 +216,75 @@ func TestAPIFallbackWallpaperIsNotCOS(t *testing.T) {
 	}
 }
 
-func TestLoliconWallpaperEndpointRequestsLandscapeSFWImages(t *testing.T) {
-	endpoint, err := url.Parse(buildLoliconWallpaperEndpoint(4))
+func TestFetchAlcyWallpapersCollectsUniqueStaticWebp(t *testing.T) {
+	var hits int
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Location", fmt.Sprintf("/pic/pc/wall-%d.webp", hits))
+		w.WriteHeader(http.StatusFound)
+	}))
+	defer server.Close()
+
+	// The production client stops at the redirect; the test client must behave
+	// the same way, otherwise it follows the Location and sees a 404 body.
+	client := &http.Client{
+		Transport: server.Client().Transport,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	items, err := fetchAlcyWallpapersWith(client, server.URL+"/pc", 3)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := endpoint.Host; got != "api.lolicon.app" {
-		t.Fatalf("expected lolicon api host, got %q", got)
+	if len(items) != 3 {
+		t.Fatalf("expected 3 wallpapers, got %d", len(items))
 	}
-	query := endpoint.Query()
-	if got := query.Get("num"); got != "4" {
-		t.Fatalf("expected num=4, got %q", got)
+	for _, item := range items {
+		if item.Source != wallpaperUpstreamSource {
+			t.Fatalf("expected %s source, got %q", wallpaperUpstreamSource, item.Source)
+		}
+		if !strings.HasPrefix(item.URL, server.URL+"/pic/pc/") || !strings.HasSuffix(item.URL, ".webp") {
+			t.Fatalf("expected an absolute static webp url, got %q", item.URL)
+		}
+		if item.PreviewURL != item.URL {
+			t.Fatalf("expected preview to reuse the static file, got %q", item.PreviewURL)
+		}
+		if item.Kind != "api" {
+			t.Fatalf("expected api kind, got %q", item.Kind)
+		}
 	}
-	if got := query.Get("r18"); got != "0" {
-		t.Fatalf("expected r18=0, got %q", got)
-	}
-	if got := query.Get("aspect_ratio"); got != "horizontal" {
-		t.Fatalf("expected aspect_ratio=horizontal, got %q", got)
-	}
-	if got := query.Get("size"); got != "regular" {
-		t.Fatalf("expected size=regular, got %q", got)
-	}
-	if got := query.Get("proxy"); got != wallpaperUpstreamImageProxy {
-		t.Fatalf("expected proxy=%s, got %q", wallpaperUpstreamImageProxy, got)
-	}
-}
-
-func TestLoliconItemMapsLandscapeImage(t *testing.T) {
-	now := time.Date(2026, 10, 26, 8, 0, 0, 0, time.UTC)
-	item, ok := loliconItemToWallpaperItem(loliconItem{
-		PID:    86081607,
-		P:      0,
-		Author: "FALL",
-		Width:  1926,
-		Height: 1233,
-		URLs: loliconImageURLs{
-			Regular: "https://i.pixiv.re/img-master/img/regular.jpg",
-			Small:   "https://i.pixiv.re/c/540x540_70/img-master/img/small.jpg",
-		},
-	}, now)
-	if !ok {
-		t.Fatal("expected landscape image to map into wallpaper item")
-	}
-	if item.Source != wallpaperUpstreamSource {
-		t.Fatalf("expected %s source, got %q", wallpaperUpstreamSource, item.Source)
-	}
-	if item.Author != "FALL" {
-		t.Fatalf("expected upstream author, got %q", item.Author)
-	}
-	if item.URL != "https://i.pixiv.re/img-master/img/regular.jpg" {
-		t.Fatalf("unexpected image url: %s", item.URL)
-	}
-	if item.PreviewURL != "https://i.pixiv.re/c/540x540_70/img-master/img/small.jpg" {
-		t.Fatalf("expected lightweight preview url, got %s", item.PreviewURL)
-	}
-	if item.SourceURL != "https://www.pixiv.net/artworks/86081607" {
-		t.Fatalf("unexpected source url: %s", item.SourceURL)
-	}
-	if item.Kind != "api" {
-		t.Fatalf("expected api kind, got %q", item.Kind)
-	}
-	if strings.Contains(item.URL, "waifu.im") {
-		t.Fatalf("wallpaper must not point at the retired waifu.im CDN: %s", item.URL)
+	if items[0].ID == items[1].ID {
+		t.Fatal("expected distinct ids for distinct wallpapers")
 	}
 }
 
-func TestLoliconItemRejectsPortraitAndR18(t *testing.T) {
-	now := time.Now().UTC()
-	portrait := loliconItem{
-		PID:    9001,
-		Width:  1200,
-		Height: 2000,
-		URLs:   loliconImageURLs{Regular: "https://i.pixiv.re/portrait.jpg"},
+func TestResolveAlcyWallpaperRejectsUnusableResponses(t *testing.T) {
+	withRedirectsDisabled := func(server *httptest.Server) *http.Client {
+		return &http.Client{
+			Transport: server.Client().Transport,
+			CheckRedirect: func(*http.Request, []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}
 	}
-	if _, ok := loliconItemToWallpaperItem(portrait, now); ok {
-		t.Fatal("expected portrait image to be rejected for wallpaper usage")
+
+	noRedirect := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer noRedirect.Close()
+	if _, err := resolveAlcyWallpaper(withRedirectsDisabled(noRedirect), noRedirect.URL+"/pc"); err == nil {
+		t.Fatal("expected a non-redirect response to be rejected")
 	}
-	nsfw := portrait
-	nsfw.Width, nsfw.Height, nsfw.R18 = 2000, 1200, true
-	if _, ok := loliconItemToWallpaperItem(nsfw, now); ok {
-		t.Fatal("expected r18 image to be rejected")
+
+	jpegRedirect := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", "/pic/pc/wall.jpg")
+		w.WriteHeader(http.StatusFound)
+	}))
+	defer jpegRedirect.Close()
+	if _, err := resolveAlcyWallpaper(withRedirectsDisabled(jpegRedirect), jpegRedirect.URL+"/pc"); err == nil {
+		t.Fatal("expected a non-webp redirect target to be rejected")
 	}
 }
 
