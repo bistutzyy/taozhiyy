@@ -6,8 +6,15 @@ the fallback direction. The name is provisional. No production integration,
 publication, API credentials, account changes, or paid trial APIs.
 
 Implementation: standalone Vite + Three.js, using OrbitControls for exploration.
-Current design: neutral digital exhibition with graphite/silver walls and coral
-selection accents; replaces the earlier garden preview (see DESIGN.md).
+Current design: explorable project starfield with near-black space, real project
+covers and rose/cyan markers. Replaces garden and exhibition previews (DESIGN.md).
+Space mounts at most six project nodes; the directory renders 12 cards per page.
+The browser verifier injects 500 synthetic records only into its isolated page
+to check bounded rendering, page navigation and full-catalogue search. The actual
+preview contains nine attributed projects and no ownership-based categories.
+Tutorials are editorial summaries of official docs. Original authors and source,
+docs, license and external trial links are included in each detail. RuiC has an
+author demo video; skill repositories are not presented as hosted generators.
 Project data is shared by scene, searchable catalogue, and native dialog details.
 Screenshots represent the actual linked websites, not claimed new products.
 
