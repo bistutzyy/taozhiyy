@@ -30,15 +30,15 @@ test('next project wraps in both directions and tolerates empty filters', () => 
   assert.equal(nextProject(projects, 'missing', 1).id, projects[0].id);
 });
 
-test('500 projects remain bounded to six space nodes or twelve directory cards', () => {
+test('500 projects keep directory pages bounded and search complete', () => {
   const many = Array.from({length:500}, (_, i) => ({...projects[i % projects.length], id:`project-${i}`, title:`Project ${i}`}));
-  assert.equal(projectPage(many, 0, 6).items.length, 6);
-  assert.equal(projectPage(many, 83, 6).items.length, 2);
+  assert.equal(projectPage(many, 0, 12).items.length, 12);
+  assert.equal(projectPage(many, 41, 12).items.length, 8);
   assert.equal(projectPage(many, 0, 12).pages, 42);
   assert.equal(projectPage(many, 999, 12).page, 41);
   assert.equal(projectPage(many, -2, 12).page, 0);
   assert.equal(projectPage([], 0, 6).pages, 0);
-  assert.equal(projectPage(many, 10, 6).items[0].id, 'project-60');
+  assert.equal(projectPage(many, 10, 12).items[0].id, 'project-120');
   assert.equal(filterProjects(many, 'Project 499').length, 1);
   assert.equal(many.length, 500);
 });

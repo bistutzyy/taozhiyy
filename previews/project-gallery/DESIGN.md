@@ -8,10 +8,12 @@ Local preview only; no production route, deployment, or remote Git changes.
 Implementation sequence:
 1. Test catalogue pagination with 500 synthetic records before implementation.
 2. Replace architecture with three fixed-size background star fields, perspective
-   camera exploration and six billboarding project nodes per active field.
-3. Paginate directory by 12 and space by 6; keep search over the full catalogue.
-   Load only current space textures; dispose outgoing geometry, label textures,
-   and materials, and dispose asynchronous texture results from stale fields.
+   camera exploration and a continuously sliding project path.
+3. Paginate directory by 12; the space has no pagination arrows. Wheel, trackpad,
+   mouse drag, one-finger touch and canvas keyboard navigation move continuously.
+   Mount six nearby projects plus one incoming node (mobile: three plus one).
+   Retain overlapping nodes and textures; dispose only outgoing resources and
+   stale asynchronous texture results. Clamp navigation at both catalogue ends.
 4. Run npm test, npm run build, and tools/verify.cjs. Inspect desktop/mobile
    screenshots, project textures, focus transitions, and canvas pixels.
 5. Save a local Git checkpoint and open the loopback preview for design review.

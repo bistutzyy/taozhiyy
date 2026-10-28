@@ -8,7 +8,10 @@ publication, API credentials, account changes, or paid trial APIs.
 Implementation: standalone Vite + Three.js, using OrbitControls for exploration.
 Current design: explorable project starfield with near-black space, real project
 covers and rose/cyan markers. Replaces garden and exhibition previews (DESIGN.md).
-Space mounts at most six project nodes; the directory renders 12 cards per page.
+Space is a continuously scrollable path without pagination controls. Wheel,
+trackpad, mouse drag and one-finger touch move the view. It mounts at most seven
+nearby nodes (four on mobile), retaining overlapping resources. The directory
+still renders 12 cards per page.
 The browser verifier injects 500 synthetic records only into its isolated page
 to check bounded rendering, page navigation and full-catalogue search. The actual
 preview contains nine attributed projects and no ownership-based categories.
