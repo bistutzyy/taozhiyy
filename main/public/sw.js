@@ -32,6 +32,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
   if (url.pathname.startsWith("/assets/")) return;
+  if (url.pathname.startsWith("/projects/")) return;
   if (url.pathname.startsWith("/cos/")) return;
   if (url.pathname === "/about-preview.html") return;
   if (url.pathname.startsWith("/showcase/") || url.pathname.startsWith("/web/")) return;
