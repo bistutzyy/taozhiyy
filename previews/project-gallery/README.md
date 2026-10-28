@@ -12,6 +12,9 @@ Space is a continuously scrollable path without pagination controls. Wheel,
 trackpad, mouse drag and one-finger touch move the view. It mounts at most seven
 nearby nodes (four on mobile), retaining overlapping resources. The directory
 still renders 12 cards per page.
+Preview textures are generated at 480x300 by tools/build-thumbnails.cjs. Detached
+project panels are reused within a total 12-project desktop / 8-project mobile
+budget. Full-resolution covers remain available in the catalogue and details.
 The browser verifier injects 500 synthetic records only into its isolated page
 to check bounded rendering, page navigation and full-catalogue search. The actual
 preview contains nine attributed projects and no ownership-based categories.

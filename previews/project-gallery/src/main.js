@@ -49,9 +49,25 @@ function notify(text) {
 function renderSelection() {
   const focusedProject = document.activeElement?.closest('.dock-item')?.dataset.project;
   const number = String(projects.indexOf(selected) + 1).padStart(2, '0');
-  $('#selected-info').innerHTML = `<span class="selected-number">${number}</span><div class="selected-content"><div class="selected-meta">${e(selected.category)} / ${e(selected.author)}</div><h2>${e(selected.title)}</h2><p>${e(selected.summary)}</p></div>`;
+  if($('#selected-info').dataset.selection!==selected.id){
+    $('#selected-info').innerHTML = `<span class="selected-number">${number}</span><div class="selected-content"><div class="selected-meta">${e(selected.category)} / ${e(selected.author)}</div><h2>${e(selected.title)}</h2><p>${e(selected.summary)}</p></div>`;
+    $('#selected-info').dataset.selection=selected.id;
+  }
   $('.exhibit-meta strong').innerHTML = `${number} <i>/</i> ${String(projects.length).padStart(2, '0')}`;
-  $('#project-dock').innerHTML = sceneItems.map(p => `<button class="dock-item" data-project="${e(p.id)}" aria-label="查看${e(p.title)}" aria-pressed="${p.id === selected.id}" title="${e(p.title)}"><img src="${e(p.cover)}" alt="" width="96" height="60" /></button>`).join('');
+  const dock=$('#project-dock');
+  const existing=new Map([...dock.children].map(button=>[button.dataset.project,button]));
+  const needed=new Set(sceneItems.map(p=>p.id));
+  for(const button of [...dock.children])if(!needed.has(button.dataset.project))button.remove();
+  sceneItems.forEach((p,index)=>{
+    let button=existing.get(p.id);
+    if(!button){
+      button=document.createElement('button');button.className='dock-item';button.dataset.project=p.id;
+      button.title=p.title;button.setAttribute('aria-label',`查看${p.title}`);
+      button.innerHTML=`<img src="${e(p.preview||p.cover)}" alt="" width="96" height="60" />`;
+    }
+    button.setAttribute('aria-pressed',String(p.id===selected.id));
+    if(dock.children[index]!==button)dock.insertBefore(button,dock.children[index]||null);
+  });
   if (focusedProject) [...$('#project-dock').children].find(button => button.dataset.project === focusedProject)?.focus({ preventScroll: true });
 }
 function select(id, focus = true) {

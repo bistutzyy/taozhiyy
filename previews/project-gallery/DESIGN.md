@@ -27,3 +27,10 @@ Each detail includes a practical tutorial, original author/source/license links,
 and a clearly labeled author video or external demo/reference link. No iframe
 loads silently and no model runs or API keys are collected by this static site.
 Repository/documentation checks are not a complete source-code security audit.
+
+Brightness/performance revision: brighter white cores, restrained blue/gold
+highlights and a more visible Milky Way band. No full-screen bloom pass or
+continuously running idle animation. Use 480x300 preview textures, a bounded
+detached-panel cache (12 desktop / 8 mobile including active nodes), and only
+reconcile the window when it changes. Damping uses elapsed milliseconds rather
+than a fixed factor per frame; pointer drag follows more closely than wheel.

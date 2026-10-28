@@ -21,7 +21,7 @@ export const projects = [
   },
   ...motionProjects,
   ...aiProjects,
-];
+].map(project => ({...project,preview:project.cover.replace('/covers/','/thumbs/')}));
 
 export function filterProjects(items, query = '') {
   const term = query.trim().toLocaleLowerCase();

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spaceWindow, wheelDistance } from '../src/space-navigation.js';
+import { spaceWindow, wheelDistance, motionBlend } from '../src/space-navigation.js';
 
 test('continuous project windows retain an incoming node and clamp both ends', () => {
   assert.deepEqual(spaceWindow(9,0,6), {position:0,start:0,end:7,max:3});
@@ -22,4 +22,12 @@ test('wheel and trackpad input respect dominant axis, units, direction and bound
   assert.equal(wheelDistance({deltaY:0,deltaX:0,deltaMode:0},900),0);
   assert.ok(Math.abs(wheelDistance({deltaY:999999,deltaMode:0},900))<=1.2);
   assert.ok(wheelDistance({deltaY:3,deltaMode:1},900)>wheelDistance({deltaY:3,deltaMode:0},900));
+});
+
+test('motion settles at the same rate across display refresh rates without a tab-resume jump', () => {
+  const at60=motionBlend(1000/60,75),at120=motionBlend(1000/120,75);
+  assert.ok(Math.abs((1-at60)-(1-at120)**2)<1e-12);
+  assert.equal(motionBlend(0,75),0);
+  assert.ok(motionBlend(1000,75)<.6);
+  assert.ok(motionBlend(16,55)>motionBlend(16,85));
 });

@@ -8,6 +8,7 @@ test('personal website plus eight requested projects have covers, tutorials, and
   assert.equal(new Set(projects.map(p => p.id)).size, 9);
   for (const p of projects) {
     assert.ok(p.cover.startsWith('/covers/'));
+    assert.equal(p.preview,`/thumbs/${p.id}.webp`);
     assert.ok(p.url.startsWith('https://'));
     assert.ok(p.author && p.summary && p.sections.length >= 5);
     assert.equal(p.kind, undefined);

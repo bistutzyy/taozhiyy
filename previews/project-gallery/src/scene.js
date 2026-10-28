@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { spaceWindow, wheelDistance } from './space-navigation.js';
+import { spaceWindow, wheelDistance, motionBlend } from './space-navigation.js';
 
 const slots = [[1.2, 1], [2.8, -5], [-1.8, 2], [2.1, -3], [-.3, 0], [-2.8, 4]];
 const spacing = 5.4;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export async function createGallery(canvas, projects, onSelect, onBrowse = () => {}) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 650 ? 1.3 : 1.6));
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: innerWidth>=650, powerPreference: 'default' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 650 ? 1.25 : 1.5));
   renderer.setClearColor('#08090e');
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(44, 1, .1, 250);
@@ -28,11 +28,15 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
   let requested = 0, rendering = false, dirtyUntil = 0, frames = 0;
   let paused = false, animation = null;
   let collection = [], position = 0, destination = 0, browsing = true, announced = '';
+  let windowKey = '', activeItems = [], lastFrame = 0, createdPanels = 0, cacheHits = 0;
   let selected = projects[0]?.id, hovered = null;
   const panels = new Map();
+  const cachedPanels = new Map();
+  const cacheLimit = () => canvas.clientWidth < 650 ? 8 : 12;
   const loader = new THREE.TextureLoader();
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+  const targetVector = new THREE.Vector3(), desiredCamera = new THREE.Vector3();
   const field = new THREE.Group(); scene.add(field);
   const capacity = () => canvas.clientWidth < 650 ? 3 : 6;
   const centerX = () => (position + (Math.min(collection.length, capacity()) - 1) / 2) * spacing;
@@ -40,16 +44,26 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
     const surface = document.createElement('canvas');
     surface.width = width; surface.height = height;
     draw(surface.getContext('2d'), width, height);
-    const map = new THREE.CanvasTexture(surface); map.colorSpace = THREE.SRGBColorSpace; return map;
+    const map = new THREE.CanvasTexture(surface); map.colorSpace = THREE.SRGBColorSpace;
+    map.generateMipmaps=false;map.minFilter=THREE.LinearFilter;return map;
   }
   const starMap = texture(32, 32, ctx => {
-    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(16, 16, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = .15; ctx.beginPath(); ctx.arc(16, 16, 11, 0, Math.PI * 2); ctx.fill();
+    const halo=ctx.createRadialGradient(16,16,3,16,16,16);
+    halo.addColorStop(0,'#ffffff');halo.addColorStop(.4,'#ffffffb0');halo.addColorStop(1,'#ffffff00');
+    ctx.fillStyle=halo;ctx.fillRect(0,0,32,32);
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(16,16,8,0,Math.PI*2);ctx.fill();
+  });
+  const sparkleMap=texture(128,128,ctx=>{
+    const halo=ctx.createRadialGradient(64,64,1,64,64,61);
+    halo.addColorStop(0,'#ffffff');halo.addColorStop(.13,'#ffffffd9');halo.addColorStop(.35,'#dceaff35');halo.addColorStop(1,'#ffffff00');
+    ctx.fillStyle=halo;ctx.fillRect(0,0,128,128);
+    ctx.strokeStyle='#ffffffa0';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(64,10);ctx.lineTo(64,118);ctx.moveTo(10,64);ctx.lineTo(118,64);ctx.stroke();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(64,64,6,0,Math.PI*2);ctx.fill();
   });
   // Seeded star fields are independent of project count and use three draw calls.
   let seed = 437;
   function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
-  function stars(count, size, band = false) {
+  function stars(count, size, band = false, sparkle = false) {
     const positions = [], colors = [];
     for (let i = 0; i < count; i++) {
       const x = (random() - .5) * 180;
@@ -57,18 +71,18 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
       const z = band ? -45 - random() * 40 : -100 + random() * 125;
       if (Math.hypot(x, y, z) < 20) { i--; continue; }
       positions.push(x, y, z);
-      const value = .25 + random() * .7, tint = random();
-      colors.push(value, value * (tint < .12 ? .65 : .96), value * (tint > .88 ? .7 : 1));
+      const value = (sparkle ? .85 : .45) + random() * .55, tint = random();
+      colors.push(value*(tint<.16?.72:1), value*(tint>.88?.85:.95), value*(tint>.88?.62:1));
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    field.add(new THREE.Points(geometry, new THREE.PointsMaterial({size, map:starMap, vertexColors:true, transparent:true, depthWrite:false, opacity:band ? .7 : .95, blending:THREE.AdditiveBlending})));
+    field.add(new THREE.Points(geometry, new THREE.PointsMaterial({size, map:sparkle?sparkleMap:starMap, vertexColors:true, transparent:true, depthWrite:false, opacity:band ? .85 : 1, blending:THREE.AdditiveBlending})));
   }
   const mobile = innerWidth < 650;
-  stars(mobile ? 1100 : 2400, .5);
-  stars(mobile ? 160 : 320, .95);
-  stars(mobile ? 1500 : 3400, .32, true);
+  stars(mobile ? 1100 : 2400, .65);
+  stars(mobile ? 90 : 180, 1.8, false, true);
+  stars(mobile ? 1500 : 3400, .43, true);
   function circle(radius, color, opacity, parent) {
     const points = Array.from({length:97}, (_, i) => new THREE.Vector3(Math.cos(i / 96 * Math.PI * 2) * radius, Math.sin(i / 96 * Math.PI * 2) * radius, 0));
     const object = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color, transparent:true, opacity}));
@@ -77,6 +91,7 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
   const orbit = new THREE.Group(); orbit.rotation.set(-1.12, .18, -.2); field.add(orbit);
   circle(9.9, '#6e7489', .16, orbit); circle(13.6, '#8a6174', .1, orbit);
   function disposePanel(panel) {
+      panel.disposed=true;
       scene.remove(panel.group);
       panel.group.traverse(object => {
         object.geometry?.dispose();
@@ -89,9 +104,11 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
     if (!items.some(p => p.id === selected)) selected = items[0]?.id;
     position = destination = spaceWindow(items.length, items.findIndex(p => p.id === selected) - (capacity()-1)/2, capacity()).position;
     browsing = true; animation = null; announced = '';
+    windowKey='';
     updateWindow(); overview(true);
   }
   function createPanel(project, index) {
+      createdPanels++;
       const [y,z] = slots[index % slots.length];
       const group = new THREE.Group(); group.position.set(index*spacing, y, z); scene.add(group);
       const color = '#acbfd3';
@@ -103,7 +120,8 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
       const dot = new THREE.Mesh(new THREE.CircleGeometry(.075, 24), new THREE.MeshBasicMaterial({color}));
       dot.position.set(0, 1.65, .02); group.add(dot);
       const ring = circle(.15, color, .9, group); ring.position.copy(dot.position);
-      const labelMap = texture(768, 160, ctx => {
+      const labelMap = texture(512, 106, ctx => {
+        ctx.scale(512/768,106/160);
         ctx.textAlign = 'center';
         ctx.fillStyle = '#eef0f6'; let size = 68; ctx.font = `500 ${size}px "Microsoft YaHei", sans-serif`;
         while (ctx.measureText(project.title).width > 748 && size > 26) ctx.font = `500 ${--size}px "Microsoft YaHei", sans-serif`;
@@ -112,29 +130,36 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
       });
       const label = new THREE.Mesh(new THREE.PlaneGeometry(3.6, .75), new THREE.MeshBasicMaterial({map:labelMap, transparent:true, depthWrite:false}));
       label.position.set(0, -.65, .02); label.userData.projectId = project.id; group.add(label);
-      const panel = {group, screen, label, frame, ring, color};
+      const panel = {group, screen, label, frame, ring, color, disposed:false};
       panels.set(project.id, panel);
-      loader.loadAsync(project.cover).then(map => {
-        if (panels.get(project.id) !== panel) { map.dispose(); return; }
+      loader.loadAsync(project.preview||project.cover).then(map => {
+        if (panel.disposed) { map.dispose(); return; }
         map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
-        screenMaterial.color.set('#ffffff'); screenMaterial.map = map; screenMaterial.needsUpdate = true; wake();
-      }).catch(() => { if (panels.get(project.id) === panel) { screenMaterial.color.set(color); wake(); } });
+        map.generateMipmaps=false;map.minFilter=THREE.LinearFilter;
+        screenMaterial.color.set('#ffffff'); screenMaterial.map = map; screenMaterial.needsUpdate = true; if(panels.get(project.id)===panel)wake();
+      }).catch(() => { if (!panel.disposed) { screenMaterial.color.set(color); wake(); } });
   }
   function updateWindow() {
     const window = spaceWindow(collection.length, position, capacity());
-    const items = collection.slice(window.start,window.end);
-    const ids = new Set(items.map(p=>p.id));
-    for (const [id,panel] of panels) if (!ids.has(id)) { disposePanel(panel); panels.delete(id); }
-    items.forEach((p,i) => {
+    const key=`${window.start}:${window.end}`;
+    if(key!==windowKey) {
+      windowKey=key;
+      activeItems=collection.slice(window.start,window.end);
+      const ids=new Set(activeItems.map(p=>p.id));
+      for(const [id,panel] of panels)if(!ids.has(id)){scene.remove(panel.group);panels.delete(id);cachedPanels.set(id,panel);}
+      activeItems.forEach((p,i) => {
       const index=window.start+i;
+      if(!panels.has(p.id)&&cachedPanels.has(p.id)){const panel=cachedPanels.get(p.id);cachedPanels.delete(p.id);panels.set(p.id,panel);scene.add(panel.group);cacheHits++;}
       if (!panels.has(p.id)) createPanel(p,index);
-      else {const [y,z]=slots[index%slots.length];panels.get(p.id).group.position.set(index*spacing,y,z);}
-    });
-    if (items.length && !ids.has(selected)) selected = items[0].id;
+      const [y,z]=slots[index%slots.length];panels.get(p.id).group.position.set(index*spacing,y,z);
+      });
+    }
+    while(panels.size+cachedPanels.size>cacheLimit()){const [id,panel]=cachedPanels.entries().next().value;disposePanel(panel);cachedPanels.delete(id);}
+    if (activeItems.length && !panels.has(selected)) selected = activeItems[0].id;
     const signature = `${window.start}:${window.end}:${selected}`;
     if (signature !== announced) {
       announced = signature;
-      onBrowse(items,window.start,collection.length,selected);
+      onBrowse(activeItems,window.start,collection.length,selected);
     }
     return window;
   }
@@ -181,18 +206,20 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
   }
   function render(now) {
     requested = 0; if (paused || document.hidden) return; rendering = true;
+    const elapsed=lastFrame?now-lastFrame:16.67;lastFrame=now;
+    const blend=reduced?1:motionBlend(elapsed,down?.dragged?45:75);
     const previous = position;
     if (browsing) {
-      position += (destination-position) * (reduced ? 1 : .14);
+      position += (destination-position) * blend;
       if (Math.abs(destination-position)<.001) position = destination;
       updateWindow();
-      const target = new THREE.Vector3(centerX(),0,0);
-      const offset = new THREE.Vector3(0,innerWidth<650?7:5,innerWidth<650?48:30);
-      camera.position.lerp(target.clone().add(offset),reduced?1:.14);
-      controls.target.lerp(target,reduced?1:.14);
+      const target = targetVector.set(centerX(),0,0);
+      desiredCamera.set(target.x,innerWidth<650?7:5,innerWidth<650?48:30);
+      camera.position.lerp(desiredCamera,blend);
+      controls.target.lerp(target,blend);
       camera.position.x = target.x;
       controls.target.x = target.x;
-      camera.zoom = THREE.MathUtils.lerp(camera.zoom,1,reduced?1:.14); camera.updateProjectionMatrix();
+      if(Math.abs(camera.zoom-1)>.0001){camera.zoom=THREE.MathUtils.lerp(camera.zoom,1,blend);camera.updateProjectionMatrix();}
     }
     if (animation) {
       const t = Math.min((now - animation.started) / 1100, 1), k = 1 - (1 - t) ** 3;
@@ -213,12 +240,15 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
       p.ring.visible = id === selected || id === hovered;
     }
     renderer.render(scene, camera); frames++; rendering = false;
-    const moving = browsing && (Math.abs(destination-previous)>.001 || camera.position.distanceTo(new THREE.Vector3(centerX(),innerWidth<650?7:5,innerWidth<650?48:30))>.005 || Math.abs(camera.zoom-1)>.001);
+    const moving = browsing && (Math.abs(destination-previous)>.001 || camera.position.distanceTo(desiredCamera)>.005 || Math.abs(camera.zoom-1)>.001);
     if (animation || moving || controls.autoRotate || now < dirtyUntil) requested = requestAnimationFrame(render);
   }
   function wake(duration = 180) {
     dirtyUntil = Math.max(dirtyUntil, performance.now() + duration);
-    if (!requested && !rendering && !paused && !document.hidden) requested = requestAnimationFrame(render);
+    if (!requested && !rendering && !paused && !document.hidden) {
+      if(performance.now()-lastFrame>120)lastFrame=0;
+      requested=requestAnimationFrame(render);
+    }
   }
   function resize() {
     camera.aspect = canvas.clientWidth / canvas.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(canvas.clientWidth, canvas.clientHeight, false); wake();
@@ -272,7 +302,7 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
     zoom(direction) { animation = null; browsing=false; camera.zoom = THREE.MathUtils.clamp(camera.zoom * (direction > 0 ? 1.16 : .86), .7, 2.3); camera.updateProjectionMatrix(); wake(); },
     orbit(value) { animation = null; browsing=false; controls.autoRotate = value && !reduced; wake(); return controls.autoRotate; },
     debug() {
-      return {frameCount:frames, loaded:[...panels.values()].filter(p=>p.screen.material.map).length, nodeCount:panels.size, selected, paused, autoRotate:controls.autoRotate, position, destination, capacity:capacity(), maxPosition:spaceWindow(collection.length,position,capacity()).max, camera:camera.position.toArray(), zoom:camera.zoom, draws:renderer.info.render.calls,
+      return {frameCount:frames, loaded:[...panels.values()].filter(p=>p.screen.material.map).length, nodeCount:panels.size, cachedProjects:cachedPanels.size, retainedProjects:panels.size+cachedPanels.size, cacheLimit:cacheLimit(), createdPanels,cacheHits,selected, paused, autoRotate:controls.autoRotate, position, destination, capacity:capacity(), maxPosition:spaceWindow(collection.length,position,capacity()).max, camera:camera.position.toArray(), zoom:camera.zoom, draws:renderer.info.render.calls,
         projected:[...panels].map(([id, p]) => { const v = p.screen.getWorldPosition(new THREE.Vector3()).project(camera); return {id, x:(v.x + 1) / 2 * canvas.clientWidth, y:(1 - v.y) / 2 * canvas.clientHeight}; })};
     },
   };
