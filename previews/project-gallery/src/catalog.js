@@ -1,6 +1,9 @@
 import { motionProjects } from './projects-motion.js';
 import { aiProjects } from './projects-ai.js';
 
+const publicBase = import.meta.env?.BASE_URL || '/';
+const publicAsset = path => publicBase + path.replace(/^\//, '');
+
 export const projects = [
   {
     id:'taozhiyy', title:'桃之夭夭', author:'taozhiyy', category:'个人网站',
@@ -10,10 +13,10 @@ export const projects = [
     license:'本站原创内容；复用前分别核对源仓库及图片、音乐等素材的授权，不因公开访问而自动获得转载或商用许可。',
     licenseUrl:'https://github.com/bistutzyy/taozhiyy', reviewedAt:'2026-10-28',
     tags:['React','个人网站','四季','相册','时间轴'],
-    demo:{kind:'external',url:'https://taozhiyy.top/',label:'访问本站',note:'已上线的真实站点；此预览不会修改线上页面或数据。'},
+    demo:{kind:'external',url:'https://taozhiyy.top/',label:'访问本站',note:'已上线的真实站点，可浏览首页影像、四季页面与建站记录。'},
     sections:[
       ['关于这个项目','桃之夭夭是这个项目馆所在的小站。首页用影像片段串联不同入口，四季主题分布在关于我、浮光集、哔哩和友链页面。'],
-      ['从主页开始','先浏览首页片段，进入博客或建站纪事；导航中的浮光集可以继续查看相册与碎语。当前项目馆仍为独立本地预览。'],
+      ['从主页开始','先浏览首页片段，进入博客或建站纪事；导航中的浮光集可以继续查看相册与碎语。奇想馆展示项目介绍与原始来源。'],
       ['浏览与互动','相册封面进入对应照片集合，创造纪事提供时间轴与文章索引。留言与评论的开放情况以各页面当前状态为准。'],
       ['预期效果','外部入口打开站点本身，动态封面、季节背景和内容均来自真实页面；封面截图只保留采集时的画面。'],
       ['源码与复用','通过下方来源链接查看源仓库。计划复用时先阅读项目说明与部署约束，另外确认第三方素材许可；不要复制生产配置或密钥。'],
@@ -21,7 +24,7 @@ export const projects = [
   },
   ...motionProjects,
   ...aiProjects,
-].map(project => ({...project,preview:project.cover.replace('/covers/','/thumbs/')}));
+].map(project => ({...project,cover:publicAsset(project.cover),preview:publicAsset(project.cover.replace('/covers/','/thumbs/'))}));
 
 export function filterProjects(items, query = '') {
   const term = query.trim().toLocaleLowerCase();

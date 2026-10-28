@@ -5,6 +5,12 @@ with project panels and accessible HTML project details. Magic Portfolio remains
 the fallback direction. The name is provisional. No production integration,
 publication, API credentials, account changes, or paid trial APIs.
 
+Deployment authorized on 2026-10-28: main's build now invokes
+tools/build-project-gallery.mjs, runs the project tests and builds with /projects/
+as its base, then stages the output in main/dist/projects. The existing server
+pull deploy backs up and syncs main/dist without any new SSH ingress or secrets.
+Homepage fragment 01 links to /projects/. Production omits the local-preview badge.
+
 Implementation: standalone Vite + Three.js, using OrbitControls for exploration.
 Current design: explorable project starfield with near-black space, real project
 covers and rose/cyan markers. Replaces garden and exhibition previews (DESIGN.md).

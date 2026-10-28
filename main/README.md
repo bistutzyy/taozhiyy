@@ -30,6 +30,7 @@ This version has been extensively customized for personal use:
 
 ## 🧩 Current Site Modules
 
+- `/projects/`: 奇想馆 project cosmos, linked from homepage fragment 01. Built separately and included in `main/dist/projects` by `npm run build`.
 - `/moments`: 碎语 page, with postcard/ticket/watercolor/poem/journal/ribbon style modules.
 - `/friends`: friend links and friend-page messages.
 - `/gallery`: gallery albums and published image URLs.

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
+    "build:site": "vite build --base=/projects/",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": { "three": "0.186.1", "lucide": "1.62.0" },

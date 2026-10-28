@@ -11,10 +11,12 @@ const COS = cosAsset(
 const ARCHIVE_ITEMS = [
   {
     index: "01",
-    title: "开场影像",
-    subtitle: "片段一",
+    title: "奇想馆",
+    subtitle: "项目星空",
     src: `${COS}/videos/feature-1.mp4`,
-    note: "这一组影像里的第一枚碎片，被安静地留作开场。",
+    note: "沿着星光，收集项目、工具与创作灵感。",
+    linkUrl: "/projects/",
+    linkText: "进入奇想馆",
   },
   {
     index: "02",
@@ -115,6 +117,18 @@ export const ExhibitCard = ({
           <div className="pointer-events-none absolute left-5 top-5 rounded-full border border-white/20 bg-white/12 px-4 py-2 font-general text-[10px] uppercase tracking-[0.35em] text-blue-50/80 backdrop-blur-md">
             片段 {index}
           </div>
+        )}
+        {linkUrl && (
+          <a
+            href={linkUrl}
+            aria-label={linkText}
+            className="absolute inset-0 z-20 flex items-end justify-between gap-4 p-6 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-pink-200 md:p-10"
+          >
+            <span className="min-w-0 text-3xl font-semibold drop-shadow-lg md:text-5xl">{title}</span>
+            <span className="inline-flex shrink-0 items-center gap-2 border-b border-white/60 pb-2 text-xs font-semibold md:text-sm">
+              {linkText}<TiLocationArrow aria-hidden="true" />
+            </span>
+          </a>
         )}
       </div>
     );
@@ -387,6 +401,9 @@ const Features = () => {
           <ExhibitCard
             src={`${COS}/videos/feature-1.mp4`}
             index="01"
+            title="奇想馆"
+            linkUrl="/projects/"
+            linkText="进入奇想馆"
             videoPriority
             visualOnly
           />

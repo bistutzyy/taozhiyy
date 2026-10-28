@@ -1,0 +1,57 @@
+const {chromium}=require('playwright');
+const sharp=require('sharp');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const origin=new URL(process.argv[2]||'http://127.0.0.1:5197').origin;
+const output=path.resolve(__dirname,'../previews/project-gallery/.qa');
+
+(async()=>{
+  fs.mkdirSync(output,{recursive:true});
+  const browser=await chromium.launch({channel:'msedge',headless:true,args:['--enable-unsafe-swiftshader']});
+  try {
+    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const errors=[],badAssets=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    page.on('response',r=>{if(r.url().startsWith(origin+'/projects/')&&r.status()>=400)badAssets.push([r.status(),r.url()]);});
+    await page.goto(origin+'/',{waitUntil:'domcontentloaded',timeout:60000});
+    const entry=page.locator('a[href="/projects/"][aria-label="进入奇想馆"]');
+    await entry.scrollIntoViewIfNeeded();
+    assert.equal(await entry.isVisible(),true);
+    await page.screenshot({path:path.join(output,'production-entry.png')});
+    await entry.click();
+    await page.waitForURL(origin+'/projects/');
+    await page.waitForFunction(()=>window.__galleryDebug?.().loaded===7,null,{timeout:30000});
+    await page.waitForTimeout(1600);
+    assert.equal(await page.title(),'奇想馆 · 项目星空');
+    assert.equal(await page.locator('.preview-badge').count(),0);
+    assert.ok(await page.locator('.dock-item img').evaluateAll(nodes=>nodes.every(n=>n.src.includes('/projects/thumbs/'))));
+    const shot=await page.screenshot({path:path.join(output,'production-space.png')});
+    const pixels=await sharp(shot).stats();
+    assert.ok(pixels.channels[0].stdev>15);
+    await page.mouse.move(900,460);
+    await page.mouse.wheel(0,120);
+    await page.waitForTimeout(300);
+    assert.ok(await page.evaluate(()=>window.__galleryDebug().position>0));
+    await page.locator('#gallery-canvas').focus();
+    await page.keyboard.press('End');
+    await page.waitForFunction(()=>Math.abs(window.__galleryDebug().position-3)<.002);
+    await page.locator('[data-project="drawio"]').click();
+    await page.locator('#open-project').click();
+    assert.equal(await page.locator('#detail-title').textContent(),'Next AI Draw.io');
+    assert.ok((await page.locator('.detail-cover').getAttribute('src')).startsWith('/projects/covers/'));
+    assert.ok((await page.locator('#detail-source').innerText()).includes('Dayuan Jiang'));
+    await page.locator('#close-dialog').click();
+    await page.setViewportSize({width:390,height:844});
+    await page.waitForTimeout(1700);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    assert.ok(await page.evaluate(()=>window.__galleryDebug().retainedProjects<=8));
+    await page.screenshot({path:path.join(output,'production-mobile.png')});
+    const release=await page.request.get(origin+'/projects/release.json?v='+Date.now());
+    assert.equal(release.status(),200);
+    const metadata=await release.json();assert.equal(metadata.app,'project-cosmos');
+    assert.deepEqual(badAssets,[]);
+    assert.deepEqual(errors,[]);
+    console.log(JSON.stringify({status:'PASS',origin,release:metadata,checks:['homepage-entry','project-assets','canvas','scroll','tutorial','attribution','mobile','no-page-errors']}));
+  } finally {await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

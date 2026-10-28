@@ -9,6 +9,9 @@ on:
       - "main/**"
       - "blog/**"
       - "build/**"
+      - "previews/project-gallery/**"
+      - "tools/build-project-gallery.mjs"
+      - "tools/test_project_gallery_deploy.py"
       - "acg-api/**"
       - "deploy/**"
       - "shared/**"
@@ -18,6 +21,9 @@ on:
       - "main/**"
       - "blog/**"
       - "build/**"
+      - "previews/project-gallery/**"
+      - "tools/build-project-gallery.mjs"
+      - "tools/test_project_gallery_deploy.py"
       - "acg-api/**"
       - "deploy/**"
       - "shared/**"
@@ -51,6 +57,7 @@ jobs:
             main/package-lock.json
             blog/package-lock.json
             build/package-lock.json
+            previews/project-gallery/package-lock.json
 
       - name: Setup Go
         uses: actions/setup-go@v5

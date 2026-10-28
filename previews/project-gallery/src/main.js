@@ -19,6 +19,7 @@ let sceneFailed = false;
 let opener = null;
 let detailProject = null;
 const dialog = $('#project-dialog');
+if (import.meta.env.PROD) $('.preview-badge')?.remove();
 $('#scene-view span').textContent = '星空';
 $('.intro .eyebrow').innerHTML = '<span class="accent-rule"></span>AN ATLAS OF IDEAS';
 $('.intro p').textContent = '让作品与灵感，在这里交汇。';
