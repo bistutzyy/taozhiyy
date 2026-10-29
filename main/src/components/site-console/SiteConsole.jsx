@@ -8,7 +8,6 @@ import {
   LuBell,
   LuBookOpen,
   LuCheck,
-  LuChevronDown,
   LuCommand,
   LuCopy,
   LuDices,
@@ -32,18 +31,18 @@ import {
   CONSOLE_QUICK_LINKS,
   CONSOLE_UPDATES,
 } from "./consoleContent.js";
-import projectCover from "./covers/projects.png";
-import blogCover from "./covers/blog.png";
-import buildCover from "./covers/build.png";
 import "./site-console.css";
 
-const covers = { projects: projectCover, blog: blogCover, build: buildCover };
 const fragmentIcons = [LuSparkles, LuBookOpen, LuLayoutGrid];
 const quickIcons = { glimmer: LuImages, friends: LuHeart, pulse: LuMonitor };
 const fragmentDestination = (href) =>
   import.meta.env.DEV && ["/projects/", "/build/"].includes(href)
     ? `https://taozhiyy.top${href}`
     : href;
+const journal = [
+  ...CONSOLE_ANNOUNCEMENTS.map((message) => ({ ...message, kind: "公告" })),
+  ...CONSOLE_UPDATES.map((message) => ({ ...message, kind: "更新" })),
+];
 
 export default function SiteConsole({
   open,
@@ -52,15 +51,13 @@ export default function SiteConsole({
   onToggleAudio,
   onSwitchCover,
 }) {
-  const [tab, setTab] = useState("announcements");
   const [copyState, setCopyState] = useState("");
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
+  const feedRef = useRef(null);
   const returnFocusRef = useRef(null);
   const copyTimerRef = useRef(null);
-
   useEffect(() => () => window.clearTimeout(copyTimerRef.current), []);
-
   useEffect(() => {
     if (!open) return undefined;
     returnFocusRef.current = document.activeElement;
@@ -69,6 +66,7 @@ export default function SiteConsole({
     const previousInert = background?.inert;
     if (background) background.inert = true;
     document.body.style.overflow = "hidden";
+    if (feedRef.current) feedRef.current.scrollTop = 0;
     closeRef.current?.focus({ preventScroll: true });
     const onKey = (event) => {
       if (event.key === "Escape") {
@@ -78,7 +76,7 @@ export default function SiteConsole({
       if (event.key === "Tab") {
         const focusable = [
           ...dialogRef.current.querySelectorAll(
-            'a[href], button:not([disabled]), summary, [tabindex="0"]',
+            'a[href], button:not([disabled]), [tabindex="0"]',
           ),
         ].filter((element) => element.getClientRects().length);
         const first = focusable[0];
@@ -105,9 +103,7 @@ export default function SiteConsole({
         returnFocusRef.current.focus({ preventScroll: true });
     };
   }, [open, onClose]);
-
   if (!open) return null;
-
   const copySite = async () => {
     window.clearTimeout(copyTimerRef.current);
     try {
@@ -118,7 +114,6 @@ export default function SiteConsole({
     }
     copyTimerRef.current = window.setTimeout(() => setCopyState(""), 2600);
   };
-
   const goTop = () => {
     onClose();
     window.scrollTo({
@@ -128,24 +123,6 @@ export default function SiteConsole({
         : "smooth",
     });
   };
-
-  const onTabKey = (event) => {
-    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    const next =
-      event.key === "Home"
-        ? "announcements"
-        : event.key === "End"
-          ? "updates"
-          : tab === "announcements"
-            ? "updates"
-            : "announcements";
-    setTab(next);
-    document.getElementById(`console-tab-${next}`)?.focus();
-  };
-
-  const entries =
-    tab === "announcements" ? CONSOLE_ANNOUNCEMENTS : CONSOLE_UPDATES;
 
   return createPortal(
     <div className="site-console-layer">
@@ -176,7 +153,7 @@ export default function SiteConsole({
           </div>
           <div className="console-heading-end">
             <span className="console-local-time">
-              <LuFlower2 aria-hidden="true" />{" "}
+              <LuFlower2 aria-hidden="true" />
               {new Intl.DateTimeFormat("zh-CN", {
                 month: "long",
                 day: "numeric",
@@ -187,7 +164,7 @@ export default function SiteConsole({
             <button
               ref={closeRef}
               type="button"
-              className="console-icon-key console-close"
+              className="console-icon-key"
               onClick={onClose}
               aria-label="关闭控制台"
               title="关闭控制台"
@@ -196,97 +173,59 @@ export default function SiteConsole({
             </button>
           </div>
         </header>
-
         <div className="console-workspace">
-          <aside className="console-journal" aria-label="公告与更新">
+          <aside className="console-journal" aria-label="小站日志">
             <div className="console-section-label">
               <LuBell aria-hidden="true" />
-              <span>小站消息</span>
-              <span className="console-section-index">01 / JOURNAL</span>
+              <span>公告与更新</span>
+              <span className="console-section-index">JOURNAL</span>
             </div>
             <div
-              className="console-tabs"
-              role="tablist"
-              aria-label="消息分类"
-              onKeyDown={onTabKey}
+              ref={feedRef}
+              className="console-journal-feed"
+              role="log"
+              aria-label="公告与更新日志"
+              aria-live="off"
+              tabIndex={0}
             >
-              {[
-                ["announcements", "公告"],
-                ["updates", "更新日志"],
-              ].map(([id, label]) => (
-                <button
-                  key={id}
-                  id={`console-tab-${id}`}
-                  type="button"
-                  role="tab"
-                  tabIndex={tab === id ? 0 : -1}
-                  aria-selected={tab === id}
-                  aria-controls="console-journal-panel"
-                  onClick={() => setTab(id)}
+              {journal.map((message, index) => (
+                <article
+                  className={`console-journal-entry ${message.kind === "更新" ? "is-update" : ""}`}
+                  key={message.id}
                 >
-                  {label}
-                  {tab === id && <span className="console-tab-light" />}
-                </button>
-              ))}
-            </div>
-            <div
-              id="console-journal-panel"
-              role="tabpanel"
-              aria-labelledby={`console-tab-${tab}`}
-              className="console-journal-entries"
-              key={tab}
-            >
-              {entries.map((item, index) => (
-                <details
-                  className={`console-journal-entry ${index === 0 ? "is-featured" : ""}`}
-                  key={item.id}
-                  open={index === 0 ? true : undefined}
-                >
-                  <summary>
-                    <span className="console-entry-meta">
-                      {index === 0 && tab === "announcements" ? (
-                        <LuPin aria-hidden="true" />
-                      ) : (
-                        <span className="console-entry-dot" />
-                      )}
-                      {item.tag}
-                      {item.date && (
-                        <time dateTime={item.date}>
-                          {item.date.slice(5).replace("-", ".")}
-                        </time>
-                      )}
+                  <span className="console-journal-node" aria-hidden="true" />
+                  <div className="console-entry-meta">
+                    <span>
+                      {message.kind} / {message.tag}
                     </span>
-                    <span className="console-entry-title">
-                      {item.title}
-                      <LuChevronDown aria-hidden="true" />
-                    </span>
-                  </summary>
-                  <div className="console-entry-body">
-                    <p>{item.text}</p>
-                    {item.href && (
-                      <a href={fragmentDestination(item.href)}>
-                        {item.action}
-                        <LuArrowUpRight aria-hidden="true" />
-                      </a>
-                    )}
+                    {message.date ? (
+                      <time dateTime={message.date}>{message.date}</time>
+                    ) : index === 0 ? (
+                      <LuPin aria-label="置顶" />
+                    ) : null}
                   </div>
-                </details>
+                  <h3>{message.title}</h3>
+                  <p>{message.text}</p>
+                  {message.href && (
+                    <a href={fragmentDestination(message.href)}>
+                      {message.action}
+                      <LuArrowUpRight aria-hidden="true" />
+                    </a>
+                  )}
+                </article>
               ))}
-            </div>
-            <div className="console-journal-signature">
-              <span className="console-tiny-flower" aria-hidden="true">
-                <LuFlower2 />
-              </span>
-              <span>写给每一个偶然路过的你</span>
+              <p className="console-feed-signature">
+                <LuFlower2 aria-hidden="true" />
+                写给每一个偶然路过的你
+              </p>
             </div>
           </aside>
-
           <div className="console-main">
             <section className="console-fragments" aria-label="片段入口">
               <div className="console-section-label">
                 <LuLayoutGrid aria-hidden="true" />
                 <span>从这里出发</span>
-                <span className="console-section-index">02 / EXPLORE</span>
+                <span className="console-section-index">EXPLORE / 01–03</span>
               </div>
               <div className="console-fragment-grid">
                 {CONSOLE_FRAGMENTS.map((fragment, index) => {
@@ -297,51 +236,42 @@ export default function SiteConsole({
                       key={fragment.id}
                       className={`console-fragment console-fragment--${fragment.id}`}
                     >
+                      <div className="console-fragment-heading">
+                        <span className="console-number-key">
+                          {fragment.id}
+                        </span>
+                        <Icon
+                          className="console-fragment-symbol"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="console-fragment-copy">
+                        <span className="console-fragment-english">
+                          {fragment.english}
+                        </span>
+                        <h3>{fragment.title}</h3>
+                        <p>{fragment.description}</p>
+                      </div>
                       <a
-                        className="console-fragment-cover"
+                        className="console-key console-enter-key"
                         href={fragmentDestination(fragment.href)}
                         aria-label={fragment.action}
                         {...(external
                           ? { target: "_blank", rel: "noopener noreferrer" }
                           : {})}
                       >
-                        <img
-                          src={covers[fragment.cover]}
-                          alt={`${fragment.title}页面预览`}
-                          width="1120"
-                          height="700"
-                        />
-                        <span className="console-number-key">
-                          {fragment.id}
+                        <Icon aria-hidden="true" />
+                        <span className="console-enter-label">
+                          {fragment.action}
                         </span>
-                        <span className="console-cover-launch">
-                          <LuArrowUpRight aria-hidden="true" />
-                        </span>
+                        <span className="console-enter-short">进入</span>
+                        <LuArrowUpRight aria-hidden="true" />
                       </a>
-                      <div className="console-fragment-info">
-                        <span className="console-fragment-english">
-                          {fragment.english}
-                        </span>
-                        <h3>{fragment.title}</h3>
-                        <p>{fragment.description}</p>
-                        <a
-                          className="console-key console-enter-key"
-                          href={fragmentDestination(fragment.href)}
-                          {...(external
-                            ? { target: "_blank", rel: "noopener noreferrer" }
-                            : {})}
-                        >
-                          <Icon aria-hidden="true" />
-                          <span>{fragment.action}</span>
-                          <LuArrowUpRight aria-hidden="true" />
-                        </a>
-                      </div>
                     </article>
                   );
                 })}
               </div>
             </section>
-
             <div className="console-lower-deck">
               <section
                 className="console-lottery"
@@ -390,10 +320,6 @@ export default function SiteConsole({
                   <div className="console-machine-lever">
                     <span />
                   </div>
-                  <div className="console-machine-feet">
-                    <i />
-                    <i />
-                  </div>
                 </div>
               </section>
               <section className="console-shortcuts" aria-label="快捷访问">
@@ -426,7 +352,6 @@ export default function SiteConsole({
             </div>
           </div>
         </div>
-
         <footer className="console-control-strip">
           <a className="console-site-address" href="/">
             <LuFlower2 aria-hidden="true" />
@@ -438,6 +363,7 @@ export default function SiteConsole({
             <button
               type="button"
               className={`console-tool-key ${isAudioPlaying ? "is-on" : ""}`}
+              aria-label="音乐"
               aria-pressed={isAudioPlaying}
               onClick={onToggleAudio}
               title={isAudioPlaying ? "关闭背景音乐" : "播放背景音乐"}
@@ -449,6 +375,7 @@ export default function SiteConsole({
             <button
               type="button"
               className="console-tool-key"
+              aria-label="换封面"
               onClick={onSwitchCover}
               title="切换首页封面"
             >
@@ -458,6 +385,7 @@ export default function SiteConsole({
             <button
               type="button"
               className="console-tool-key"
+              aria-label="分享"
               onClick={copySite}
               title="复制站点链接"
             >
@@ -468,6 +396,7 @@ export default function SiteConsole({
             <button
               type="button"
               className="console-tool-key"
+              aria-label="顶部"
               onClick={goTop}
               title="回到顶部"
             >
@@ -477,6 +406,7 @@ export default function SiteConsole({
             <button
               type="button"
               className="console-tool-key console-power-key"
+              aria-label="收起"
               onClick={onClose}
               title="收起控制台"
             >

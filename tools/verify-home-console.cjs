@@ -13,10 +13,33 @@ async function openConsole(page, width) {
   await page.getByRole('dialog', { name: '控制台.' }).waitFor();
 }
 
+async function checkFit(dialog, width, height) {
+  const geometry = await dialog.evaluate((element) => {
+    const workspace = element.querySelector('.console-workspace');
+    const rect = element.getBoundingClientRect();
+    const body = workspace.getBoundingClientRect();
+    const controls = element.querySelector('.console-control-strip').getBoundingClientRect();
+    const clipped = [...workspace.querySelectorAll('a[href], button')].filter((node) => {
+      if (!node.getClientRects().length) return false;
+      if (node.closest('.console-journal-feed')) return false;
+      const r = node.getBoundingClientRect();
+      return r.top < body.top - 1 || r.bottom > body.bottom + 1 || r.left < body.left - 1 || r.right > body.right + 1;
+    }).map((node) => node.getAttribute('aria-label') || node.textContent.trim());
+    return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, overflow: workspace.scrollWidth - workspace.clientWidth, verticalOverflow: workspace.scrollHeight - workspace.clientHeight, controlsBottom: controls.bottom, clipped };
+  });
+  assert.ok(geometry.left >= 0 && geometry.right <= width + 1 && geometry.bottom <= height + 1);
+  assert.ok(Math.abs((geometry.left + geometry.right) / 2 - width / 2) <= 1, 'horizontal centering');
+  assert.ok(Math.abs((geometry.top + geometry.bottom) / 2 - height / 2) <= 1, 'vertical centering');
+  assert.ok(geometry.overflow <= 1, `horizontal overflow at ${width}: ${geometry.overflow}`);
+  assert.ok(geometry.verticalOverflow <= 1, `vertical overflow at ${width}x${height}: ${geometry.verticalOverflow}`);
+  assert.deepEqual(geometry.clipped, [], `clipped controls at ${width}x${height}`);
+  assert.ok(geometry.controlsBottom <= height);
+}
+
 (async () => {
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
-    for (const [width, height] of [[1440, 1000], [1920, 1080], [1024, 768], [768, 1024], [390, 844], [320, 740]]) {
+    for (const [width, height] of [[1366, 768], [1440, 900], [1280, 720], [1920, 1080], [1024, 768], [1024, 600], [768, 1024], [390, 844], [320, 740], [320, 568], [390, 500], [844, 390]]) {
       const context = await browser.newContext({ viewport: { width, height }, permissions: ['clipboard-read', 'clipboard-write'] });
       const page = await context.newPage();
       const errors = [];
@@ -30,31 +53,34 @@ async function openConsole(page, width) {
       assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden');
       assert.equal(await page.evaluate(() => document.getElementById('root').inert), true);
       assert.equal(await dialog.locator('.console-fragment').count(), 3);
-      assert.ok(await dialog.locator('.console-fragment-cover img').evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0)));
+      assert.equal(await dialog.locator('.console-fragments img').count(), 0);
       assert.equal(await dialog.getByRole('link', { name: '进入花园', exact: true }).last().getAttribute('href'), 'https://bistutzyy.github.io/');
       assert.equal(await dialog.locator('.console-enter-key').nth(0).getAttribute('href'), 'https://taozhiyy.top/projects/');
       assert.equal(await dialog.locator('.console-enter-key').nth(2).getAttribute('href'), 'https://taozhiyy.top/build/');
-      assert.equal(await dialog.getByRole('link', { name: '前往现有抽奖机', exact: true }).getAttribute('href'), '/#end');
-
-      const geometry = await dialog.evaluate((element) => {
-        const workspace = element.querySelector('.console-workspace');
-        const rect = element.getBoundingClientRect();
-        const controls = element.querySelector('.console-control-strip').getBoundingClientRect();
-        return { left: rect.left, right: rect.right, bottom: rect.bottom, overflow: workspace.scrollWidth - workspace.clientWidth, controlsBottom: controls.bottom };
-      });
-      assert.ok(geometry.left >= 0 && geometry.right <= width + 1 && geometry.bottom <= height + 1);
-      assert.ok(geometry.overflow <= 1, `horizontal overflow at ${width}: ${geometry.overflow}`);
-      assert.ok(geometry.controlsBottom <= height);
+      assert.equal(await dialog.locator('a[href="/#end"]').getAttribute('href'), '/#end');
+      await checkFit(dialog, width, height);
       assert.ok(await page.locator('#blog-ai-root').evaluateAll((nodes) => nodes.every((node) => getComputedStyle(node).visibility === 'hidden')));
       await page.screenshot({ path: path.join(out, `${width}x${height}.png`) });
 
-      await dialog.getByRole('tab', { name: '更新日志', exact: true }).click();
-      await dialog.getByText('星空里的新落款', { exact: true }).waitFor();
-      assert.equal(await dialog.getByRole('tab', { name: '更新日志', exact: true }).getAttribute('aria-selected'), 'true');
-      await page.keyboard.press('ArrowLeft');
-      assert.equal(await dialog.getByRole('tab', { name: '公告', exact: true }).getAttribute('aria-selected'), 'true');
-      await dialog.locator('summary').nth(1).click();
-      assert.equal(await dialog.locator('details').nth(1).getAttribute('open'), '');
+      const feed = dialog.getByRole('log', { name: '公告与更新日志', exact: true });
+      assert.equal(await feed.locator('article').count(), 6);
+      assert.equal(await dialog.getByRole('tablist').count(), 0);
+      assert.ok(await feed.evaluate((node) => node.scrollHeight > node.clientHeight));
+      const rightBefore = await dialog.locator('.console-main').boundingBox();
+      const panelBefore = await dialog.boundingBox();
+      await feed.hover();
+      await page.mouse.wheel(0, 500);
+      await page.waitForFunction(() => document.querySelector('.console-journal-feed').scrollTop > 0);
+      assert.deepEqual(await dialog.locator('.console-main').boundingBox(), rightBefore);
+      assert.deepEqual(await dialog.boundingBox(), panelBefore);
+      assert.equal(await dialog.locator('.console-workspace').evaluate((node) => node.scrollTop), 0);
+      await page.screenshot({ path: path.join(out, `${width}x${height}-journal.png`) });
+      await page.waitForTimeout(150);
+      const feedScroll = await feed.evaluate((node) => node.scrollTop);
+      await dialog.locator('.console-main').hover();
+      await page.mouse.wheel(0, 500);
+      await page.waitForTimeout(150);
+      assert.equal(await feed.evaluate((node) => node.scrollTop), feedScroll);
 
       await dialog.getByRole('button', { name: '分享', exact: true }).click();
       await dialog.getByRole('status').getByText('已复制站点链接', { exact: true }).waitFor();
@@ -102,7 +128,7 @@ async function openConsole(page, width) {
         console.log(`PASS ${width}: real music playback and cover switch`);
       }
       assert.equal(errors.length, 0, errors.join('\n'));
-      console.log(`PASS ${width}x${height}: images, controls, tabs, links, clipboard, focus, close, layout`);
+      console.log(`PASS ${width}x${height}: centered, no images, independent journal scrolling, controls, clipboard, focus`);
       await context.close();
     }
     for (const width of [1440, 390]) {
@@ -111,7 +137,6 @@ async function openConsole(page, width) {
       await page.route('**/api/**', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }));
       await page.goto(`${base}/about`, { waitUntil: 'domcontentloaded' });
       await openConsole(page, width);
-      await page.getByRole('tab', { name: '更新日志', exact: true }).click();
       assert.equal(await page.getByRole('link', { name: '去看看', exact: true }).getAttribute('href'), 'https://taozhiyy.top/projects/');
       await page.getByRole('link', { name: '前往现有抽奖机', exact: true }).click();
       await page.waitForURL('**/#end');
