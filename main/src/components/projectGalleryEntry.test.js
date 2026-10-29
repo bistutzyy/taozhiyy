@@ -8,7 +8,8 @@ test('fragment 01 links to the separate project cosmos while retaining its video
   assert.ok(card);
   assert.match(card,/linkUrl="\/projects\/"/);
   assert.match(card,/linkText="进入奇想馆"/);
-  assert.match(card,/visualOnly/);
+  assert.doesNotMatch(card,/visualOnly/);
+  assert.match(card,/description=/);
   assert.match(source,/index:\s*"01"[\s\S]*?linkUrl:\s*"\/projects\/"/);
 });
 test('visual-only fragment links are accessible and the old destinations stay intact',()=>{

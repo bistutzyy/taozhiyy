@@ -402,10 +402,10 @@ const Features = () => {
             src={`${COS}/videos/feature-1.mp4`}
             index="01"
             title="奇想馆"
+            description="沿着星光，收集项目、工具与创作灵感，把值得尝试的想法慢慢收进来。"
             linkUrl="/projects/"
             linkText="进入奇想馆"
             videoPriority
-            visualOnly
           />
         </ExhibitTilt>
 

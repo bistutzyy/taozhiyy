@@ -155,14 +155,33 @@ const Hero = () => {
 
   useEffect(() => {
     const handler = () => {
+      if (window.matchMedia("(max-width: 767px)").matches) {
+        const available = HERO_INDEXES.filter((index) => isHeroImageReady(index, loadedHeroIndexes));
+        const nextIndex = available.find((index) => index > currentIndex) ?? available[0];
+        if (nextIndex === undefined || nextIndex === currentIndex) return;
+        setSelectorOpen(false);
+        setPreviousIndex(currentIndex);
+        setHasClicked(true);
+        setIsTransitioning(true);
+        setCurrentIndex(nextIndex);
+        return;
+      }
       setCompassRotation(getCompassItemByIndex(currentIndex).angle);
       setSelectorOpen(true);
     };
     window.addEventListener("showHeroPreview", handler);
+    const coverRequested = new URLSearchParams(window.location.search).get("cover") === "select";
+    const canSelect = !window.matchMedia("(max-width: 767px)").matches || loadedHeroIndexes.size > 1;
+    if (coverRequested && canSelect) {
+      handler();
+      const url = new URL(window.location.href);
+      url.searchParams.delete("cover");
+      window.history.replaceState(window.history.state, "", url);
+    }
     return () => {
       window.removeEventListener("showHeroPreview", handler);
     };
-  }, [currentIndex]);
+  }, [currentIndex, loadedHeroIndexes]);
 
   const markHeroImageLoaded = (index) => {
     setLoadedHeroIndexes((prev) => {

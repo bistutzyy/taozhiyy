@@ -6,9 +6,12 @@ import { Link, useLocation } from "react-router-dom";
 import { useWindowScroll } from "react-use";
 import { cosAsset } from "../lib/cosAsset.js";
 import VisitorNetworkBadge from "./VisitorNetworkBadge";
+import { LuCommand } from "react-icons/lu";
+import SiteConsole from "./site-console/SiteConsole";
 
 const navLinks = [
   { label: "HOME", to: "/", end: true },
+  { label: "控制台", action: "console" },
   { label: "关于我", to: "/about", end: true },
   { label: "浮光集", to: "/glimmer", end: true },
   { label: "哔哩BILI", to: "/bili", end: true },
@@ -41,11 +44,41 @@ const NavBar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [drawerMounted, setDrawerMounted] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [consoleOpen, setConsoleOpen] = useState(false);
 
   const audioElementRef = useRef(null);
   const navContainerRef = useRef(null);
   const menuBtnRef = useRef(null);
   const closeBtnRef = useRef(null);
+  const consoleTriggerRef = useRef(null);
+
+  const closeConsole = useCallback(() => {
+    setConsoleOpen(false);
+    requestAnimationFrame(() => {
+      const target = window.matchMedia("(min-width: 768px)").matches
+        ? consoleTriggerRef.current
+        : menuBtnRef.current;
+      target?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  const openConsole = () => {
+    setDrawerVisible(false);
+    setMobileOpen(false);
+    setDrawerMounted(false);
+    document.body.style.overflow = "";
+    setConsoleOpen(true);
+  };
+
+  const switchCoverFromConsole = () => {
+    closeConsole();
+    if (pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "instant" });
+      window.dispatchEvent(new CustomEvent("showHeroPreview"));
+    } else {
+      window.location.assign("/?cover=select");
+    }
+  };
 
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
@@ -109,8 +142,15 @@ const NavBar = () => {
     setDrawerVisible(false);
     setMobileOpen(false);
     setDrawerMounted(false);
+    setConsoleOpen(false);
     document.body.style.overflow = "";
   }, [pathname]);
+
+  useEffect(() => {
+    if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("console") === "open") {
+      setConsoleOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!drawerMounted) return undefined;
@@ -135,7 +175,10 @@ const NavBar = () => {
 
   useEffect(() => {
     if (isAudioPlaying) {
-      audioElementRef.current?.play();
+      audioElementRef.current?.play()?.catch(() => {
+        setIsAudioPlaying(false);
+        setIsIndicatorActive(false);
+      });
     } else {
       audioElementRef.current?.pause();
     }
@@ -233,18 +276,51 @@ const NavBar = () => {
     }
   };
 
-  const renderDesktopLink = (item) => (
-    <Link
-      key={item.label}
-      to={item.to}
-      className={desktopLinkClass(isLinkActive(item))}
-      onClick={() => handleNavClick(item)}
-    >
-      {item.label}
-    </Link>
-  );
+  const renderDesktopLink = (item) => {
+    if (item.action === "console") {
+      return (
+        <button
+          key={item.label}
+          ref={consoleTriggerRef}
+          type="button"
+          className={clsx(desktopLinkClass(consoleOpen), "nav-console-trigger")}
+          aria-haspopup="dialog"
+          aria-expanded={consoleOpen}
+          aria-controls={consoleOpen ? "site-console" : undefined}
+          onClick={openConsole}
+        >
+          <LuCommand aria-hidden="true" />
+          {item.label}
+        </button>
+      );
+    }
+    return (
+      <Link
+        key={item.label}
+        to={item.to}
+        className={desktopLinkClass(isLinkActive(item))}
+        onClick={() => handleNavClick(item)}
+      >
+        {item.label}
+      </Link>
+    );
+  };
 
   const renderMobileLink = (item) => {
+    if (item.action === "console") {
+      return (
+        <button
+          key={item.label}
+          type="button"
+          className={clsx("nav-mobile-link nav-mobile-console", `nav-mobile-link--${navTheme}`)}
+          aria-haspopup="dialog"
+          onClick={openConsole}
+        >
+          {item.label}
+          <LuCommand aria-hidden="true" />
+        </button>
+      );
+    }
     const active = isLinkActive(item);
     return (
       <Link
@@ -416,6 +492,13 @@ const NavBar = () => {
         </header>
       </div>
       {mobileDrawer}
+      <SiteConsole
+        open={consoleOpen}
+        onClose={closeConsole}
+        isAudioPlaying={isAudioPlaying}
+        onToggleAudio={toggleAudioIndicator}
+        onSwitchCover={switchCoverFromConsole}
+      />
     </>
   );
 };
