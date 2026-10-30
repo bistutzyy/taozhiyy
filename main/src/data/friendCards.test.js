@@ -54,6 +54,15 @@ test("keeps xiaomo friend link on the canonical domain", () => {
   assert.equal(xiaomo.avatar, "https://xiaomoo.top/images/dog.jpg");
 });
 
+test("updates A's Treasure Land without duplicating the existing friend", () => {
+  const matches = friendCards.filter((friend) => friend.name === "阿的宝藏之地");
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].desc, "为学日益，为道日损");
+  assert.equal(matches[0].url, "https://nothing-new.cn");
+  assert.equal(matches[0].avatar, "https://nothing-new.cn/avatar");
+  assert.ok(friendCards.every((friend) => friend.url !== "https://nothing-new.icu"));
+});
+
 test("updates renamed and relocated friend links from owner requests", () => {
   const nanzhiy = friendCards.find((friend) => friend.name === "楠枝小笺");
   const wanxiang = friendCards.find((friend) => friend.name === "万象存笺");
