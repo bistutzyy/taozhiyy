@@ -84,5 +84,5 @@ export const CONSOLE_UPDATES = [
 export const CONSOLE_QUICK_LINKS = [
   { id: "glimmer", label: "浮光集", note: "照片与短句", href: "/glimmer" },
   { id: "friends", label: "友链", note: "去邻居家坐坐", href: "/friends" },
-  { id: "pulse", label: "数据中心", note: "站点的此刻", href: "/ai-traffic" },
+  { id: "about", label: "关于我", note: "认识一下站长", href: "/about" },
 ];

@@ -986,6 +986,9 @@ body:has(.site-console-layer) #blog-ai-root {
   }
 }
 @media (max-height: 650px) {
+  .console-shortcut-grid {
+    gap: 5px;
+  }
   .site-console {
     height: calc(100dvh - 28px);
   }
@@ -1008,7 +1011,7 @@ body:has(.site-console-layer) #blog-ai-root {
     gap: 18px;
   }
   .console-main {
-    grid-template-rows: minmax(0, 1fr) 124px;
+    grid-template-rows: minmax(0, 1fr) 128px;
     gap: 12px;
   }
   .console-fragment {
@@ -1073,6 +1076,12 @@ body:has(.site-console-layer) #blog-ai-root {
   }
 }
 @media (max-width: 700px) and (max-height: 650px) {
+  .console-shortcut-grid {
+    gap: 3px;
+  }
+  .console-shortcut {
+    padding-block: 1px;
+  }
   .site-console {
     height: calc(100dvh - 20px);
   }

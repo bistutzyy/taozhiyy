@@ -57,6 +57,8 @@ async function checkFit(dialog, width, height) {
       assert.equal(await dialog.getByRole('link', { name: '进入花园', exact: true }).last().getAttribute('href'), 'https://bistutzyy.github.io/');
       assert.equal(await dialog.locator('.console-enter-key').nth(0).getAttribute('href'), 'https://taozhiyy.top/projects/');
       assert.equal(await dialog.locator('.console-enter-key').nth(2).getAttribute('href'), 'https://taozhiyy.top/build/');
+      assert.equal(await dialog.locator('.console-shortcut--about').getAttribute('href'), '/about');
+      assert.equal(await dialog.locator('a[href="/ai-traffic"]').count(), 0);
       assert.equal(await dialog.locator('a[href="/#end"]').getAttribute('href'), '/#end');
       await checkFit(dialog, width, height);
       assert.ok(await page.locator('#blog-ai-root').evaluateAll((nodes) => nodes.every((node) => getComputedStyle(node).visibility === 'hidden')));
@@ -116,16 +118,17 @@ async function checkFit(dialog, width, height) {
         await dialog.getByRole('button', { name: '音乐', exact: true }).click();
         await page.waitForFunction(() => document.querySelector('audio').paused);
         const previousCover = await page.locator('#bg-image').getAttribute('src');
-        await dialog.getByRole('button', { name: '换封面', exact: true }).click();
-        await dialog.waitFor({ state: 'detached' });
-        if (width >= 768) {
-          await page.getByRole('button', { name: 'Close hero card selector', exact: true }).waitFor({ state: 'visible' });
-          await page.keyboard.press('Escape');
-        } else {
-          await page.waitForFunction((previous) => document.getElementById('bg-image').getAttribute('src') !== previous, previousCover);
-        }
-        await page.screenshot({ path: path.join(out, `${width}-homepage.png`) });
-        console.log(`PASS ${width}: real music playback and cover switch`);
+        await dialog.getByRole('button', { name: '主题预览', exact: true }).click();
+        const picker = dialog.getByRole('group', { name: '控制台主题', exact: true });
+        assert.equal(await picker.getByRole('button').count(), 4);
+        await picker.getByRole('button', { name: '银钛', exact: true }).click();
+        assert.equal(await page.locator('.site-console-layer').getAttribute('data-console-theme'), 'titanium');
+        assert.equal(await page.locator('#bg-image').getAttribute('src'), previousCover);
+        await page.keyboard.press('Escape');
+        await picker.waitFor({ state: 'detached' });
+        assert.ok(await dialog.isVisible());
+        assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), '主题预览');
+        console.log(`PASS ${width}: real music playback, theme switching, Escape and unchanged homepage cover`);
       }
       assert.equal(errors.length, 0, errors.join('\n'));
       console.log(`PASS ${width}x${height}: centered, no images, independent journal scrolling, controls, clipboard, focus`);

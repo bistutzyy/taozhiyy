@@ -94,3 +94,55 @@ test("console is centered on both axes and only the journal feed can scroll", ()
   assert.match(panel, /translate\(-50%,\s*-50%\)/);
   assert.match(css, /\.console-journal-feed\s*\{[^}]*overflow-y:\s*auto/);
 });
+
+test("console quick links include About instead of Data Center", async () => {
+  const { CONSOLE_QUICK_LINKS } = await import("./consoleContent.js");
+  assert.ok(
+    CONSOLE_QUICK_LINKS.some(
+      ({ label, href }) => label === "关于我" && href === "/about",
+    ),
+  );
+  assert.ok(CONSOLE_QUICK_LINKS.every(({ href }) => href !== "/ai-traffic"));
+});
+
+test("console offers four distinct themes with validated fallback and a theme control", async () => {
+  assert.ok(read("./consoleThemes.js"), "theme definitions must exist");
+  const { CONSOLE_THEMES, resolveConsoleTheme } =
+    await import("./consoleThemes.js");
+  assert.deepEqual(
+    CONSOLE_THEMES.map(({ id }) => id),
+    ["night", "paper", "titanium", "arcade"],
+  );
+  assert.equal(resolveConsoleTheme("bogus"), "arcade");
+  assert.equal(resolveConsoleTheme("titanium"), "titanium");
+  const ui = read("./SiteConsole.jsx");
+  assert.match(ui, /data-console-theme=\{theme\}/);
+  assert.match(ui, /<ConsoleThemePicker/);
+  assert.doesNotMatch(ui, /onSwitchCover/);
+});
+
+test("first open uses Arcade and later opens rotate without repeating the previous choice", async () => {
+  const { nextConsoleTheme } = await import("./consoleThemes.js");
+  assert.equal(typeof nextConsoleTheme, "function");
+  assert.equal(nextConsoleTheme(null), "arcade");
+  assert.equal(nextConsoleTheme("invalid"), "arcade");
+  let previous = null;
+  const sequence = [];
+  for (let i = 0; i < 8; i += 1) {
+    const next = nextConsoleTheme(previous);
+    assert.notEqual(next, previous);
+    sequence.push(next);
+    previous = next;
+  }
+  assert.deepEqual(sequence, [
+    "arcade",
+    "night",
+    "paper",
+    "titanium",
+    "arcade",
+    "night",
+    "paper",
+    "titanium",
+  ]);
+  assert.equal(nextConsoleTheme("paper"), "titanium");
+});

@@ -70,16 +70,6 @@ const NavBar = () => {
     setConsoleOpen(true);
   };
 
-  const switchCoverFromConsole = () => {
-    closeConsole();
-    if (pathname === "/") {
-      window.scrollTo({ top: 0, behavior: "instant" });
-      window.dispatchEvent(new CustomEvent("showHeroPreview"));
-    } else {
-      window.location.assign("/?cover=select");
-    }
-  };
-
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -497,7 +487,6 @@ const NavBar = () => {
         onClose={closeConsole}
         isAudioPlaying={isAudioPlaying}
         onToggleAudio={toggleAudioIndicator}
-        onSwitchCover={switchCoverFromConsole}
       />
     </>
   );

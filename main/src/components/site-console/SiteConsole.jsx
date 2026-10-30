@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   LuArrowRight,
@@ -16,7 +22,7 @@ import {
   LuImages,
   LuLayoutGrid,
   LuLink,
-  LuMonitor,
+  LuUserRound,
   LuMoon,
   LuPin,
   LuPower,
@@ -32,9 +38,16 @@ import {
   CONSOLE_UPDATES,
 } from "./consoleContent.js";
 import "./site-console.css";
+import "./console-themes.css";
+import ConsoleThemePicker from "./ConsoleThemePicker.jsx";
+import {
+  CONSOLE_THEME_STORAGE,
+  nextConsoleTheme,
+  resolveConsoleTheme,
+} from "./consoleThemes.js";
 
 const fragmentIcons = [LuSparkles, LuBookOpen, LuLayoutGrid];
-const quickIcons = { glimmer: LuImages, friends: LuHeart, pulse: LuMonitor };
+const quickIcons = { glimmer: LuImages, friends: LuHeart, about: LuUserRound };
 const fragmentDestination = (href) =>
   import.meta.env.DEV && ["/projects/", "/build/"].includes(href)
     ? `https://taozhiyy.top${href}`
@@ -49,14 +62,58 @@ export default function SiteConsole({
   onClose,
   isAudioPlaying,
   onToggleAudio,
-  onSwitchCover,
 }) {
+  const [theme, setTheme] = useState("arcade");
   const [copyState, setCopyState] = useState("");
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
   const feedRef = useRef(null);
   const returnFocusRef = useRef(null);
   const copyTimerRef = useRef(null);
+  const lastThemeRef = useRef(null);
+  const initializedThemeRef = useRef(false);
+  const openedThemeRef = useRef(false);
+  const rememberTheme = useCallback((value) => {
+    const next = resolveConsoleTheme(value);
+    lastThemeRef.current = next;
+    setTheme(next);
+    try {
+      window.localStorage.setItem(CONSOLE_THEME_STORAGE, next);
+    } catch {
+      /* Keep rotation in memory when storage is blocked. */
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      openedThemeRef.current = false;
+      return;
+    }
+    if (openedThemeRef.current) return;
+    openedThemeRef.current = true;
+    let requested = null;
+    if (!initializedThemeRef.current) {
+      initializedThemeRef.current = true;
+      try {
+        lastThemeRef.current = window.localStorage.getItem(
+          CONSOLE_THEME_STORAGE,
+        );
+      } catch {
+        /* A fresh session starts with Arcade. */
+      }
+      const url = new URL(window.location.href);
+      requested = url.searchParams.get("consoleTheme");
+      if (requested !== null) {
+        url.searchParams.delete("consoleTheme");
+        window.history.replaceState(window.history.state, "", url);
+      }
+    }
+    rememberTheme(
+      requested !== null
+        ? resolveConsoleTheme(requested)
+        : nextConsoleTheme(lastThemeRef.current),
+    );
+  }, [open, rememberTheme]);
   useEffect(() => () => window.clearTimeout(copyTimerRef.current), []);
   useEffect(() => {
     if (!open) return undefined;
@@ -125,7 +182,7 @@ export default function SiteConsole({
   };
 
   return createPortal(
-    <div className="site-console-layer">
+    <div className="site-console-layer" data-console-theme={theme}>
       <div
         className="site-console-backdrop"
         onClick={onClose}
@@ -372,16 +429,7 @@ export default function SiteConsole({
               <span>音乐</span>
               <i />
             </button>
-            <button
-              type="button"
-              className="console-tool-key"
-              aria-label="换封面"
-              onClick={onSwitchCover}
-              title="切换首页封面"
-            >
-              <LuImages />
-              <span>换封面</span>
-            </button>
+            <ConsoleThemePicker theme={theme} onChange={rememberTheme} />
             <button
               type="button"
               className="console-tool-key"
