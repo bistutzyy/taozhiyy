@@ -28,36 +28,22 @@ export const CONSOLE_FRAGMENTS = [
   },
 ];
 
-export const CONSOLE_ANNOUNCEMENTS = [
-  {
-    id: "welcome",
-    tag: "置顶",
-    title: "欢迎来小屋坐坐",
-    text: "这里放着喜欢的项目、慢慢写下的文字，和这个网站一路成长的记录。愿你在这里找到一点小小的共鸣。",
-  },
-  {
-    id: "source",
-    tag: "收录",
-    title: "关于项目与分享",
-    text: "奇想馆的项目详情保留原作者和来源链接。使用第三方项目时，请一并查看其许可证与使用说明。",
-  },
-  {
-    id: "friends",
-    tag: "友邻",
-    title: "交换一盏小屋的灯",
-    text: "友链申请和信息更新，可以在友链页面留下消息。",
-    href: "/friends",
-    action: "拜访友邻",
-  },
-];
-
 export const CONSOLE_UPDATES = [
+  {
+    id: "console",
+    date: "2026-10-30",
+    tag: "上新",
+    title: "首页控制台",
+    text: "三个片段集中直达，四款主题随打开轮换。",
+    href: "/build/post/site-growth-18-home-console",
+    action: "查看记录",
+  },
   {
     id: "brand",
     date: "2026-10-28",
     tag: "更新",
-    title: "星空里的新落款",
-    text: "奇想馆左上角的落款更新为 taozhiyo。",
+    title: "奇想馆落款更新",
+    text: "页头署名统一为 taozhiyo。",
     href: "/projects/",
     action: "去看看",
   },
@@ -65,17 +51,26 @@ export const CONSOLE_UPDATES = [
     id: "cosmos",
     date: "2026-10-28",
     tag: "上新",
-    title: "奇想馆，沿着星光出发",
-    text: "九个项目已收进星空，滑动可以继续探索；项目详情里收好了教程、作者与来源。",
+    title: "项目星空上线",
+    text: "收录九个项目，支持滑动探索、教程与来源查看。",
     href: "/projects/",
     action: "走进星空",
+  },
+  {
+    id: "lottery",
+    date: "2026-10-27",
+    tag: "修复",
+    title: "抽奖图片恢复",
+    text: "改用静态图源，优化图片加载和抽奖机布局。",
+    href: "/#end",
+    action: "去抽一张",
   },
   {
     id: "archive",
     date: "2026-10-26",
     tag: "手记",
-    title: "把搭建过程写进时间里",
-    text: "创造纪事记录了小站的设计手记、功能生长和幕后工程。",
+    title: "创造纪事时间轴",
+    text: "新增滚动时间轴、分类筛选和搜索。",
     href: "/build/",
     action: "翻开记录",
   },

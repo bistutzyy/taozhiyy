@@ -13,10 +13,20 @@ export const categories: { id: ArchiveCategory | 'all'; label: Copy }[] = [
 ];
 
 const notes: Record<string, EntryNotes> = {
+  'site-growth-18-home-console': {
+    category: 'feature', title: ['把常用入口，放进一张控制台', 'One console for the places we visit'],
+    tags: ['Console', 'Navigation', 'Themes'],
+    note: ['HOME 旁多了一张居中的控制台：三个片段、快捷访问和抽奖机入口收在右侧，左侧独立滚动查看更新日志。游艺、夜航、晴笺、银钛四款主题随每次打开轮换。', 'A centered console beside HOME gathers the three fragments, shortcuts, and lottery entrance. Its update log scrolls independently. Arcade, Night, Paper, and Titanium rotate with each opening.'],
+  },
+  'site-growth-17-project-cosmos': {
+    category: 'feature', title: ['项目在星光里，有了自己的位置', 'A place for projects among the stars'],
+    tags: ['Projects', 'Three.js', 'Tutorials'],
+    note: ['片段 01 通向奇想馆，把自己的作品和收录项目放进同一片星空。滑动浏览九个项目，点开可读简介、教程、试用方式和作者来源；页头落款统一为 taozhiyo。', 'Fragment 01 opens Project Cosmos: one starfield for personal and curated projects. Scroll through nine projects, then open their introductions, tutorials, demos, and author credits. The header now reads taozhiyo.'],
+  },
   'site-growth-16-lottery-wallpaper-source': {
     category: 'engineering', title: ['抽奖机抽不出图的那一天', 'The day the lottery lost its pictures'],
     tags: ['Lottery', 'API', 'Diagnosis'],
-    note: ['接口一直是 200，池子里也一直有记录，但每条都是死链——图源域名已经指向别人的服务器。换成 Lolicon 直连，并让失效图源自动下线。', 'The API returned 200 and the pool kept returning rows, but every row was a dead link: the image domain now pointed at someone else. Switched to Lolicon and let retired sources remove themselves.'],
+    note: ['旧图源失效后，先排查死链，再发现镜像冷启动带来的延迟。最终切换为 t.alcy.cc 静态图源，补上预热，并让停用图源自动下线。', 'Dead links exposed a retired source, then mirror cold starts explained the remaining delays. The final switch uses static images from t.alcy.cc, warms new images, and retires disabled sources automatically.'],
   },
   'site-growth-15-time-archive': {
     category: 'design', title: ['目录不是故事的讲法', 'A table of contents is not a story'],

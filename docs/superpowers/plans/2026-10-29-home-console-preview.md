@@ -1,6 +1,6 @@
 # Home Console Preview Implementation Plan
 
-> **For agentic workers:** Use executing-plans for the tightly coupled navigation and dialog changes. Keep all work local; do not push or deploy.
+> **For agentic workers:** Use executing-plans for the tightly coupled navigation and dialog changes. The initial scope was local-only; the user approved production deployment on 2026-10-30 with the release revision below.
 
 **Goal:** Add a visitor-facing control panel next to HOME, with tactile controls, three fragment entrances, announcements, updates, a reserved lottery station, and quick links.
 
@@ -44,3 +44,11 @@ The panel opens from a real control after HOME, with visible clickable controls 
 - Theme verification covers four modes at seven viewport sizes, including small portrait and landscape. Check 4.5:1 small-text/control contrast, exact centering, right-side control bounds, theme picker bounds, and material/typography variation.
 - Rotation verification covers eight repeated openings, multiple close methods, browser reload continuity, manual selection, one-shot preview queries, and blocked storage on desktop/mobile. The implementation remains local-only.
 - Final verification on 2026-10-30 passed: 28 focused tests, all four themes at seven viewport sizes, desktop/mobile rotation checks, and a fresh Vite production build. Existing assistant-asset and bundle-size warnings remain. Read-only review found no actionable issues in the rotation or picker behavior.
+
+## Approved Production Release Revision
+- [x] Replace announcements with five concise dated updates, newest first. Keep independent scrolling when the log exceeds the available height.
+- [x] Add bilingual growth records 17 (Project Cosmos, 2026-10-28) and 18 (home console, 2026-10-30), with timeline categories and summaries. Align the lottery summary with the existing static-source follow-up.
+- [x] Write regression tests first, observe missing-content failures, then regenerate `build/src/data/content.json` with the existing content builder.
+- [x] Verify 32 focused tests, main/build production builds, 12 responsive console sizes, desktop/mobile theme rotation, production-preview smoke checks, timeline search, and bilingual article routes. Include closing the modal before same-homepage lottery navigation.
+- [ ] Commit the scoped release, create a PR into protected master, require successful validation, and merge without bypassing branch protection.
+- [ ] Confirm server pull deployment by inspecting the public asset versions and exercising the deployed console and timeline. Do not claim deployment until the new assets are served.

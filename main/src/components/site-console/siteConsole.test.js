@@ -71,6 +71,10 @@ test("cover switching has a usable mobile path rather than opening a hidden desk
 test("update actions work in local preview and homepage honors the lottery anchor after mounting", () => {
   const ui = read("./SiteConsole.jsx");
   assert.match(ui, /href=\{fragmentDestination\(message.href\)\}/);
+  assert.match(
+    ui,
+    /<a\s+href=\{fragmentDestination\(message.href\)\}\s+onClick=\{onClose\}/,
+  );
   const home = read("../../pages/HomePage.jsx");
   assert.match(home, /window.location.hash !== "#end"/);
   assert.match(home, /requestAnimationFrame/);
@@ -79,11 +83,27 @@ test("update actions work in local preview and homepage honors the lottery ancho
 
 test("console entries are text controls and the journal shows complete messages without click selectors", () => {
   const ui = read("./SiteConsole.jsx");
-  assert.match(ui, /aria-label="公告与更新日志"/);
+  assert.match(ui, /aria-label="更新日志"/);
   assert.doesNotMatch(
     ui,
     /<img|covers\/|<details|<summary|role="tablist"|console-message-picker/,
   );
+});
+
+test("journal contains only short dated updates, newest first", async () => {
+  const content = await import("./consoleContent.js");
+  assert.equal(content.CONSOLE_ANNOUNCEMENTS, undefined);
+  assert.equal(content.CONSOLE_UPDATES[0].id, "console");
+  let previous = "9999-12-31";
+  for (const item of content.CONSOLE_UPDATES) {
+    assert.match(item.date, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(item.date <= previous);
+    assert.ok(item.text.length <= 45, item.id);
+    previous = item.date;
+  }
+  const ui = read("./SiteConsole.jsx");
+  assert.match(ui, /<span>更新日志<\/span>/);
+  assert.doesNotMatch(ui, /CONSOLE_ANNOUNCEMENTS|公告与更新|写给每一个/);
 });
 
 test("console is centered on both axes and only the journal feed can scroll", () => {

@@ -1,6 +1,32 @@
 {
   "articles": [
     {
+      "slug": "site-growth-18-home-console",
+      "date": "2026-10-30",
+      "title_zh": "建站成长记录 18｜把常用入口放进首页控制台",
+      "title_en": "Site Growth Log 18 | A Home Console for Everyday Entrances",
+      "excerpt_zh": "HOME 旁新增访客控制台，集中片段 01、02、03、快捷访问与抽奖机入口。左侧是简短更新日志，四款主题从游艺开始随打开轮换，页面和操作区保持居中。",
+      "excerpt_en": "A visitor console beside HOME gathers the three fragments, quick links, and lottery entrance. A short update log scrolls independently, while four themes rotate from Arcade on the first opening.",
+      "words": "850",
+      "reads": "0",
+      "minutes": "4",
+      "bodyHtmlZh": "<h1>建站成长记录 18：常去的地方，放在一起</h1>\n<p>首页导航在 HOME 旁新增了“控制台”。这是给访客使用的入口集合，不是站长后台，也不接入任何私密管理功能。</p>\n<h2>三个片段，一个位置</h2>\n<p>控制台里的三个入口分别通向奇想馆、碎片独处和创造纪事。去掉缩略图，使用编号、图标和按键，把空间留给明确的操作。</p>\n<p>右下保留浮光集、友链、关于我的快捷访问。抽奖机区域先保留机位，并提供通向首页现有抽奖机的链接；这里没有另造一个抽奖流程。</p>\n<h2>日志单独滚动，控制台保持原位</h2>\n<p>整张控制台在屏幕中居中，不需要上下拖动才能看到按钮。左侧改成简短的更新日志，每条带日期，用一句话说明发生了什么。</p>\n<p>当日志超出可用高度时，只滚动日志本身。手机上也保留独立的日志区域，不让它把右侧入口和底部操作挤出屏幕。</p>\n<h2>从游艺开始，下一次换个样子</h2>\n<p>四款主题最终都保留下来：</p>\n<ul>\n<li><strong>游艺</strong>：粉、黄、薄荷色按键与清晰的复古边框。</li>\n<li><strong>夜航</strong>：深色面板，搭配柔和的粉色与青绿色。</li>\n<li><strong>晴笺</strong>：浅色纸面、细线与更轻的文字层次。</li>\n<li><strong>银钛</strong>：银灰材质、金属按键与冷色细节。</li>\n</ul>\n<p>首次打开默认游艺，之后依次轮换夜航、晴笺、银钛，再回到游艺。也可以手动选主题，下一次从所选主题继续轮换。</p>\n<p>浏览器能保存偏好时，刷新后会接着轮换；存储不可用时，同一次页面访问里仍能正常切换。</p>\n<h2>小操作也要完整</h2>\n<p>底部保留音乐、主题、分享链接、回到顶部和收起。首页原有的封面切换继续独立工作。键盘可以在控制台里移动焦点，Escape 可以收起；主题选择器打开时，先关闭选择器。</p>\n<p>这次没有改变原有页面的归属，只是让常用入口更容易找到。</p>",
+      "bodyHtmlEn": "<h1>Site Growth Log 18: Keeping Familiar Places Together</h1>\n<p>A new Console button sits beside HOME. It is a visitor-facing collection of entrances, not the owner dashboard, and it has no private administration functions.</p>\n<h2>Three fragments, one place</h2>\n<p>The three keys open Project Cosmos, the external blog, and the growth timeline. Numbered controls and icons replace thumbnails. Quick links lead to Glimmer, Friends, and About.</p>\n<p>The lottery area reserves space for a future station while linking to the existing homepage machine. It does not introduce another draw workflow.</p>\n<h2>The log scrolls, the console stays</h2>\n<p>The console remains centered with its controls visible. The left side is a brief, dated update log. Only this region scrolls when its contents exceed the available height, including on mobile.</p>\n<h2>Arcade first, then a different material</h2>\n<p>All four designs remain: pastel tactile Arcade, dark Night, editorial Paper, and metallic Titanium.</p>\n<p>The first opening uses Arcade. Later openings cycle through Night, Paper, Titanium, and back to Arcade. Manual selection remains available, and the next opening advances from that choice.</p>\n<p>When browser storage is available, the rotation continues after a reload. When it is blocked, the current page session still rotates in memory.</p>\n<h2>Complete controls</h2>\n<p>Music, theme selection, link sharing, back to top, and close stay on the bottom strip. The homepage cover switch remains independent. Keyboard focus stays inside the dialog, and Escape dismisses the theme picker before closing the console itself.</p>\n<p>Existing pages keep their roles; the console simply makes them easier to reach.</p>"
+    },
+    {
+      "slug": "site-growth-17-project-cosmos",
+      "date": "2026-10-28",
+      "title_zh": "建站成长记录 17｜让项目在星光里相遇",
+      "title_en": "Site Growth Log 17 | A Starfield for Projects",
+      "excerpt_zh": "片段 01 改为项目分享入口“奇想馆”：以可滑动的星空浏览项目，详情保留教程、试用方式、来源与作者。不再区分自己的作品和精选分享，让项目本身成为重点。",
+      "excerpt_en": "Fragment 01 becomes Project Cosmos: a scrollable starfield of projects, with tutorials, demos, sources, and author credits. Personal work and shared discoveries live together, with the projects at the center.",
+      "words": "700",
+      "reads": "0",
+      "minutes": "3",
+      "bodyHtmlZh": "<h1>建站成长记录 17：把项目放进星空</h1>\n<p>片段 01 现在通向“奇想馆”。它不再只展示一个作品，而是收录自己做的、正在尝试的，以及值得分享的项目。</p>\n<h2>先看项目，再看出处</h2>\n<p>没有再把内容分成“我的作品”和“精选分享”。它们放在同一张项目目录里，用图文简介让人先判断是否感兴趣。</p>\n<p>首批收录九个项目。进入详情后，可以继续查看具体介绍、使用教程、在线试用入口或试用效果。原作者和来源链接单独标清，第三方项目仍以原仓库的许可证和使用说明为准。</p>\n<h2>用滑动探索，不用翻页箭头</h2>\n<p>最初尝试过展厅式布局，后来改为星空。这里刻意避开主站四季的花、海、叶和雪，让项目分享页有自己的辨识度。</p>\n<p>星空不靠分页箭头推进，滚动或触摸滑动就能看到后续项目。随后又调整了星光亮度和运动表现，保留空间感，同时让浏览更连贯。</p>\n<h2>入口与落款</h2>\n<p>首页片段 01 保留原来的视觉素材，与片段 02、03 使用一致的信息层级。项目页左上角的署名统一改为 <strong>taozhiyo</strong>。</p>\n<p>这次把一条展示链接，变成了可以持续增加内容的项目入口。</p>",
+      "bodyHtmlEn": "<h1>Site Growth Log 17: Projects Among the Stars</h1>\n<p>Fragment 01 now opens Project Cosmos. Instead of featuring just one piece of work, it gathers personal projects, experiments, and useful discoveries in one place.</p>\n<h2>Projects first, credits always</h2>\n<p>Personal work and curated discoveries are no longer separate categories. Each project gets an image and a short introduction, followed by a detail view with practical instructions, demo links, or recorded trial results.</p>\n<p>The first collection contains nine projects. Original authors and source links remain visible. Third-party projects retain their own licenses and usage requirements.</p>\n<h2>Scroll instead of turning pages</h2>\n<p>An exhibition-like layout came first, but the final direction is a starfield. It avoids repeating the flowers, ocean, leaves, and snow already used by the four seasonal pages.</p>\n<p>Scrolling or swiping reveals the next projects without pagination arrows. Star brightness and motion were then adjusted to make exploration brighter and smoother while preserving a sense of depth.</p>\n<h2>A consistent entrance</h2>\n<p>The homepage keeps Fragment 01's visual asset while bringing its information treatment in line with Fragments 02 and 03. The project header now uses the name <strong>taozhiyo</strong>.</p>\n<p>One showcase link has become a collection that can keep growing.</p>"
+    },
+    {
       "slug": "site-growth-15-time-archive",
       "date": "2026-10-26",
       "title_zh": "建站成长记录 15｜把文章列表改成一条时间轴",

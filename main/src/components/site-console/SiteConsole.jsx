@@ -24,7 +24,6 @@ import {
   LuLink,
   LuUserRound,
   LuMoon,
-  LuPin,
   LuPower,
   LuSparkles,
   LuStar,
@@ -32,7 +31,6 @@ import {
   LuX,
 } from "react-icons/lu";
 import {
-  CONSOLE_ANNOUNCEMENTS,
   CONSOLE_FRAGMENTS,
   CONSOLE_QUICK_LINKS,
   CONSOLE_UPDATES,
@@ -49,13 +47,10 @@ import {
 const fragmentIcons = [LuSparkles, LuBookOpen, LuLayoutGrid];
 const quickIcons = { glimmer: LuImages, friends: LuHeart, about: LuUserRound };
 const fragmentDestination = (href) =>
-  import.meta.env.DEV && ["/projects/", "/build/"].includes(href)
+  import.meta.env.DEV &&
+  (href.startsWith("/projects/") || href.startsWith("/build/"))
     ? `https://taozhiyy.top${href}`
     : href;
-const journal = [
-  ...CONSOLE_ANNOUNCEMENTS.map((message) => ({ ...message, kind: "公告" })),
-  ...CONSOLE_UPDATES.map((message) => ({ ...message, kind: "更新" })),
-];
 
 export default function SiteConsole({
   open,
@@ -231,50 +226,43 @@ export default function SiteConsole({
           </div>
         </header>
         <div className="console-workspace">
-          <aside className="console-journal" aria-label="小站日志">
+          <aside className="console-journal" aria-label="小站更新">
             <div className="console-section-label">
               <LuBell aria-hidden="true" />
-              <span>公告与更新</span>
-              <span className="console-section-index">JOURNAL</span>
+              <span>更新日志</span>
+              <span className="console-section-index">CHANGELOG</span>
             </div>
             <div
               ref={feedRef}
               className="console-journal-feed"
               role="log"
-              aria-label="公告与更新日志"
+              aria-label="更新日志"
               aria-live="off"
               tabIndex={0}
             >
-              {journal.map((message, index) => (
+              {CONSOLE_UPDATES.map((message) => (
                 <article
-                  className={`console-journal-entry ${message.kind === "更新" ? "is-update" : ""}`}
+                  className="console-journal-entry is-update"
                   key={message.id}
                 >
                   <span className="console-journal-node" aria-hidden="true" />
                   <div className="console-entry-meta">
-                    <span>
-                      {message.kind} / {message.tag}
-                    </span>
-                    {message.date ? (
-                      <time dateTime={message.date}>{message.date}</time>
-                    ) : index === 0 ? (
-                      <LuPin aria-label="置顶" />
-                    ) : null}
+                    <span>{message.tag}</span>
+                    <time dateTime={message.date}>{message.date}</time>
                   </div>
                   <h3>{message.title}</h3>
                   <p>{message.text}</p>
                   {message.href && (
-                    <a href={fragmentDestination(message.href)}>
+                    <a
+                      href={fragmentDestination(message.href)}
+                      onClick={onClose}
+                    >
                       {message.action}
                       <LuArrowUpRight aria-hidden="true" />
                     </a>
                   )}
                 </article>
               ))}
-              <p className="console-feed-signature">
-                <LuFlower2 aria-hidden="true" />
-                写给每一个偶然路过的你
-              </p>
             </div>
           </aside>
           <div className="console-main">
