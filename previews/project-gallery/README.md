@@ -41,6 +41,24 @@ Checklist:
 Run `npm ci`, `npm test`, and `npm run dev -- --port 5196 --strictPort` here.
 This folder is deliberately outside `main/`, `build/`, and deployment scripts.
 
+## Reader And Silver Atlas Preview (2026-10-30)
+
+Local-only revision on `codex/project-reader-silver-preview`; it has not been
+published. The gallery now has an explicit same-tab home link. Project details
+use a full-viewport native dialog, a compact real cover, a desktop reading index,
+and a mobile section selector. Back restores the scene or catalogue position.
+
+Cosmos remains the default. Silver Atlas is a second selectable theme shared by
+the scene, directory, and reader. Its Three.js materials update in place without
+reloading covers or recreating project nodes. A validated preference is saved
+when browser storage is available. The reader pauses WebGL rendering.
+
+Current preview: `http://127.0.0.1:5201/?theme=silver`. The optional theme query
+is consumed once, so subsequent manual choices are not pinned by the URL.
+Run `node tools/verify.cjs http://127.0.0.1:5201` for the original WebGL/catalogue
+regressions, and `node tools/verify-reader.cjs http://127.0.0.1:5201` for both
+themes, full-screen reader, state restoration, media, and responsive bounds.
+
 Captures: `tools/capture-covers.cjs` uses Playwright and Sharp from the bundled
 Codex runtime through NODE_PATH. `tools/verify.cjs` uses the same runtime.
 Public external screenshots are credited within each project's source link;

@@ -1,10 +1,13 @@
 import './style.css';
 import './cosmos.css';
-import { createIcons, Aperture, Box, LayoutGrid, Search, Scan, Plus, Minus, Orbit, ArrowUpRight, ArrowLeft, ArrowRight, Sparkle, X, SearchX, ExternalLink, CodeXml, BookOpen, FileText, Copy, Play } from 'lucide';
+import './gallery-themes.css';
+import './reader.css';
+import { createIcons, Aperture, Box, LayoutGrid, Search, Scan, Plus, Minus, Orbit, ArrowUpRight, ArrowLeft, ArrowRight, Sparkle, Sparkles, Sun, House, ChevronDown, X, SearchX, ExternalLink, CodeXml, BookOpen, FileText, Copy, Play } from 'lucide';
 import { projects, filterProjects, projectPage } from './catalog.js';
 import { renderProjectDetail, escapeHTML as e } from './detail.js';
+import { GALLERY_THEME_STORAGE, resolveGalleryTheme } from './gallery-themes.js';
 
-const icons = { Aperture, Box, LayoutGrid, Search, Scan, Plus, Minus, Orbit, ArrowUpRight, ArrowLeft, ArrowRight, Sparkle, X, SearchX, ExternalLink, CodeXml, BookOpen, FileText, Copy, Play };
+const icons = { Aperture, Box, LayoutGrid, Search, Scan, Plus, Minus, Orbit, ArrowUpRight, ArrowLeft, ArrowRight, Sparkle, Sparkles, Sun, House, ChevronDown, X, SearchX, ExternalLink, CodeXml, BookOpen, FileText, Copy, Play };
 const $ = selector => document.querySelector(selector);
 const iconize = () => createIcons({ icons, attrs: { 'aria-hidden': 'true' } });
 let scene;
@@ -18,7 +21,31 @@ let noticeTimer;
 let sceneFailed = false;
 let opener = null;
 let detailProject = null;
+let sectionObserver;
+let readerOverflow = '';
+let catalogueScroll = 0;
 const dialog = $('#project-dialog');
+let galleryTheme = 'cosmos';
+try { galleryTheme = resolveGalleryTheme(localStorage.getItem(GALLERY_THEME_STORAGE)); } catch { /* Use the default without storage. */ }
+const previewURL = new URL(location.href);
+if (previewURL.searchParams.has('theme')) {
+  galleryTheme = resolveGalleryTheme(previewURL.searchParams.get('theme'));
+  previewURL.searchParams.delete('theme');
+  history.replaceState(history.state, '', previewURL);
+}
+function applyGalleryTheme(value, persist = true) {
+  galleryTheme = resolveGalleryTheme(value);
+  document.documentElement.dataset.galleryTheme = galleryTheme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', galleryTheme === 'silver' ? '#eef1f3' : '#08090e');
+  document.querySelectorAll('[data-theme-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === galleryTheme)));
+  scene?.setTheme(galleryTheme);
+  if (persist) try { localStorage.setItem(GALLERY_THEME_STORAGE, galleryTheme); } catch { /* Theme controls also work without storage. */ }
+}
+applyGalleryTheme(galleryTheme, false);
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-theme-choice]');
+  if (button) applyGalleryTheme(button.dataset.themeChoice);
+});
 if (import.meta.env.PROD) $('.preview-badge')?.remove();
 $('#scene-view span').textContent = '星空';
 $('.intro .eyebrow').innerHTML = '<span class="accent-rule"></span>AN ATLAS OF IDEAS';
@@ -107,16 +134,47 @@ function openDetail(id) {
   if (!p) return;
   opener = document.activeElement;
   detailProject = p;
+  catalogueScroll = $('#catalogue').scrollTop;
+  readerOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
   $('#project-detail').innerHTML = renderProjectDetail(p);
+  $('#reader-back span').textContent = view === 'list' ? '返回目录' : '返回星空';
   iconize(); dialog.showModal(); dialog.scrollTop = 0;
-  $('#close-dialog').focus(); scene?.setPaused(true);
+  $('#reader-back').focus({preventScroll:true}); scene?.setPaused(true);
+  sectionObserver?.disconnect();
+  sectionObserver = new IntersectionObserver(entries => {
+    const current = entries.find(entry => entry.isIntersecting);
+    if (current) markReaderSection(current.target.id);
+  }, {root:dialog, rootMargin:'-24% 0px -55% 0px'});
+  dialog.querySelectorAll('.detail-section').forEach(section => sectionObserver.observe(section));
+}
+function markReaderSection(id) {
+  dialog.querySelectorAll('[data-reader-link]').forEach(link => {
+    if (link.hash === `#${id}`) link.setAttribute('aria-current','location');
+    else link.removeAttribute('aria-current');
+  });
+  $('#reader-section-select').value = id;
+}
+function jumpReaderSection(id) {
+  const section = dialog.querySelector(`#${CSS.escape(id)}`);
+  if (!section?.classList.contains('detail-section')) return;
+  section.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  markReaderSection(id);
 }
 $('#close-dialog').addEventListener('click', () => dialog.close());
+$('#reader-back').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', event => {
   const rect = dialog.getBoundingClientRect();
   if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
 });
-dialog.addEventListener('close', () => { dialog.querySelector('video')?.pause(); scene?.setPaused(view !== 'scene'); if (opener?.isConnected) opener.focus(); });
+dialog.addEventListener('close', () => {
+  sectionObserver?.disconnect();
+  dialog.querySelector('video')?.pause();
+  document.body.style.overflow = readerOverflow;
+  if (view === 'list') $('#catalogue').scrollTop = catalogueScroll;
+  scene?.setPaused(view !== 'scene');
+  if (opener?.isConnected) opener.focus({preventScroll:true});
+});
 dialog.addEventListener('click', async event => {
   const button = event.target.closest('[data-copy-section]');
   if (!button || !detailProject) return;
@@ -125,7 +183,10 @@ dialog.addEventListener('click', async event => {
 });
 dialog.addEventListener('click', event => {
   const link = event.target.closest('.detail-toc a');
-  if (link) { event.preventDefault(); $(link.getAttribute('href')).scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); }
+  if (link) { event.preventDefault(); jumpReaderSection(link.hash.slice(1)); }
+});
+dialog.addEventListener('change', event => {
+  if (event.target.id === 'reader-section-select') jumpReaderSection(event.target.value);
 });
 $('#open-project').addEventListener('click', () => openDetail(selected.id));
 $('#project-dock').addEventListener('click', event => { const button = event.target.closest('[data-project]'); if (button) select(button.dataset.project); });
@@ -166,6 +227,7 @@ $('#gallery-canvas').addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp
 try {
   const { createGallery } = await import('./scene.js');
   scene = await createGallery($('#gallery-canvas'), visible, id => select(id),onBrowse);
+  scene.setTheme(galleryTheme);
   scene.focus(selected.id, false);
   scene.setPaused(view !== 'scene' || dialog.open);
   window.__galleryDebug = () => ({ ...scene.debug(), view, selected: selected.id, query, visible: visible.map(p => p.id) });
