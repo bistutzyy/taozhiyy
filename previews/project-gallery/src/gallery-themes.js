@@ -18,15 +18,15 @@ const palettes = {
     panel:{frame:'#333744', accent:'#acbfd3', screen:'#11141e', label:'#eef0f6', category:'#acbfd3'},
   },
   silver: {
-    id:'silver', clear:'#edf1f4', blending:'normal',
+    id:'silver', clear:'#eef1f3', blending:'normal',
     stars:[
-      {color:'#33434c', size:.38, opacity:.92},
-      {color:'#256e73', size:.85, opacity:.95},
+      {color:'#27343b', size:.38, opacity:.92},
+      {color:'#366b69', size:.85, opacity:.95},
       {color:'#54656e', size:.27, opacity:.68},
     ],
-    orbits:[{color:'#527d83', opacity:.42}, {color:'#99677c', opacity:.3}],
+    orbits:[{color:'#366b69', opacity:.42}, {color:'#97536a', opacity:.3}],
     coordinates:{color:'#789095', opacity:.28, visible:true},
-    panel:{frame:'#8b9da7', accent:'#286e73', screen:'#d8e1e7', label:'#253640', category:'#526b76'},
+    panel:{frame:'#8b9da7', accent:'#366b69', screen:'#d8e1e7', label:'#27343b', category:'#526b76'},
   },
 };
 

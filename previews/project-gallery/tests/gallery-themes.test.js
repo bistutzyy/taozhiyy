@@ -37,6 +37,10 @@ test('Silver has a genuinely light palette with contrasting small normal-blended
   assert.equal(themes.getScenePalette('invalid'), dark);
   assert.equal(themes.getScenePalette(), dark);
   assert.equal(dark.clear, '#08090e');
+  assert.equal(light.clear, '#eef1f3');
+  assert.equal(light.panel.label, '#27343b');
+  assert.equal(light.panel.accent, '#366b69');
+  assert.equal(light.orbits[1].color, '#97536a');
   assert.ok(luminance(dark.clear) < .01);
   assert.ok(luminance(light.clear) > .8);
   assert.equal(dark.blending, 'additive');
