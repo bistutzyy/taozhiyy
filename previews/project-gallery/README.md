@@ -43,8 +43,8 @@ This folder is deliberately outside `main/`, `build/`, and deployment scripts.
 
 ## Reader And Silver Atlas Preview (2026-10-30)
 
-Local-only revision on `codex/project-reader-silver-preview`; it has not been
-published. The gallery now has an explicit same-tab home link. Project details
+Initially previewed on `codex/project-reader-silver-preview`; the user authorized
+production release on 2026-10-30 after review. The gallery now has an explicit same-tab home link. Project details
 use a full-viewport native dialog, a compact real cover, a desktop reading index,
 and a mobile section selector. Back restores the scene or catalogue position.
 

@@ -1,6 +1,6 @@
 # Project Reader And Silver Atlas
 
-Approved in chat on 2026-10-30. Local preview only; no push, PR, merge, or deployment.
+Approved in chat on 2026-10-30, initially as a local preview. After reviewing the preview, the user explicitly authorized production deployment on 2026-10-30. Publish through the protected master PR flow; preserve Cosmos as the default.
 
 ## Scope
 Keep the existing project starfield, continuous browsing, bottom summary, catalogue, and all nine attributed projects. Add an explicit same-tab main-site home link. Replace only the central project-detail modal presentation with a full-viewport reading mode, with no floating outer card or large frame.
