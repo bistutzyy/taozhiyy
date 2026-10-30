@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#08090e" />
     <title>奇想馆 · 项目星空</title>
+    <script>try{document.documentElement.dataset.galleryTheme=localStorage.getItem('taozhiyy.projects.theme.v1')==='silver'?'silver':'cosmos'}catch{document.documentElement.dataset.galleryTheme='cosmos'}</script>
     <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7f8AAAAASUVORK5CYII=" />
   </head>
   <body>
     <div id="app">
       <div id="scene-host"><canvas id="gallery-canvas" aria-label="三维项目星空"></canvas></div>
       <header class="site-header">
-        <a class="brand" href="https://taozhiyy.top/" target="_blank" rel="noopener noreferrer" aria-label="桃之夭夭主站"><span class="brand-mark"><i data-lucide="aperture"></i></span><span>taozhiyo<small>片段 01 / PROJECTS</small></span></a>
-        <div class="header-actions"><span class="preview-badge">本地预览</span><div class="view-switch" role="group" aria-label="展示方式"><button id="scene-view" type="button" aria-pressed="true"><i data-lucide="box"></i><span>展馆</span></button><button id="list-view" type="button" aria-pressed="false"><i data-lucide="layout-grid"></i><span>目录</span></button></div><button class="icon-button search-launch" id="search-launch" aria-label="搜索项目" title="搜索项目"><i data-lucide="search"></i></button></div>
+        <div class="site-identity"><a class="brand" href="https://taozhiyy.top/" aria-label="桃之夭夭主站"><span class="brand-mark"><i data-lucide="aperture"></i></span><span>taozhiyo<small>片段 01 / PROJECTS</small></span></a><a class="home-link" href="https://taozhiyy.top/"><i data-lucide="house"></i><span>返回主页</span></a></div>
+        <div class="header-actions"><span class="preview-badge">本地预览</span><div class="theme-switch" role="group" aria-label="奇想馆主题"><button type="button" data-theme-choice="cosmos" aria-pressed="true" title="星空主题"><i data-lucide="sparkles"></i><span>星空</span></button><button type="button" data-theme-choice="silver" aria-pressed="false" title="银白星图主题"><i data-lucide="sun"></i><span>银白星图</span></button></div><div class="view-switch" role="group" aria-label="展示方式"><button id="scene-view" type="button" aria-pressed="true"><i data-lucide="box"></i><span>展馆</span></button><button id="list-view" type="button" aria-pressed="false"><i data-lucide="layout-grid"></i><span>目录</span></button></div><button class="icon-button search-launch" id="search-launch" aria-label="搜索项目" title="搜索项目"><i data-lucide="search"></i></button></div>
       </header>
       <main>
         <div class="intro"><div class="eyebrow"><span class="accent-rule"></span>AN ATLAS OF IDEAS</div><h1>奇想馆<span>.</span></h1><p>让作品与灵感，在这里交汇。</p><div class="collection-filters" aria-label="项目数量"><span class="collection-count">PROJECT INDEX / 09</span></div></div>
@@ -22,7 +23,7 @@
         <div class="exhibit-selection" id="exhibit-selection"><div id="selected-info"></div><div class="selection-actions"><button class="text-action" id="open-project">查看项目 <i data-lucide="arrow-up-right"></i></button></div></div>
       </main>
       <footer class="exhibit-footer"><span class="footer-label">THE CURIOUS ROOM <span>VOL. 01</span></span><div id="project-dock" aria-label="快速选择项目"></div><span class="footer-note">MADE WITH CURIOSITY<i data-lucide="sparkle"></i></span></footer>
-      <dialog id="project-dialog" aria-labelledby="detail-title"><div class="detail-toolbar"><span>PROJECT NOTES</span><button class="icon-button" id="close-dialog" aria-label="关闭项目详情" title="关闭"><i data-lucide="x"></i></button></div><div id="project-detail"></div></dialog>
+      <dialog id="project-dialog" aria-labelledby="detail-title"><div class="detail-toolbar"><div class="reader-return-controls"><button id="reader-back" type="button"><i data-lucide="arrow-left"></i><span>返回星空</span></button><a class="reader-home" href="https://taozhiyy.top/" title="返回主页"><i data-lucide="house"></i><span>返回主页</span></a></div><span class="reader-toolbar-title">奇想馆<span>/ PROJECT FILE</span></span><div class="reader-toolbar-actions"><div class="theme-switch" role="group" aria-label="阅读主题"><button type="button" data-theme-choice="cosmos" aria-pressed="true" title="星空主题"><i data-lucide="sparkles"></i><span>星空</span></button><button type="button" data-theme-choice="silver" aria-pressed="false" title="银白星图主题"><i data-lucide="sun"></i><span>银白星图</span></button></div><button class="icon-button" id="close-dialog" aria-label="关闭项目详情" title="关闭项目详情"><i data-lucide="x"></i></button></div></div><div id="project-detail"></div></dialog>
       <div id="notice" role="status" aria-live="polite"></div>
     </div>
     <script type="module" src="/src/main.js"></script>

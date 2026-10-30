@@ -23,3 +23,15 @@ test('external trials do not mount hidden remote iframes or accept non-HTTPS lin
   assert.ok(!html.includes('javascript:'));
   assert.ok(html.includes('noopener noreferrer'));
 });
+
+test('reader uses a compact masthead, introduction and responsive section navigation', () => {
+  const html = renderProjectDetail(sample);
+  assert.ok(html.includes('class="reader-masthead"'));
+  assert.ok(html.includes('id="detail-introduction"'));
+  assert.ok(html.includes('class="reader-overview"'));
+  assert.ok(html.includes('id="reader-section-select"'));
+  assert.ok(html.includes('data-reader-link'));
+  assert.ok(html.indexOf('id="detail-introduction"') < html.indexOf('id="detail-demo"'));
+  assert.ok(html.includes('loading="lazy"'));
+  assert.ok(html.includes('原作者'));
+});
