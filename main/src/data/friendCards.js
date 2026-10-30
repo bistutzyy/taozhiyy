@@ -136,9 +136,9 @@ export const friendCards = [
   },
   {
     name: "阿的宝藏之地",
-    desc: "记录项目、数学思考与杂谈。",
-    url: "https://nothing-new.icu",
-    avatar: "https://bu.dusays.com/2026/06/20/6a361fc5c68ff.jpg",
+    desc: "为学日益，为道日损",
+    url: "https://nothing-new.cn",
+    avatar: "https://nothing-new.cn/avatar",
     note: "FRIEND",
   },
   {
