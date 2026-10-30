@@ -1,15 +1,17 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { spaceWindow, wheelDistance, motionBlend } from './space-navigation.js';
+import { resolveGalleryTheme, getScenePalette } from './gallery-themes.js';
 
 const slots = [[1.2, 1], [2.8, -5], [-1.8, 2], [2.1, -3], [-.3, 0], [-2.8, 4]];
 const spacing = 5.4;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export async function createGallery(canvas, projects, onSelect, onBrowse = () => {}) {
+  let theme = 'cosmos', palette = getScenePalette(theme);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: innerWidth>=650, powerPreference: 'default' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 650 ? 1.25 : 1.5));
-  renderer.setClearColor('#08090e');
+  renderer.setClearColor(palette.clear);
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(44, 1, .1, 250);
   const controls = new OrbitControls(camera, canvas);
@@ -62,8 +64,9 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
   });
   // Seeded star fields are independent of project count and use three draw calls.
   let seed = 437;
+  const starLayers = [];
   function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
-  function stars(count, size, band = false, sparkle = false) {
+  function stars(count, layer, band = false, sparkle = false) {
     const positions = [], colors = [];
     for (let i = 0; i < count; i++) {
       const x = (random() - .5) * 180;
@@ -77,19 +80,66 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    field.add(new THREE.Points(geometry, new THREE.PointsMaterial({size, map:sparkle?sparkleMap:starMap, vertexColors:true, transparent:true, depthWrite:false, opacity:band ? .85 : 1, blending:THREE.AdditiveBlending})));
+    const style = palette.stars[layer];
+    const points = new THREE.Points(geometry, new THREE.PointsMaterial({color:style.color, size:style.size, map:sparkle?sparkleMap:starMap, vertexColors:true, transparent:true, depthWrite:false, opacity:style.opacity, blending:THREE.AdditiveBlending}));
+    starLayers.push(points); field.add(points);
   }
   const mobile = innerWidth < 650;
-  stars(mobile ? 1100 : 2400, .65);
-  stars(mobile ? 90 : 180, 1.8, false, true);
-  stars(mobile ? 1500 : 3400, .43, true);
+  stars(mobile ? 1100 : 2400, 0);
+  stars(mobile ? 90 : 180, 1, false, true);
+  stars(mobile ? 1500 : 3400, 2, true);
   function circle(radius, color, opacity, parent) {
     const points = Array.from({length:97}, (_, i) => new THREE.Vector3(Math.cos(i / 96 * Math.PI * 2) * radius, Math.sin(i / 96 * Math.PI * 2) * radius, 0));
     const object = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color, transparent:true, opacity}));
     parent.add(object); return object;
   }
   const orbit = new THREE.Group(); orbit.rotation.set(-1.12, .18, -.2); field.add(orbit);
-  circle(9.9, '#6e7489', .16, orbit); circle(13.6, '#8a6174', .1, orbit);
+  const orbitLines = [9.9, 13.6].map((radius, index) => circle(radius, palette.orbits[index].color, palette.orbits[index].opacity, orbit));
+  const coordinatePoints = [];
+  for (let x = -90; x <= 90; x += 15) coordinatePoints.push(x, -42, -28, x, 42, -28);
+  for (let y = -36; y <= 36; y += 12) coordinatePoints.push(-90, y, -28, 90, y, -28);
+  const coordinateGeometry = new THREE.BufferGeometry();
+  coordinateGeometry.setAttribute('position', new THREE.Float32BufferAttribute(coordinatePoints, 3));
+  const coordinates = new THREE.LineSegments(coordinateGeometry, new THREE.LineBasicMaterial({color:palette.coordinates.color, transparent:true, opacity:palette.coordinates.opacity, depthWrite:false}));
+  coordinates.visible = palette.coordinates.visible; field.add(coordinates);
+  function labelTexture(project) {
+    return texture(512, 106, ctx => {
+      ctx.scale(512/768,106/160);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = palette.panel.label; let size = 68; ctx.font = `500 ${size}px "Microsoft YaHei", sans-serif`;
+      while (ctx.measureText(project.title).width > 748 && size > 26) ctx.font = `500 ${--size}px "Microsoft YaHei", sans-serif`;
+      ctx.fillText(project.title, 384, 78);
+      ctx.fillStyle = palette.panel.category; ctx.font = '27px monospace'; ctx.fillText(project.category, 384, 135);
+    });
+  }
+  function setTheme(value) {
+    const next = resolveGalleryTheme(value);
+    if (next === theme) return theme;
+    theme = next; palette = getScenePalette(theme);
+    renderer.setClearColor(palette.clear);
+    starLayers.forEach((points, index) => {
+      const style = palette.stars[index], material = points.material;
+      material.color.set(style.color); material.size = style.size; material.opacity = style.opacity;
+      material.blending = palette.blending === 'normal' ? THREE.NormalBlending : THREE.AdditiveBlending;
+    });
+    orbitLines.forEach((line, index) => {
+      line.material.color.set(palette.orbits[index].color); line.material.opacity = palette.orbits[index].opacity;
+    });
+    coordinates.visible = palette.coordinates.visible;
+    coordinates.material.color.set(palette.coordinates.color); coordinates.material.opacity = palette.coordinates.opacity;
+    // Cached labels must be ready before re-entering the visible project window.
+    for (const [id, panel] of [...panels, ...cachedPanels]) {
+      panel.color = palette.panel.accent;
+      panel.frame.material.color.set(id === selected || id === hovered ? panel.color : palette.panel.frame);
+      panel.dot.material.color.set(panel.color); panel.ring.material.color.set(panel.color);
+      if (!panel.screen.material.map) panel.screen.material.color.set(panel.coverFailed ? panel.color : palette.panel.screen);
+      const previous = panel.label.material.map;
+      panel.label.material.map = labelTexture(panel.project);
+      panel.label.material.needsUpdate = true; previous.dispose();
+    }
+    wake();
+    return theme;
+  }
   function disposePanel(panel) {
       panel.disposed=true;
       scene.remove(panel.group);
@@ -111,33 +161,26 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
       createdPanels++;
       const [y,z] = slots[index % slots.length];
       const group = new THREE.Group(); group.position.set(index*spacing, y, z); scene.add(group);
-      const color = '#acbfd3';
-      const frame = new THREE.Mesh(new THREE.PlaneGeometry(2.46, 1.56), new THREE.MeshBasicMaterial({color:'#333744'}));
+      const color = palette.panel.accent;
+      const frame = new THREE.Mesh(new THREE.PlaneGeometry(2.46, 1.56), new THREE.MeshBasicMaterial({color:palette.panel.frame}));
       frame.position.y = .65; group.add(frame);
-      const screenMaterial = new THREE.MeshBasicMaterial({color:'#11141e'});
+      const screenMaterial = new THREE.MeshBasicMaterial({color:palette.panel.screen});
       const screen = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.5), screenMaterial);
       screen.position.set(0, .65, .01); screen.userData.projectId = project.id; group.add(screen);
       const dot = new THREE.Mesh(new THREE.CircleGeometry(.075, 24), new THREE.MeshBasicMaterial({color}));
       dot.position.set(0, 1.65, .02); group.add(dot);
       const ring = circle(.15, color, .9, group); ring.position.copy(dot.position);
-      const labelMap = texture(512, 106, ctx => {
-        ctx.scale(512/768,106/160);
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#eef0f6'; let size = 68; ctx.font = `500 ${size}px "Microsoft YaHei", sans-serif`;
-        while (ctx.measureText(project.title).width > 748 && size > 26) ctx.font = `500 ${--size}px "Microsoft YaHei", sans-serif`;
-        ctx.fillText(project.title, 384, 78);
-        ctx.fillStyle = color; ctx.font = '27px monospace'; ctx.fillText(project.category, 384, 135);
-      });
+      const labelMap = labelTexture(project);
       const label = new THREE.Mesh(new THREE.PlaneGeometry(3.6, .75), new THREE.MeshBasicMaterial({map:labelMap, transparent:true, depthWrite:false}));
       label.position.set(0, -.65, .02); label.userData.projectId = project.id; group.add(label);
-      const panel = {group, screen, label, frame, ring, color, disposed:false};
+      const panel = {group, screen, label, frame, dot, ring, color, project, disposed:false, coverFailed:false};
       panels.set(project.id, panel);
       loader.loadAsync(project.preview||project.cover).then(map => {
         if (panel.disposed) { map.dispose(); return; }
         map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
         map.generateMipmaps=false;map.minFilter=THREE.LinearFilter;
         screenMaterial.color.set('#ffffff'); screenMaterial.map = map; screenMaterial.needsUpdate = true; if(panels.get(project.id)===panel)wake();
-      }).catch(() => { if (!panel.disposed) { screenMaterial.color.set(color); wake(); } });
+      }).catch(() => { if (!panel.disposed) { panel.coverFailed = true; screenMaterial.color.set(panel.color); wake(); } });
   }
   function updateWindow() {
     const window = spaceWindow(collection.length, position, capacity());
@@ -236,7 +279,7 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
     }
     for (const [id, p] of panels) {
       p.group.quaternion.copy(camera.quaternion);
-      p.frame.material.color.set(id === selected || id === hovered ? p.color : '#333744');
+      p.frame.material.color.set(id === selected || id === hovered ? p.color : palette.panel.frame);
       p.ring.visible = id === selected || id === hovered;
     }
     renderer.render(scene, camera); frames++; rendering = false;
@@ -297,12 +340,12 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
   new ResizeObserver(resize).observe(canvas);
   resize(); setProjects(projects);
   return {
-    focus, overview, setProjects,
+    focus, overview, setProjects, setTheme,
     setPaused(value) { paused = value; if (!value) wake(); },
     zoom(direction) { animation = null; browsing=false; camera.zoom = THREE.MathUtils.clamp(camera.zoom * (direction > 0 ? 1.16 : .86), .7, 2.3); camera.updateProjectionMatrix(); wake(); },
     orbit(value) { animation = null; browsing=false; controls.autoRotate = value && !reduced; wake(); return controls.autoRotate; },
     debug() {
-      return {frameCount:frames, loaded:[...panels.values()].filter(p=>p.screen.material.map).length, nodeCount:panels.size, cachedProjects:cachedPanels.size, retainedProjects:panels.size+cachedPanels.size, cacheLimit:cacheLimit(), createdPanels,cacheHits,selected, paused, autoRotate:controls.autoRotate, position, destination, capacity:capacity(), maxPosition:spaceWindow(collection.length,position,capacity()).max, camera:camera.position.toArray(), zoom:camera.zoom, draws:renderer.info.render.calls,
+      return {theme, frameCount:frames, loaded:[...panels.values()].filter(p=>p.screen.material.map).length, nodeCount:panels.size, cachedProjects:cachedPanels.size, retainedProjects:panels.size+cachedPanels.size, cacheLimit:cacheLimit(), createdPanels,cacheHits,selected, paused, autoRotate:controls.autoRotate, position, destination, capacity:capacity(), maxPosition:spaceWindow(collection.length,position,capacity()).max, camera:camera.position.toArray(), zoom:camera.zoom, draws:renderer.info.render.calls,
         projected:[...panels].map(([id, p]) => { const v = p.screen.getWorldPosition(new THREE.Vector3()).project(camera); return {id, x:(v.x + 1) / 2 * canvas.clientWidth, y:(1 - v.y) / 2 * canvas.clientHeight}; })};
     },
   };
