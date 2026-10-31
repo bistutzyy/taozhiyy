@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { getHeroCoverSrc } from "./heroCoverAssets.js";
 
 const heroSource = readFileSync(new URL("./Hero.jsx", import.meta.url), "utf8");
 const cssSource = readFileSync(new URL("../index.css", import.meta.url), "utf8");
@@ -21,7 +22,12 @@ test("keeps the fixed-height hero shell from becoming a vertical scroll containe
 });
 
 test("loads hero media through the same-origin COS proxy", () => {
-  assert.match(heroSource, /cosAsset\(/);
+  assert.match(heroSource, /getHeroCoverSrc as getImgSrc/);
+  for (const index of [1, 2, 3, 4]) {
+    const source = new URL(getHeroCoverSrc(index), "https://taozhiyy.top");
+    assert.equal(source.origin, "https://taozhiyy.top");
+    assert.ok(source.pathname.startsWith("/cos/"));
+  }
   assert.doesNotMatch(heroSource, /cos\.ap-beijing\.myqcloud\.com/);
 });
 
