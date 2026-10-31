@@ -14,7 +14,7 @@
 - [x] Add introduction content, a real scene screenshot and thumbnail, and guide rendering/action support. Keep the current title description, scene controls and themes.
 - [x] Test entry selection, reader, browse action, return focus, both themes, desktop/mobile and nonblank canvas pixels. Preserve WebGL fallback to the directory.
 - [x] Run unit tests and production builds; inspect screenshots and review the scoped diff.
-- [ ] Commit, push through a protected-master PR, and verify the actual production version and guide workflow after pull deployment.
+- [x] Commit, push through a protected-master PR, and verify the actual production version and guide workflow after pull deployment.
 
 ## Approved Content Scope
 
@@ -23,3 +23,7 @@ Explain the purpose and content of the collection: personal creations, open-sour
 ## Verification
 
 Run `npm test` and `npm run build:site` in `previews/project-gallery`, then the complete `main` build. Use the existing WebGL motion smoke test plus a focused guide browser check. Preserve unrelated untracked files and do not edit production credentials or deployment configuration.
+
+## Release Verification
+
+PR #72 merged as `10c8d1d434298c304194023195132ae54dc962ac`. The public release marker confirmed this SHA. Live checks passed at 1440, 390 and 320 pixels in both themes: first introduction, real cover assets, reader, search, directory action, original project details and focus restoration. The guide also remained usable with WebGL disabled. Unit tests (25), deployment integration tests (4), the complete main build and local motion regression passed. This post-deployment note is documentation only, saved on the feature branch without triggering another production build.
