@@ -13,6 +13,11 @@ export const categories: { id: ArchiveCategory | 'all'; label: Copy }[] = [
 ];
 
 const notes: Record<string, EntryNotes> = {
+  'site-growth-19-folding-fan-covers': {
+    category: 'design', title: ['把四幅封面，展开成一面折扇', 'Four covers unfold into a fan'],
+    tags: ['Cover', 'Motion', 'Folding Fan'],
+    note: ['首页换景改为扇面画屏：悬停预览，点选后画面从扇页铺满屏幕，花瓣与流苏轻轻收尾。保留随机换景、亮度调节和纯净观赏，也照顾触屏、键盘与减少动态效果的偏好。', 'The home cover picker becomes a folding fan. Hover to preview, then select a leaf to expand its image across the screen with a brief petal and tassel flourish. Random selection, brightness, and clean view remain, with touch, keyboard, and reduced-motion support.'],
+  },
   'site-growth-18-home-console': {
     category: 'feature', title: ['把常用入口，放进一张控制台', 'One console for the places we visit'],
     tags: ['Console', 'Navigation', 'Themes'],

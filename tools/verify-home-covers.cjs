@@ -250,6 +250,10 @@ async function newPage(browser, options = {}) {
       );
       const before = await previewIndex(page);
       await command(page, "随机一景").click();
+      await page.waitForFunction(
+        (previous) => document.querySelector("dialog.cover-picker [data-preview-index]")?.dataset.previewIndex !== previous,
+        before,
+      );
       assert.notEqual(await previewIndex(page), before);
       assert.equal(await saved(page, storageKey), null);
       await command(page, "纯净观赏").click();

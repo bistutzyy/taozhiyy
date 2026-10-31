@@ -28,7 +28,7 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
   controls.minAzimuthAngle = -.85; controls.maxAzimuthAngle = .85;
   controls.autoRotateSpeed = .12;
   let requested = 0, rendering = false, dirtyUntil = 0, frames = 0;
-  let paused = false, animation = null;
+  let paused = false, animation = null, orbitRequested = false, orbitInteracting = false;
   let collection = [], position = 0, destination = 0, browsing = true, announced = '';
   let windowKey = '', activeItems = [], lastFrame = 0, createdPanels = 0, cacheHits = 0;
   let selected = projects[0]?.id, hovered = null;
@@ -284,6 +284,11 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
     }
     renderer.render(scene, camera); frames++; rendering = false;
     const moving = browsing && (Math.abs(destination-previous)>.001 || camera.position.distanceTo(desiredCamera)>.005 || Math.abs(camera.zoom-1)>.001);
+    // Browsing temporarily yields the camera without discarding the motion toggle.
+    if (orbitRequested && !animation && !moving && !down && !orbitInteracting) {
+      browsing = false;
+      controls.autoRotate = true;
+    }
     if (animation || moving || controls.autoRotate || now < dirtyUntil) requested = requestAnimationFrame(render);
   }
   function wake(duration = 180) {
@@ -330,12 +335,13 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
       down.previousX=e.clientX;down.previousY=e.clientY;canvas.style.cursor='grabbing';
     } else {const id=pick(e);if(id!==hovered){hovered=id;canvas.style.cursor=id?'pointer':'grab';wake();}}
   });
-  canvas.addEventListener('pointerup', e => { if (down && e.pointerId !== down.id) return; if (down && !down.dragged) { const id = pick(e); if (id) onSelect(id); } down = null; canvas.style.cursor='grab'; });
+  canvas.addEventListener('pointerup', e => { if (down && e.pointerId !== down.id) return; if (down && !down.dragged) { const id = pick(e); if (id) onSelect(id); } down = null; canvas.style.cursor='grab'; wake(); });
   canvas.addEventListener('pointerleave', () => { down = null; hovered = null; wake(); });
-  canvas.addEventListener('pointercancel', () => { down = null; });
+  canvas.addEventListener('pointercancel', () => { down = null; wake(); });
   canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); window.dispatchEvent(new CustomEvent('gallery-context-lost')); });
   controls.addEventListener('change', () => wake());
-  controls.addEventListener('start', () => { animation = null; browsing = false; wake(1200); });
+  controls.addEventListener('start', () => { orbitInteracting = true; controls.autoRotate = false; animation = null; browsing = false; wake(1200); });
+  controls.addEventListener('end', () => { orbitInteracting = false; wake(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
   new ResizeObserver(resize).observe(canvas);
   resize(); setProjects(projects);
@@ -343,9 +349,9 @@ export async function createGallery(canvas, projects, onSelect, onBrowse = () =>
     focus, overview, setProjects, setTheme,
     setPaused(value) { paused = value; if (!value) wake(); },
     zoom(direction) { animation = null; browsing=false; camera.zoom = THREE.MathUtils.clamp(camera.zoom * (direction > 0 ? 1.16 : .86), .7, 2.3); camera.updateProjectionMatrix(); wake(); },
-    orbit(value) { animation = null; browsing=false; controls.autoRotate = value && !reduced; wake(); return controls.autoRotate; },
+    orbit(value) { animation = null; browsing=false; orbitRequested = Boolean(value) && !reduced; controls.autoRotate = orbitRequested; wake(); return orbitRequested; },
     debug() {
-      return {theme, frameCount:frames, loaded:[...panels.values()].filter(p=>p.screen.material.map).length, nodeCount:panels.size, cachedProjects:cachedPanels.size, retainedProjects:panels.size+cachedPanels.size, cacheLimit:cacheLimit(), createdPanels,cacheHits,selected, paused, autoRotate:controls.autoRotate, position, destination, capacity:capacity(), maxPosition:spaceWindow(collection.length,position,capacity()).max, camera:camera.position.toArray(), zoom:camera.zoom, draws:renderer.info.render.calls,
+      return {theme, frameCount:frames, loaded:[...panels.values()].filter(p=>p.screen.material.map).length, nodeCount:panels.size, cachedProjects:cachedPanels.size, retainedProjects:panels.size+cachedPanels.size, cacheLimit:cacheLimit(), createdPanels,cacheHits,selected, paused, motionEnabled:orbitRequested, autoRotate:controls.autoRotate, position, destination, capacity:capacity(), maxPosition:spaceWindow(collection.length,position,capacity()).max, camera:camera.position.toArray(), zoom:camera.zoom, draws:renderer.info.render.calls,
         projected:[...panels].map(([id, p]) => { const v = p.screen.getWorldPosition(new THREE.Vector3()).project(camera); return {id, x:(v.x + 1) / 2 * canvas.clientWidth, y:(1 - v.y) / 2 * canvas.clientHeight}; })};
     },
   };

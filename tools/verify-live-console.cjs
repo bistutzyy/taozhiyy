@@ -22,8 +22,10 @@ const out = path.resolve(__dirname, '../previews/project-gallery/.qa/home-consol
         await dialog.waitFor();
         assert.equal(await page.locator('.site-console-layer').getAttribute('data-console-theme'), theme);
         const feed = dialog.getByRole('log', { name: '更新日志', exact: true });
-        assert.equal(await feed.locator('article').count(), 5);
-        assert.ok((await feed.innerText()).includes('2026-10-30'));
+        assert.equal(await feed.locator('article').count(), 7);
+        assert.ok((await feed.locator('article').first().innerText()).includes('首页扇面画屏'));
+        assert.ok((await feed.innerText()).includes('2026-10-31'));
+        assert.equal(await feed.locator('article').first().getByRole('link').getAttribute('href'), '/build/post/site-growth-19-folding-fan-covers');
         assert.equal(await dialog.getByRole('link', { name: '进入奇想馆', exact: true }).getAttribute('href'), '/projects/');
         assert.equal(await dialog.getByRole('link', { name: '翻开时间轴', exact: true }).getAttribute('href'), '/build/');
         assert.equal(await dialog.getByRole('link', { name: '进入花园', exact: true }).getAttribute('href'), 'https://bistutzyy.github.io/');
@@ -38,7 +40,7 @@ const out = path.resolve(__dirname, '../previews/project-gallery/.qa/home-consol
       await page.getByRole('dialog').waitFor({ state: 'detached' });
       await page.waitForURL('**/#end');
       assert.equal(await page.evaluate(() => document.getElementById('root').inert), false);
-      console.log(`PASS ${width}: deployed console, 5 concise updates, 4-theme rotation, fragment links and lottery close`);
+      console.log(`PASS ${width}: deployed console, 7 concise updates, 4-theme rotation, fragment links and lottery close`);
       await context.close();
     }
   } finally {

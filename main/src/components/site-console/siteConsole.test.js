@@ -94,7 +94,7 @@ test("console entries are text controls and the journal shows complete messages 
 test("journal contains only short dated updates, newest first", async () => {
   const content = await import("./consoleContent.js");
   assert.equal(content.CONSOLE_ANNOUNCEMENTS, undefined);
-  assert.equal(content.CONSOLE_UPDATES[0].id, "console");
+  assert.equal(content.CONSOLE_UPDATES[0].id, "fan-covers");
   let previous = "9999-12-31";
   for (const item of content.CONSOLE_UPDATES) {
     assert.match(item.date, /^\d{4}-\d{2}-\d{2}$/);

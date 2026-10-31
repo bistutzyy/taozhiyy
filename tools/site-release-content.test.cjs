@@ -9,6 +9,7 @@ const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
 for (const [slug, date, phrases] of [
   ['site-growth-17-project-cosmos', '2026-10-28', ['奇想馆', '来源', '滑动']],
   ['site-growth-18-home-console', '2026-10-30', ['控制台', '游艺', '更新日志']],
+  ['site-growth-19-folding-fan-covers', '2026-10-31', ['扇面画屏', '花瓣', '亮度', '星空默认开启']],
 ]) {
   test(`timeline includes bilingual release record ${slug}`, () => {
     const data = JSON.parse(read('build/src/data/content.json'));
@@ -22,6 +23,14 @@ for (const [slug, date, phrases] of [
     assert.ok(read('build/src/data/chronicle.ts').includes(`'${slug}':`));
   });
 }
+
+test('console starts with the folding fan release and links to its timeline record', () => {
+  const source = read('main/src/components/site-console/consoleContent.js');
+  const newest = source.split('export const CONSOLE_UPDATES = [')[1].split('},')[0];
+  assert.match(newest, /2026-10-31/);
+  assert.match(newest, /首页扇面画屏/);
+  assert.match(newest, /\/build\/post\/site-growth-19-folding-fan-covers/);
+});
 
 test('lottery timeline summary reflects the current static image source', () => {
   const source = read('build/src/data/chronicle.ts');

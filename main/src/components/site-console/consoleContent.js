@@ -30,6 +30,24 @@ export const CONSOLE_FRAGMENTS = [
 
 export const CONSOLE_UPDATES = [
   {
+    id: "fan-covers",
+    date: "2026-10-31",
+    tag: "更新",
+    title: "首页扇面画屏",
+    text: "悬停预览、点选换景，加入调光、纯净观赏与花瓣转场。",
+    href: "/build/post/site-growth-19-folding-fan-covers",
+    action: "查看记录",
+  },
+  {
+    id: "project-motion",
+    date: "2026-10-31",
+    tag: "优化",
+    title: "星空默认动态",
+    text: "进入奇想馆即缓慢环看，可手动暂停或继续。",
+    href: "/projects/",
+    action: "去看看",
+  },
+  {
     id: "console",
     date: "2026-10-30",
     tag: "上新",

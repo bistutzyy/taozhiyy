@@ -102,8 +102,6 @@ function select(id, focus = true) {
   const project = projects.find(p => p.id === id);
   if (!project) return;
   selected = project;
-  $('#orbit-toggle').setAttribute('aria-pressed', 'false');
-  scene?.orbit(false);
   scene?.focus(id, focus);
   renderSelection();
 }
@@ -199,13 +197,20 @@ for (const [name, direction] of [['prev', -1], ['next', 1]]) {
   $(`#list-${name}`).addEventListener('click', () => { listPage += direction; renderCatalogue(); $('#catalogue').scrollTop = 0; });
 }
 $('#clear-search').addEventListener('click', () => { query = ''; listPage = 0; $('#project-search').value = ''; renderCatalogue(); });
-$('#reset-camera').addEventListener('click', () => { scene?.overview(); $('#orbit-toggle').setAttribute('aria-pressed', 'false'); });
+$('#reset-camera').addEventListener('click', () => scene?.overview());
 $('#zoom-in').addEventListener('click', () => scene?.zoom(1));
 $('#zoom-out').addEventListener('click', () => scene?.zoom(-1));
+function syncOrbitButton(active) {
+  const button = $('#orbit-toggle');
+  button.setAttribute('aria-pressed', String(active));
+  const label = active ? '暂停动态' : '开启动态';
+  button.setAttribute('aria-label', label);
+  button.title = label;
+}
 $('#orbit-toggle').addEventListener('click', () => {
   const state = $('#orbit-toggle').getAttribute('aria-pressed') !== 'true';
   const active = scene?.orbit(state) ?? false;
-  $('#orbit-toggle').setAttribute('aria-pressed', String(active));
+  syncOrbitButton(active);
   if (state && !active && window.matchMedia('(prefers-reduced-motion: reduce)').matches) notify('已遵循设备的减少动态效果设置。');
 });
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && !dialog.open && view === 'scene') scene?.overview(); });
@@ -217,18 +222,14 @@ function onBrowse(items,start,total,id) {
   const project = projects.find(p=>p.id===id);
   if (project) selected=project;
   $('#space-range').textContent = `${String(total ? start+1 : 0).padStart(2,'0')}–${String(start+items.length).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
-  $('#orbit-toggle').setAttribute('aria-pressed','false');
   renderSelection();
 }
-const stopOrbitIndicator = () => $('#orbit-toggle').setAttribute('aria-pressed','false');
-$('#gallery-canvas').addEventListener('pointerdown',stopOrbitIndicator);
-$('#gallery-canvas').addEventListener('wheel',event=>{if(!event.ctrlKey)stopOrbitIndicator();});
-$('#gallery-canvas').addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','PageDown','PageUp','Home','End'].includes(event.key))stopOrbitIndicator();});
 try {
   const { createGallery } = await import('./scene.js');
   scene = await createGallery($('#gallery-canvas'), visible, id => select(id),onBrowse);
   scene.setTheme(galleryTheme);
   scene.focus(selected.id, false);
+  syncOrbitButton(scene.orbit(true));
   scene.setPaused(view !== 'scene' || dialog.open);
   window.__galleryDebug = () => ({ ...scene.debug(), view, selected: selected.id, query, visible: visible.map(p => p.id) });
   document.documentElement.dataset.sceneReady = 'true';
