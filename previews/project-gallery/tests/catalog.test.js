@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { projects, filterProjects, nextProject, projectPage } from '../src/catalog.js';
 
 test('personal website plus eight requested projects have covers, tutorials, and attribution', () => {
-  assert.equal(projects.length, 9);
-  assert.deepEqual(projects.map(p => p.id), ['taozhiyy','ruic','shotcraft','reactbits','gsap','emil','qwen','designmd','drawio']);
-  assert.equal(new Set(projects.map(p => p.id)).size, 9);
-  for (const p of projects) {
+  const entries = projects.filter(p => !p.isGuide);
+  assert.equal(entries.length, 9);
+  assert.deepEqual(entries.map(p => p.id), ['taozhiyy','ruic','shotcraft','reactbits','gsap','emil','qwen','designmd','drawio']);
+  assert.equal(new Set(projects.map(p => p.id)).size, 10);
+  for (const p of entries) {
     assert.ok(p.cover.startsWith('/covers/'));
     assert.equal(p.preview,`/thumbs/${p.id}.webp`);
     assert.ok(p.url.startsWith('https://'));
@@ -17,12 +18,28 @@ test('personal website plus eight requested projects have covers, tutorials, and
     assert.equal(p.reviewedAt, '2026-10-28');
   }
 });
+
+test('the first scene entry explains Project Cosmos without inventing an external project', () => {
+  const guide = projects[0];
+  assert.equal(projects.length, 10);
+  assert.equal(guide.id, 'project-guide');
+  assert.equal(guide.isGuide, true);
+  assert.equal(guide.category, '板块介绍');
+  assert.equal(guide.cover, '/covers/project-guide.webp');
+  assert.equal(guide.preview, '/thumbs/project-guide.webp');
+  const copy = guide.sections.map(section => section.join(' ')).join(' ');
+  for (const phrase of ['开源项目', '实用工具', '教程', '试用', '作者', '来源']) assert.ok(copy.includes(phrase), phrase);
+  assert.equal(guide.source, undefined);
+  assert.equal(guide.demo, undefined);
+  assert.equal(filterProjects(projects, '板块介绍')[0].id, guide.id);
+});
+
 test('search is case-insensitive across titles, authors and tags without ownership divisions', () => {
-  assert.equal(filterProjects(projects, '').length, 9);
+  assert.equal(filterProjects(projects, '').length, 10);
   assert.equal(filterProjects(projects, '  QWEN  ').length, 1);
   assert.equal(filterProjects(projects, 'HRuiCcc').length, 1);
   assert.equal(filterProjects(projects, 'not-a-project').length, 0);
-  assert.equal(projects.length, 9);
+  assert.equal(projects.length, 10);
 });
 test('next project wraps in both directions and tolerates empty filters', () => {
   assert.equal(nextProject(projects, projects.at(-1).id, 1).id, projects[0].id);

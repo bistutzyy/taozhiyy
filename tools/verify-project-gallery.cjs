@@ -37,7 +37,7 @@ const output=path.resolve(__dirname,'../previews/project-gallery/.qa');
     assert.ok(await page.evaluate(()=>window.__galleryDebug().position>0));
     await page.locator('#gallery-canvas').focus();
     await page.keyboard.press('End');
-    await page.waitForFunction(()=>Math.abs(window.__galleryDebug().position-3)<.002);
+    await page.waitForFunction(()=>Math.abs(window.__galleryDebug().position-window.__galleryDebug().maxPosition)<.002);
     await page.locator('[data-project="drawio"]').click();
     await page.locator('#open-project').click();
     assert.equal(await page.locator('#detail-title').textContent(),'Next AI Draw.io');
