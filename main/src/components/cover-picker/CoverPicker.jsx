@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
-import { LuArrowLeft, LuClapperboard, LuX } from "react-icons/lu";
-import CoverScreening from "./CoverScreening";
+import { Flip } from "gsap/Flip";
+import { LuArrowLeft, LuFlower2, LuX } from "react-icons/lu";
+import CoverFan from "./CoverFan";
 import { getRandomCoverIndex, resolveCoverBrightness } from "./coverState.js";
 import "./cover-picker.css";
+
+gsap.registerPlugin(Flip);
+const FAN_START_CLIP =
+  "polygon(3% 8%,25% 3%,75% 3%,97% 8%,58% 97%,50% 100%,42% 97%,3% 8%)";
+const FAN_END_CLIP =
+  "polygon(0% 0%,25% 0%,75% 0%,100% 0%,100% 100%,50% 100%,0% 100%,0% 0%)";
 
 function CoverPickerSession({
   covers,
@@ -20,11 +27,14 @@ function CoverPickerSession({
   const closeRef = useRef(null);
   const cleanReturnRef = useRef(null);
   const editorFocus = useRef(null);
-  const projectionRef = useRef(null);
+  const revealRef = useRef(null);
   const projectionTimeline = useRef(null);
+  const latestApply = useRef(onApply);
+  latestApply.current = onApply;
   const confirming = useRef(false);
   const [busy, setBusy] = useState(false);
   const [cleanView, setCleanView] = useState(false);
+  const [selection, setSelection] = useState(null);
   const [brightness, setBrightness] = useState(() =>
     resolveCoverBrightness(currentBrightness),
   );
@@ -140,32 +150,73 @@ function CoverPickerSession({
   const changeBrightness = (value) => {
     if (!confirming.current) setBrightness(resolveCoverBrightness(value));
   };
-  const confirmCover = () => {
-    const index = previewIndex;
+  const confirmCover = (requestedIndex = previewIndex, source) => {
+    const index = requestedIndex;
     if (confirming.current || !available.includes(index)) return;
     confirming.current = true;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      onApply(index, brightness);
+      onApply(index, brightness, { skipTransition: true });
       return;
     }
     setBusy(true);
+    setPreviewIndex(index);
+    setSelection({
+      index,
+      brightness,
+      src: covers.find((cover) => cover.index === index).src,
+      source:
+        source ??
+        dialogRef.current.querySelector(`[data-cover-index="${index}"]`),
+    });
+  };
+
+  useLayoutEffect(() => {
+    if (!selection) return;
+    const { index, brightness, source } = selection;
+    const reveal = revealRef.current;
+    gsap.set(reveal, {
+      x: 0,
+      y: 0,
+      rotation: 0,
+      skewX: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      transformOrigin: "50% 50%",
+    });
+    const from = source?.isConnected
+      ? Flip.fit(reveal, source, { getVars: true, scale: false })
+      : {
+          x: window.innerWidth * 0.3,
+          y: window.innerHeight * 0.3,
+          width: window.innerWidth * 0.4,
+          height: window.innerHeight * 0.4,
+        };
     projectionTimeline.current = gsap
       .timeline({
         onComplete: () => {
-          if (confirming.current) onApply(index, brightness);
+          if (confirming.current)
+            latestApply.current(index, brightness, { skipTransition: true });
         },
       })
-      .to(projectionRef.current, {
-        opacity: 0.2,
-        duration: 0.14,
-        ease: "power2.out",
-      })
-      .to(
-        projectionRef.current,
-        { opacity: 0, duration: 0.28, ease: "power1.out" },
-        "+=0.08",
+      .fromTo(
+        reveal,
+        { ...from, opacity: 1, clipPath: FAN_START_CLIP },
+        {
+          x: 0,
+          y: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          rotation: 0,
+          skewX: 0,
+          scaleX: 1,
+          scaleY: 1,
+          clipPath: FAN_END_CLIP,
+          duration: 0.7,
+          ease: "power3.inOut",
+        },
       );
-  };
+    return () => projectionTimeline.current?.kill();
+  }, [selection]);
 
   return (
     <dialog
@@ -173,7 +224,7 @@ function CoverPickerSession({
       className="cover-picker"
       aria-labelledby="cover-picker-title"
       data-clean={cleanView}
-      data-phase={busy ? "projecting" : "select"}
+      data-phase={busy ? "unfolding" : "select"}
       onCancel={(event) => {
         event.preventDefault();
         if (cleanView) returnToEditor();
@@ -207,8 +258,8 @@ function CoverPickerSession({
       <div className="cover-picker__content" hidden={cleanView}>
         <header className="cover-picker__header">
           <div className="cover-picker__heading">
-            <LuClapperboard aria-hidden="true" />
-            <h2 id="cover-picker-title">封面放映室</h2>
+            <LuFlower2 aria-hidden="true" />
+            <h2 id="cover-picker-title">扇面画屏</h2>
             <span>TAOZHIYO</span>
           </div>
           <button
@@ -222,7 +273,7 @@ function CoverPickerSession({
             <LuX aria-hidden="true" />
           </button>
         </header>
-        <CoverScreening
+        <CoverFan
           covers={covers}
           previewIndex={previewIndex}
           currentIndex={currentIndex}
@@ -231,11 +282,12 @@ function CoverPickerSession({
           busy={busy}
           brightness={brightness}
           onPreview={previewCover}
+          onSelect={confirmCover}
           onShuffle={shuffleCover}
           onBrightness={changeBrightness}
           onResetBrightness={() => changeBrightness(100)}
           onCleanView={enterCleanView}
-          onConfirm={confirmCover}
+          onConfirm={() => confirmCover()}
           onRetry={onRetry}
         />
       </div>
@@ -252,11 +304,41 @@ function CoverPickerSession({
           <span>返回编辑</span>
         </button>
       )}
-      <div
-        className="cover-picker__projection"
-        ref={projectionRef}
-        aria-hidden="true"
-      />
+      {selection && (
+        <>
+          <div
+            className="cover-picker__reveal"
+            ref={revealRef}
+            aria-hidden="true"
+          >
+            <img
+              src={selection.src}
+              alt=""
+              style={{ filter: `brightness(${selection.brightness / 100})` }}
+            />
+          </div>
+          <div className="cover-picker__petal-burst" aria-hidden="true">
+            {[
+              [-210, -130],
+              [180, -100],
+              [-135, 20],
+              [230, 80],
+              [-80, -180],
+              [110, 40],
+            ].map(([x, y], index) => (
+              <i
+                key={index}
+                style={{
+                  "--petal-x": `${x}px`,
+                  "--petal-y": `${y}px`,
+                  "--petal-delay": `${index * 22}ms`,
+                  "--petal-rotation": `${70 + index * 41}deg`,
+                }}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </dialog>
   );
 }

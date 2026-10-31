@@ -172,13 +172,61 @@
 .cover-picker__return span {
   font-size: 12px;
 }
-.cover-picker__projection {
+.cover-picker__reveal {
   position: absolute;
   z-index: 6;
-  inset: 0;
-  background: #f0fffb;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
   pointer-events: none;
+  overflow: hidden;
+}
+.cover-picker__reveal img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cover-picker__petal-burst {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cover-picker__petal-burst > i {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 10px;
+  height: 15px;
+  border-radius: 75% 12% 70% 25%;
+  background: #f9c3d5;
+  border-left: 1px solid #ffe5ed;
+  opacity: 0;
+  animation: cover-fan-petal 0.62s ease-out both;
+  animation-delay: var(--petal-delay);
+}
+.cover-picker__petal-burst > i:nth-child(2n) {
+  width: 7px;
+  height: 12px;
+  background: #f7e5cf;
+}
+@keyframes cover-fan-petal {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0) scale(0.4);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--petal-x), var(--petal-y))
+      rotate(var(--petal-rotation)) scale(1);
+  }
 }
 @keyframes cover-picker-reveal {
   from {

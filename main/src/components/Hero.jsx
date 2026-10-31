@@ -131,7 +131,11 @@ const Hero = () => {
     return () => window.removeEventListener("showHeroPreview", handler);
   }, []);
 
-  const applyCover = (index, brightness = currentBrightness) => {
+  const applyCover = (
+    index,
+    brightness = currentBrightness,
+    { skipTransition = false } = {},
+  ) => {
     if (!isHeroImageReady(index, loadedHeroIndexes)) return;
     const nextBrightness = resolveCoverBrightness(brightness);
     try {
@@ -144,8 +148,8 @@ const Hero = () => {
     setSelectorOpen(false);
     if (index === currentIndex) return;
     setPreviousIndex(currentIndex);
-    setHasClicked(true);
-    setIsTransitioning(true);
+    setHasClicked(!skipTransition);
+    setIsTransitioning(!skipTransition);
     setCurrentIndex(index);
   };
 

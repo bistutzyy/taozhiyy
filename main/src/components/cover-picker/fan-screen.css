@@ -1,0 +1,601 @@
+.fan-room {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  min-height: 0;
+  width: 100%;
+  padding: 0 28px 22px;
+  color: #f5f7f4;
+}
+.fan-room__definitions {
+  position: absolute;
+  pointer-events: none;
+}
+.fan-room__stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow: clip;
+  padding: 0 18px;
+}
+.fan-screen {
+  --leaf-height: min(410px, calc((100vw - 120px) * 0.52), calc(100dvh - 270px));
+  --leaf-width: calc(var(--leaf-height) * 0.56);
+  position: relative;
+  width: min(880px, 100%);
+  height: 100%;
+  max-height: 520px;
+}
+.fan-screen__arc {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  pointer-events: none;
+}
+.fan-screen__arc path {
+  stroke: #ead7ad8c;
+  stroke-width: 0.65;
+  vector-effect: non-scaling-stroke;
+}
+.fan-screen__arc path:last-child {
+  stroke: #ead7ad38;
+}
+.fan-leaf {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  width: var(--leaf-width);
+  height: var(--leaf-height);
+  transform: translateX(-50%) rotate(var(--leaf-angle));
+  transform-origin: 50% 100%;
+  z-index: calc(2 + var(--leaf-order));
+  transition: width 0.32s ease;
+}
+.fan-leaf.is-preview {
+  width: calc(var(--leaf-width) * 1.16);
+  z-index: 8;
+}
+.fan-leaf__button {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: #dfe9e4;
+  color: #fff;
+  cursor: pointer;
+}
+.fan-leaf__button:disabled {
+  cursor: default;
+}
+.fan-leaf__button > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fan-leaf__paper {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    #f7f9f002 40%,
+    #ecf2e138 78%,
+    #e4e9daeb 100%
+  );
+  pointer-events: none;
+}
+.fan-leaf__folds {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    from -14deg at 50% 100%,
+    transparent 0deg 5deg,
+    #fdf9e424 5deg 5.25deg,
+    transparent 5.25deg 10deg
+  );
+  pointer-events: none;
+}
+.fan-leaf__edge {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  overflow: visible;
+  pointer-events: none;
+}
+.fan-leaf__edge path {
+  stroke: #f3e3bdc9;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.fan-leaf.is-preview .fan-leaf__edge path,
+.fan-leaf:focus-within .fan-leaf__edge path {
+  stroke: #ffd1d7;
+  stroke-width: 1.8;
+}
+.fan-leaf__label {
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 30px;
+  min-height: 46px;
+  padding: 5px;
+  transform: translateX(-50%);
+  border: 1px solid #fffc;
+  border-radius: 2px;
+  background: #faf6ebd9;
+  color: #704e5c;
+  font-family: "Songti SC", "SimSun", serif;
+  font-size: 22px;
+  line-height: 1.1;
+  box-shadow: 0 2px 7px #13263826;
+}
+.fan-leaf__label > svg {
+  width: 12px;
+  height: 12px;
+}
+.fan-leaf.is-preview .fan-leaf__label {
+  background: #fbe2e6ed;
+  border-color: #f9c1cd;
+}
+.fan-leaf__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.fan-leaf__loader {
+  position: absolute;
+  left: calc(50% - 9px);
+  top: 40%;
+  width: 18px;
+  height: 18px;
+  color: #54717a;
+  animation: fan-loading 1s linear infinite;
+}
+.fan-leaf .cover-picker__retry {
+  position: absolute;
+  z-index: 9;
+  left: calc(50% - 20px);
+  top: 36%;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #e7c7ce;
+  border-radius: 4px;
+  background: #f8f5e9;
+  color: #835e6d;
+  cursor: pointer;
+}
+.cover-picker__retry svg {
+  width: 18px;
+  height: 18px;
+}
+.fan-screen__pivot {
+  position: absolute;
+  z-index: 10;
+  left: calc(50% - 9px);
+  bottom: calc(12% - 9px);
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  aspect-ratio: 1;
+  border: 1px solid #f7dfb6;
+  border-radius: 50%;
+  background: #e6bdba;
+  color: #fff7ea;
+  pointer-events: none;
+}
+.fan-screen__pivot svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 1.1;
+}
+.fan-tassel {
+  position: absolute;
+  z-index: 9;
+  top: 88%;
+  left: calc(50% - 5px);
+  width: 10px;
+  height: 10%;
+  transform-origin: 50% 0;
+  animation: fan-tassel-sway 0.9s ease-out both;
+  pointer-events: none;
+}
+.fan-tassel__cord {
+  position: absolute;
+  top: 0;
+  left: 4px;
+  width: 1px;
+  height: 55%;
+  background: #f5ddbd;
+}
+.fan-tassel__knot {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 6px;
+  height: 5px;
+  border-radius: 2px;
+  background: #cfa0aa;
+}
+.fan-tassel__fringe {
+  position: absolute;
+  top: 58%;
+  bottom: 0;
+  left: 1px;
+  width: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.fan-tassel__fringe > i {
+  height: 100%;
+  width: 1px;
+  background: #e6bbc4;
+}
+.fan-screen__seal {
+  position: absolute;
+  right: 14%;
+  bottom: 11%;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 28px;
+  border: 1px solid #efbac2a8;
+  color: #f0c4cb;
+  font-family: "Songti SC", "SimSun", serif;
+  font-size: 15px;
+  line-height: 1;
+  transform: rotate(5deg);
+  pointer-events: none;
+}
+.fan-room__count {
+  position: absolute;
+  left: calc(50% + 34px);
+  bottom: 6%;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-height: 23px;
+  color: #f6eadf;
+  text-shadow: 0 1px 5px #142535;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.fan-room__count strong {
+  font-size: 18px;
+  font-weight: 400;
+}
+.fan-room.is-unfolding .fan-room__stage {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.fan-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(710px, 100%);
+  justify-self: center;
+  min-height: 64px;
+  padding: 9px 11px;
+  border: 1px solid #f1e6d9b8;
+  border-radius: 7px;
+  background: #f4f6efdc;
+  box-shadow: 0 7px 25px #10273521;
+  color: #46585b;
+}
+.fan-command {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #bdafa32e;
+  border-radius: 4px;
+  background: #ffffff57;
+  color: #526a6d;
+  cursor: pointer;
+}
+.fan-command > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.6;
+}
+.fan-command:hover:not(:disabled) {
+  background: #fce6e8;
+  border-color: #cba0a8;
+}
+.fan-command:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.fan-command__tip {
+  display: none;
+  position: absolute;
+  z-index: 12;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 9px;
+  border-radius: 4px;
+  background: #334850eb;
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.fan-command:hover:not(:disabled) .fan-command__tip,
+.fan-command:focus-visible .fan-command__tip {
+  display: block;
+}
+.fan-brightness {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.fan-brightness label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.fan-brightness label svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.4;
+}
+.fan-brightness input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 45px;
+  height: 30px;
+  accent-color: #ba8191;
+  cursor: pointer;
+}
+.fan-brightness output {
+  width: 38px;
+  flex: 0 0 38px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.fan-controls .fan-controls__reset {
+  flex: 0 0 29px;
+  width: 29px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+}
+.fan-controls__reset > svg {
+  width: 15px;
+  height: 15px;
+}
+.fan-apply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid #cfb0b1;
+  border-radius: 4px;
+  background: #efced2;
+  color: #644f58;
+  cursor: pointer;
+}
+.fan-apply svg {
+  width: 16px;
+  height: 16px;
+}
+.fan-apply span {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.fan-apply:hover:not(:disabled) {
+  background: #f7dce0;
+}
+.fan-apply:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+@keyframes fan-loading {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fan-tassel-sway {
+  0% {
+    transform: rotate(-14deg);
+  }
+  35% {
+    transform: rotate(10deg);
+  }
+  65% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+@media (max-width: 767px) {
+  .fan-room {
+    gap: 10px;
+    padding: 0 16px 14px;
+  }
+  .fan-room__stage {
+    padding: 0;
+  }
+  .fan-screen {
+    --leaf-height: min(
+      290px,
+      calc((100vw - 40px) * 0.74),
+      calc(100dvh - 260px)
+    );
+    --leaf-width: calc(var(--leaf-height) * 0.5);
+    max-height: 420px;
+  }
+  .fan-leaf {
+    transform: translateX(-50%) rotate(var(--leaf-mobile-angle));
+  }
+  .fan-leaf.is-preview {
+    width: calc(var(--leaf-width) * 1.12);
+  }
+  .fan-leaf__label {
+    top: 13%;
+    min-width: 24px;
+    min-height: 32px;
+    padding: 4px;
+    font-size: 17px;
+    gap: 3px;
+  }
+  .fan-leaf__label > svg {
+    width: 10px;
+    height: 10px;
+  }
+  .fan-screen__arc {
+    opacity: 0.55;
+  }
+  .fan-screen__seal {
+    right: 7%;
+  }
+  .fan-controls {
+    display: grid;
+    grid-template-columns: 40px 40px minmax(0, 1fr);
+    gap: 7px 9px;
+    width: min(440px, 100%);
+    padding: 9px;
+    min-height: 0;
+  }
+  .fan-controls__shuffle {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .fan-controls__clean {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .fan-apply {
+    grid-column: 3;
+    grid-row: 1;
+    min-height: 42px;
+    padding-inline: 8px;
+  }
+  .fan-brightness {
+    grid-column: 1/-1;
+    grid-row: 2;
+    gap: 8px;
+    padding-inline: 3px;
+  }
+  .fan-brightness input {
+    min-width: 40px;
+  }
+  .fan-command__tip {
+    left: 0;
+    transform: none;
+  }
+  .fan-controls__reset .fan-command__tip {
+    left: auto;
+    right: 0;
+  }
+}
+@media (max-height: 450px) and (orientation: landscape) {
+  .fan-room {
+    gap: 4px;
+    padding: 0 12px 8px;
+  }
+  .fan-screen {
+    --leaf-height: min(215px, calc(100dvh - 160px));
+    --leaf-width: calc(var(--leaf-height) * 0.52);
+    max-height: none;
+  }
+  .fan-room__stage {
+    padding: 0 30px;
+  }
+  .fan-leaf {
+    transform: translateX(-50%) rotate(var(--leaf-angle));
+  }
+  .fan-leaf__label {
+    top: 12%;
+    min-width: 24px;
+    min-height: 28px;
+    font-size: 16px;
+  }
+  .fan-leaf__label > svg {
+    width: 10px;
+    height: 10px;
+  }
+  .fan-screen__arc {
+    opacity: 0.4;
+  }
+  .fan-room__count {
+    bottom: 2%;
+    left: calc(50% + 28px);
+    font-size: 10px;
+  }
+  .fan-room__count strong {
+    font-size: 15px;
+  }
+  .fan-screen__seal {
+    right: 12%;
+    bottom: 8%;
+  }
+  .fan-controls {
+    display: flex;
+    flex-wrap: nowrap;
+    width: min(650px, 100%);
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .fan-command {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+  .fan-brightness {
+    gap: 7px;
+  }
+  .fan-brightness label span {
+    display: none;
+  }
+  .fan-brightness input {
+    min-width: 45px;
+    width: 90px;
+  }
+  .fan-apply {
+    width: 40px;
+    min-height: 36px;
+    padding: 0;
+  }
+  .fan-apply span {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fan-room *,
+  .fan-room *::before,
+  .fan-room *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

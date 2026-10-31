@@ -10,7 +10,7 @@ const read = (name) => {
   return readFileSync(url, "utf8");
 };
 const source = () => read("./CoverPicker.jsx");
-const room = () => read("./CoverScreening.jsx");
+const room = () => read("./CoverFan.jsx");
 
 test("screening room module loads server-side and stays empty while closed", async () => {
   const { createServer } = await import("vite");
@@ -41,10 +41,10 @@ test("screening scene remains a labelled native modal portalled outside Hero", (
   assert.match(ui, /id="cover-picker-title"/);
   assert.match(ui, /\.showModal\(\)/);
   assert.match(ui, /createPortal\([\s\S]*document\.body/);
-  assert.match(ui, /<CoverScreening\b/);
+  assert.match(ui, /<CoverFan\b/);
   assert.doesNotMatch(
     ui + room(),
-    /CoverDial|Draggable|InertiaPlugin|dialMath/,
+    /CoverDial|CoverScreening|Draggable|InertiaPlugin|screening-projector/,
   );
 });
 
@@ -87,10 +87,18 @@ test("cancel keeps native modal opener, body style priorities and scroll restora
   assert.doesNotMatch(ui.match(/<dialog\b[\s\S]*?>/)?.[0] ?? "", /\bonClose=/);
 });
 
-test("floating slides only preview ready images and expose truthful retry state", () => {
+test("fan leaves preview on fine hover or focus and explicitly select on click", () => {
   const ui = room();
   assert.match(ui, /data-cover-index=\{index\}/);
-  assert.match(ui, /onClick=\{\(\) => onPreview\(index\)\}/);
+  assert.match(
+    ui,
+    /onClick=\{\(event\) => onSelect\(index, event\.currentTarget\)\}/,
+  );
+  assert.match(ui, /onMouseEnter=/);
+  assert.match(ui, /\(hover: hover\) and \(pointer: fine\)/);
+  assert.match(ui, /onFocus=\{\(\) => onPreview\(index\)\}/);
+  assert.match(ui, /clipPathUnits="objectBoundingBox"/);
+  assert.match(ui, /data-fan-hit/);
   assert.match(ui, /disabled=\{!ready \|\| busy\}/);
   assert.match(ui, /aria-busy=\{!ready && !failed\}/);
   assert.match(ui, /className="cover-picker__retry"/);
@@ -125,12 +133,17 @@ test("random selection stays in the preview and obeys image readiness", () => {
   assert.match(ui, /confirming\.current/);
 });
 
-test("one-shot projection confirms both drafts and is killed on unmount", () => {
+test("selected leaf expands to full-screen with cancellable captured-index Flip", () => {
   const ui = source();
   assert.match(ui, /gsap\s*\.timeline\(/);
   assert.match(ui, /prefers-reduced-motion/);
-  assert.match(ui, /onApply\(index, brightness\)/);
+  assert.match(ui, /onApply\(index, brightness,/);
+  assert.match(ui, /skipTransition:\s*true/);
   assert.match(ui, /projectionTimeline\.current\?\.kill\(\)/);
+  assert.match(ui, /Flip\.fit\(/);
+  assert.match(ui, /getVars:\s*true/);
+  assert.match(ui, /cover-picker__reveal/);
+  assert.match(ui, /cover-picker__petal-burst/);
   assert.match(ui, /data-phase=/);
 });
 
@@ -152,12 +165,12 @@ test("full-screen previews retain real images and never use blur or auto-rotatio
   assert.match(ui, /data-preview-index=\{displayedCover\.index\}/);
   assert.match(ui, /clearTimeout\(timeout\)/);
   assert.doesNotMatch(ui, /setInterval|new Image|compass|poem|<canvas/i);
-  const css = read("./cover-picker.css") + read("./screening-room.css");
+  const css = read("./cover-picker.css") + read("./fan-screen.css");
   assert.doesNotMatch(css, /blur\s*\(|font-size:\s*[^;]*vw/);
 });
 
 test("room layouts include constrained mobile, short landscape and reduced motion", () => {
-  const css = read("./cover-picker.css") + read("./screening-room.css");
+  const css = read("./cover-picker.css") + read("./fan-screen.css");
   assert.match(css, /100dvh/);
   assert.match(css, /aspect-ratio:/);
   assert.match(css, /:focus-visible/);
@@ -165,4 +178,7 @@ test("room layouts include constrained mobile, short landscape and reduced motio
   assert.match(css, /orientation:\s*landscape/);
   assert.match(css, /env\(safe-area-inset-bottom/);
   assert.match(css, /\[hidden\]/);
+  assert.match(css, /transform-origin:\s*50% 100%/);
+  assert.match(css, /--leaf-angle/);
+  assert.match(css, /fan-tassel/);
 });

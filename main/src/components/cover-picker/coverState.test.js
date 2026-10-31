@@ -191,13 +191,15 @@ test("Hero restores brightness and passes the applied value into the cover picke
 test("Hero validates and applies brightness before the same-cover early return", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
   const apply = hero.match(
-    /const applyCover = \(index, brightness = currentBrightness\) => \{([\s\S]*?)\n {2}\};/,
+    /const applyCover = \(\s*index,\s*brightness = currentBrightness,[\s\S]*?\) => \{([\s\S]*?)\n {2}\};/,
   );
   assert.ok(
     apply,
     "applyCover must accept brightness with the applied value as its default",
   );
   const body = apply[1];
+  assert.match(body, /setHasClicked\(!skipTransition\)/);
+  assert.match(body, /setIsTransitioning\(!skipTransition\)/);
   const readyGuard = body.indexOf(
     "if (!isHeroImageReady(index, loadedHeroIndexes)) return;",
   );

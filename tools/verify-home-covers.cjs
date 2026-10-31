@@ -62,14 +62,32 @@ async function closedPicker(page) {
       document.body.style.position !== "fixed",
   );
 }
-async function choose(page, index, touch = false) {
-  if (touch) await frame(page, index).tap();
-  else await frame(page, index).click();
+async function choose(page, index, hover = false) {
+  if (hover) await frame(page, index).locator("[data-fan-hit]").hover();
+  else await frame(page, index).focus();
   await page.waitForFunction(
     (expected) =>
       document.querySelector("dialog.cover-picker [data-preview-index]")
         ?.dataset.previewIndex === String(expected),
     index,
+  );
+}
+async function applyLeaf(page, index, touch = false) {
+  const hit = frame(page, index).locator("[data-fan-hit]");
+  if (touch) await hit.tap();
+  else await hit.click();
+  await closedPicker(page);
+  assert.equal(
+    await page.locator("#previous-image").count(),
+    0,
+    "a completed fan reveal must not replay the old cover",
+  );
+  assert.equal(
+    await page
+      .locator("#bg-image")
+      .evaluate((el) => Number(getComputedStyle(el).opacity)),
+    1,
+    "the completed reveal hands off without a flash",
   );
 }
 async function setRangeEnd(page, key) {
@@ -83,12 +101,12 @@ async function checkFit(page, width, height) {
       const rect = dialog.getBoundingClientRect();
       const bad = [
         ...dialog.querySelectorAll(
-          "button,input,[data-fit-text],.screening-command__tip",
+          "button,input,[data-fit-text],.fan-command__tip",
         ),
       ]
         .filter((el) => {
           if (
-            el.matches(".screening-command__tip") &&
+            el.matches(".fan-command__tip") &&
             getComputedStyle(el).visibility === "hidden"
           )
             return false;
@@ -100,7 +118,7 @@ async function checkFit(page, width, height) {
               r.top < -0.5 ||
               r.right > innerWidth + 0.5 ||
               r.bottom > innerHeight + 0.5 ||
-              (!el.matches(".screening-command") &&
+              (!el.matches(".fan-command") &&
                 el.scrollWidth > el.clientWidth + 1))
           );
         })
@@ -167,19 +185,11 @@ async function newPage(browser, options = {}) {
       const original = await page.locator("#bg-image").getAttribute("src");
       await openPicker(page);
       await checkFit(page, width, height);
-      if (width < 768 && height > width) {
-        const slides = await page.locator(".screening-slides").boundingBox();
-        const projector = await page
-          .locator(".screening-projector")
-          .boundingBox();
-        assert.ok(
-          projector.y >= slides.y + slides.height - 1,
-          "portrait projector belongs below the slides",
-        );
-      }
+      assert.equal(await page.locator(".fan-leaf").count(), 4);
+      assert.equal(await page.locator(".fan-screen__pivot").count(), 1);
       assert.equal(await frame(page, 1).count(), 1);
       assert.equal(await page.locator(".aperture-dial").count(), 0);
-      await choose(page, 2, width < 768);
+      await choose(page, 2, width >= 768);
       assert.equal(
         await page.locator("#bg-image").getAttribute("src"),
         original,
@@ -264,7 +274,24 @@ async function newPage(browser, options = {}) {
         await command(page, "使用此封面").click();
         assert.equal(
           await page.locator("dialog.cover-picker").getAttribute("data-phase"),
-          "projecting",
+          "unfolding",
+        );
+        assert.equal(
+          await page.locator(".cover-picker__petal-burst>i").count(),
+          6,
+        );
+        assert.ok(
+          (
+            await page.locator(".cover-picker__reveal img").getAttribute("src")
+          ).endsWith("hero-4.webp"),
+        );
+        await page.waitForTimeout(180);
+        const expanding = await page
+          .locator(".cover-picker__reveal")
+          .boundingBox();
+        assert.ok(
+          expanding.width > width * 0.25 && expanding.height > height * 0.25,
+          "the selected image expands visibly",
         );
         await page.keyboard.press("Escape");
         await closedPicker(page);
@@ -279,8 +306,7 @@ async function newPage(browser, options = {}) {
       await openPicker(page);
       await choose(page, 3);
       await setRangeEnd(page, "End");
-      await command(page, "使用此封面").click();
-      await closedPicker(page);
+      await applyLeaf(page, 3, width < 768);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
           "hero-3.webp",
@@ -302,7 +328,8 @@ async function newPage(browser, options = {}) {
       await openPicker(page);
       assert.equal(await brightness(page).inputValue(), "115");
       await setRangeEnd(page, "Home");
-      await command(page, "放映并应用封面").click();
+      await frame(page, 3).focus();
+      await page.keyboard.press("Enter");
       await closedPicker(page);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
@@ -316,9 +343,9 @@ async function newPage(browser, options = {}) {
       );
       if (width === 1440) {
         await openPicker(page);
-        await choose(page, 4);
+        await choose(page, 3);
         await setRangeEnd(page, "End");
-        await command(page, "使用此封面").click();
+        await frame(page, 4).evaluate((button) => button.click());
         await closedPicker(page);
         assert.ok(
           (await page.locator("#bg-image").getAttribute("src")).endsWith(
@@ -343,7 +370,7 @@ async function newPage(browser, options = {}) {
       assert.ok(Math.abs((await page.evaluate(() => scrollY)) - scroll) < 2);
       assert.deepEqual(errors, []);
       console.log(
-        `PASS ${width}x${height}: scene bounds, real images, touch/click, shuffle, brightness, clean view, cancel, both apply controls, persistence and focus`,
+        `PASS ${width}x${height}: fan bounds, hover/focus preview, direct leaf selection, brightness, clean view, cancellation, persistence and keyboard`,
       );
       await context.close();
     }
