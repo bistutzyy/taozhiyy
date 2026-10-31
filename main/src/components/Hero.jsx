@@ -9,7 +9,10 @@ import HeroWordmark from "./HeroWordmark";
 import CoverPicker from "./cover-picker/CoverPicker";
 import {
   COVER_INDEXES,
+  readCoverBrightness,
   readCoverPreference,
+  resolveCoverBrightness,
+  writeCoverBrightness,
   writeCoverPreference,
 } from "./cover-picker/coverState";
 import { isHeroImageReady } from "./heroImageState";
@@ -34,6 +37,13 @@ const Hero = () => {
       return readCoverPreference(window.localStorage);
     } catch {
       return 1;
+    }
+  });
+  const [currentBrightness, setCurrentBrightness] = useState(() => {
+    try {
+      return readCoverBrightness(window.localStorage);
+    } catch {
+      return 100;
     }
   });
   const [previousIndex, setPreviousIndex] = useState(currentIndex);
@@ -121,13 +131,16 @@ const Hero = () => {
     return () => window.removeEventListener("showHeroPreview", handler);
   }, []);
 
-  const applyCover = (index) => {
+  const applyCover = (index, brightness = currentBrightness) => {
     if (!isHeroImageReady(index, loadedHeroIndexes)) return;
+    const nextBrightness = resolveCoverBrightness(brightness);
     try {
       writeCoverPreference(window.localStorage, index);
+      writeCoverBrightness(window.localStorage, nextBrightness);
     } catch {
       /* Preserve in-memory selection. */
     }
+    setCurrentBrightness(nextBrightness);
     setSelectorOpen(false);
     if (index === currentIndex) return;
     setPreviousIndex(currentIndex);
@@ -140,7 +153,7 @@ const Hero = () => {
     () => {
       if (!hasClicked) return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        gsap.set("#bg-image", { opacity: 1, scale: 1, clearProps: "filter" });
+        gsap.set("#bg-image", { opacity: 1, scale: 1 });
         setIsTransitioning(false);
         return;
       }
@@ -207,6 +220,7 @@ const Hero = () => {
               alt=""
               aria-hidden="true"
               className="pointer-events-none absolute left-0 top-0 z-30 size-full object-cover object-center"
+              style={{ filter: `brightness(${currentBrightness / 100})` }}
             />
           )}
           {/* A decoded retry must replace a previously failed DOM image. */}
@@ -216,6 +230,7 @@ const Hero = () => {
             id="bg-image"
             alt="首页封面"
             className="absolute left-0 top-0 size-full object-cover object-center"
+            style={{ filter: `brightness(${currentBrightness / 100})` }}
             {...heroImagePriority}
             decoding="async"
           />
@@ -265,6 +280,7 @@ const Hero = () => {
         open={selectorOpen}
         covers={covers}
         currentIndex={currentIndex}
+        currentBrightness={currentBrightness}
         readyIndexes={loadedHeroIndexes}
         failedIndexes={failedIndexes}
         onApply={applyCover}
