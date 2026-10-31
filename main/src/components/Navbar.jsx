@@ -64,6 +64,7 @@ const NavBar = () => {
   }, []);
 
   const openConsole = () => {
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
     setDrawerVisible(false);
     setMobileOpen(false);
     setDrawerMounted(false);
@@ -138,9 +139,15 @@ const NavBar = () => {
   }, [pathname]);
 
   useEffect(() => {
-    if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("console") === "open") {
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const closeOnMobile = () => {
+      if (!desktop.matches) setConsoleOpen(false);
+    };
+    desktop.addEventListener("change", closeOnMobile);
+    if (desktop.matches && import.meta.env.DEV && new URLSearchParams(window.location.search).get("console") === "open") {
       setConsoleOpen(true);
     }
+    return () => desktop.removeEventListener("change", closeOnMobile);
   }, []);
 
   useEffect(() => {
@@ -298,20 +305,7 @@ const NavBar = () => {
   };
 
   const renderMobileLink = (item) => {
-    if (item.action === "console") {
-      return (
-        <button
-          key={item.label}
-          type="button"
-          className={clsx("nav-mobile-link nav-mobile-console", `nav-mobile-link--${navTheme}`)}
-          aria-haspopup="dialog"
-          onClick={openConsole}
-        >
-          {item.label}
-          <LuCommand aria-hidden="true" />
-        </button>
-      );
-    }
+    if (item.action === "console") return null;
     const active = isLinkActive(item);
     return (
       <Link

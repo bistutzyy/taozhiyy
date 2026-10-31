@@ -176,7 +176,10 @@ function CoverPickerSession({
     const index = requestedIndex;
     if (confirming.current || !available.includes(index)) return;
     confirming.current = true;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(max-width: 767px)").matches
+    ) {
       onApply(index, brightness, { skipTransition: true });
       return;
     }
@@ -280,7 +283,10 @@ function CoverPickerSession({
         <header className="cover-picker__header">
           <div className="cover-picker__heading">
             <LuFlower2 aria-hidden="true" />
-            <h2 id="cover-picker-title">扇面画屏</h2>
+            <h2 id="cover-picker-title">
+              <span className="cover-picker__title-fan">扇面画屏</span>
+              <span className="cover-picker__title-grid">选择封面</span>
+            </h2>
             <span>TAOZHIYO</span>
           </div>
           <button

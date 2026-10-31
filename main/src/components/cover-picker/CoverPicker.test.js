@@ -188,3 +188,30 @@ test("room layouts include constrained mobile, short landscape and reduced motio
   assert.match(css, /--leaf-angle/);
   assert.match(css, /fan-tassel/);
 });
+
+test("mobile cover selection becomes an undecorated two-column grid and applies without a fan reveal", () => {
+  const css = read("./cover-mobile.css");
+  assert.match(css, /@media \(max-width: 767px\)/);
+  assert.match(css, /grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /clip-path:\s*none !important/);
+  assert.match(css, /\.fan-leaf[\s\S]*?transform:\s*none/);
+  assert.match(css, /\.fan-tassel[\s\S]*?display:\s*none/);
+  assert.match(room(), /import "\.\/cover-mobile.css"/);
+  assert.match(
+    source(),
+    /window\.matchMedia\("\(max-width: 767px\)"\)\.matches/,
+  );
+});
+
+test("mobile navigation excludes the console while retaining the desktop entry", () => {
+  const nav = read("../Navbar.jsx");
+  assert.match(
+    nav,
+    /const renderMobileLink = \(item\) => \{\s*if \(item.action === "console"\) return null;/,
+  );
+  assert.match(
+    nav,
+    /className=\{clsx\(desktopLinkClass\(consoleOpen\), "nav-console-trigger"\)\}/,
+  );
+  assert.doesNotMatch(nav, /nav-mobile-console/);
+});

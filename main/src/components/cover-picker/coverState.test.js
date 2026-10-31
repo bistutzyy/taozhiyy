@@ -276,11 +276,27 @@ test("Hero applies brightness to both image layers without filtering its text or
   assert.doesNotMatch(hero, /clearProps:\s*["'][^"']*filter/);
 });
 
+test("Hero randomizes each homepage mount instead of restoring a fixed cover", async () => {
+  const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
+  const { getRandomCoverIndex, COVER_INDEXES } = await getState();
+  assert.deepEqual(
+    [0, 0.25, 0.5, 0.75].map((sample) =>
+      getRandomCoverIndex(COVER_INDEXES, null, sample),
+    ),
+    [1, 2, 3, 4],
+  );
+  assert.match(
+    hero,
+    /useState\(\s*\(\) =>\s*getRandomCoverIndex\(COVER_INDEXES, null\) \?\? 1/,
+  );
+  assert.doesNotMatch(hero, /readCoverPreference/);
+});
+
 test("Hero uses a shared cover picker on desktop and mobile without compass or poetry", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
   assert.match(hero, /<CoverPicker/);
   assert.doesNotMatch(hero, /HERO_POEM|pointedPoem|Compass|compass|转动指南针/);
-  assert.match(hero, /readCoverPreference/);
+  assert.match(hero, /getRandomCoverIndex/);
   assert.match(hero, /writeCoverPreference/);
   assert.match(hero, /\.decode\(/);
   assert.match(hero, /prefers-reduced-motion/);

@@ -43,6 +43,7 @@ async function pixelSamples(buffer) {
   const browser = await chromium.launch({ channel: "msedge", headless: true });
   async function pageFor(options = {}, images = true) {
     const context = await browser.newContext(options);
+    await context.addInitScript(() => { Math.random = () => 0.1; });
     const page = await context.newPage();
     const errors = [];
     page.on("pageerror", error => errors.push(error.message));
@@ -146,7 +147,7 @@ async function pixelSamples(buffer) {
       assert.equal(await real.page.evaluate(key => localStorage.getItem(key), brightnessKey), null);
       assert.deepEqual(real.errors, []);
       await real.context.close();
-      console.log(`PASS ${width}: all real wallpapers, skewed frames, highlighting and viewport fit`);
+      console.log(`PASS ${width}: all real wallpapers, ${width < 768 ? "mobile grid" : "skewed frames"}, highlighting and viewport fit`);
     }
   } finally {
     await browser.close();

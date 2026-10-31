@@ -10,6 +10,7 @@ import {
   LuSun,
 } from "react-icons/lu";
 import "./fan-screen.css";
+import "./cover-mobile.css";
 
 function Command({ label, icon: Icon, onClick, disabled, className = "" }) {
   return (
@@ -57,7 +58,8 @@ export default function CoverFan({
   return (
     <section
       className={`fan-room${busy ? " is-unfolding" : ""}`}
-      aria-label="扇面选景"
+      aria-label="封面选景"
+      style={{ "--cover-brightness": brightness / 100 }}
     >
       <svg
         className="fan-room__definitions"
@@ -72,7 +74,7 @@ export default function CoverFan({
         </defs>
       </svg>
       <div className="fan-room__stage">
-        <div className="fan-screen" role="group" aria-label="四景折扇">
+        <div className="fan-screen" role="group" aria-label="四张封面">
           <svg
             className="fan-screen__arc"
             viewBox="0 0 880 520"

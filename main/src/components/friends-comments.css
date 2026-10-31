@@ -1,0 +1,151 @@
+/* Keep reply pickers above the reply list's own stacking context. */
+#friends-guestbook .friends-comment-card > .friends-comment-reply-editor,
+#friends-guestbook .friends-comment-compose-footer {
+  z-index: 5;
+}
+
+#friends-guestbook > form:has([aria-expanded="true"]) {
+  z-index: 50;
+}
+
+@media (max-width: 767px) {
+  #friends-guestbook .friends-comment-thread,
+  #friends-guestbook .friends-comment-reply {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  #friends-guestbook .friends-comment-avatar {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    z-index: 3;
+  }
+
+  #friends-guestbook .friends-comment-avatar--reply {
+    top: 0.625rem;
+    left: 0.625rem;
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+
+  #friends-guestbook .friends-comment-card {
+    padding: 0.75rem;
+  }
+
+  #friends-guestbook .friends-comment-reply-card {
+    padding: 0.625rem;
+  }
+
+  #friends-guestbook .friends-comment-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  #friends-guestbook .friends-comment-identity {
+    min-height: 2.25rem;
+    padding-left: 2.75rem;
+  }
+
+  #friends-guestbook .friends-comment-reply-card .friends-comment-meta {
+    min-height: 1.875rem;
+    padding-left: 2.375rem;
+  }
+
+  #friends-guestbook .friends-comment-meta {
+    min-width: 0;
+    line-height: 1.5;
+  }
+
+  #friends-guestbook .friends-comment-name {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  #friends-guestbook .friends-comment-time {
+    max-width: 100%;
+  }
+
+  #friends-guestbook .friends-comment-actions {
+    justify-self: end;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  #friends-guestbook .friends-comment-actions button,
+  #friends-guestbook button.friends-comment-actions {
+    min-height: 2.25rem;
+  }
+
+  #friends-guestbook .friends-comment-content,
+  #friends-guestbook .friends-comment-meta > span,
+  #friends-guestbook .friends-comment-identity > p,
+  #friends-guestbook .friends-comment-form-note {
+    overflow-wrap: anywhere;
+  }
+
+  #friends-guestbook .friends-comment-content {
+    margin-top: 0.75rem;
+    line-height: 1.75;
+  }
+
+  #friends-guestbook .friends-comment-replies {
+    min-width: 0;
+    margin-top: 1rem;
+    padding-left: 0.5rem;
+    border-left-width: 2px;
+    gap: 0.75rem;
+  }
+
+  #friends-guestbook .friends-comment-reply {
+    /* Override the shared mobile reset without changing desktop indentation. */
+    margin-left: min(var(--reply-indent, 0px), 12px) !important;
+  }
+
+  #friends-guestbook .friends-comment-reply-form {
+    grid-column: 1 / -1;
+  }
+
+  #friends-guestbook .friends-comment-reply-editor,
+  #friends-guestbook .friends-comment-reply-form {
+    min-width: 0;
+    padding: 0.625rem;
+  }
+
+  #friends-guestbook .friends-comment-editor-toolbar {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    gap: 0.5rem;
+  }
+
+  #friends-guestbook .friends-comment-editor-toolbar > button {
+    flex-shrink: 0;
+  }
+
+  #friends-guestbook .friends-comment-emoji,
+  #friends-guestbook .friends-comment-emoji > div {
+    position: static;
+  }
+
+  #friends-guestbook .friends-comment-emoji [id] {
+    left: 0;
+    width: min(100%, 320px);
+    max-width: 100%;
+  }
+
+  #friends-guestbook .friends-comment-emoji [id] > .grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  #friends-guestbook .friends-comment-emoji [id] button {
+    width: 100%;
+    min-width: 0;
+    height: 2.25rem;
+  }
+}
