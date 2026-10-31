@@ -153,6 +153,7 @@ async function checkFit(page, width, height) {
 }
 async function newPage(browser, options = {}) {
   const context = await browser.newContext(options);
+  await context.addInitScript(() => { Math.random = () => 0.1; });
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
   const errors = [];
@@ -189,6 +190,13 @@ async function newPage(browser, options = {}) {
       await checkFit(page, width, height);
       assert.equal(await page.locator(".fan-leaf").count(), 4);
       assert.equal(await page.locator(".fan-screen__pivot").count(), 1);
+      if (width < 768) {
+        assert.equal(await page.locator(".fan-screen__pivot").isVisible(), false);
+        assert.equal(await frame(page, 1).evaluate(el => getComputedStyle(el).clipPath), "none");
+        const boxes = await page.locator(".fan-leaf").evaluateAll(leaves => leaves.map(el => el.getBoundingClientRect().toJSON()));
+        assert.ok(Math.abs(boxes[0].y - boxes[1].y) < 1 && boxes[2].y > boxes[0].y);
+        assert.ok(Math.abs(boxes[0].width - boxes[0].height) < 1, "mobile covers must be square");
+      }
       assert.equal(await frame(page, 1).count(), 1);
       assert.equal(await page.locator(".aperture-dial").count(), 0);
       await choose(page, 2, width >= 768);
@@ -325,6 +333,7 @@ async function newPage(browser, options = {}) {
       await shot(page, `applied-${width}`);
       await page.reload({ waitUntil: "domcontentloaded" });
       await readyHome(page);
+      assert.ok((await page.locator("#bg-image").getAttribute("src")).endsWith(coverFile(1)), "reload must randomize instead of restoring applied cover 3");
       assert.equal(await filter(page, "#bg-image"), "brightness(1.15)");
       assert.equal(
         await filter(page, ".hero-wordmark"),
@@ -376,7 +385,7 @@ async function newPage(browser, options = {}) {
       assert.ok(Math.abs((await page.evaluate(() => scrollY)) - scroll) < 2);
       assert.deepEqual(errors, []);
       console.log(
-        `PASS ${width}x${height}: fan bounds, hover/focus preview, direct leaf selection, brightness, clean view, cancellation, persistence and keyboard`,
+        `PASS ${width}x${height}: responsive cover layout, preview, selection, brightness, clean view, cancellation, random entry and keyboard`,
       );
       await context.close();
     }
@@ -534,7 +543,7 @@ async function newPage(browser, options = {}) {
     await closedPicker(savedFailure.page);
     await savedFailure.context.close();
     console.log(
-      "PASS saved-cover fallback without overwriting explicit preference",
+      "PASS random entry ignores the old fixed preference without overwriting it",
     );
 
     const retry = await newPage(browser, {

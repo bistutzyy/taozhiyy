@@ -1,0 +1,35 @@
+@media (max-width: 767px) {
+  .bili-hub-page .bangumi-mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 180px));
+    gap: 12px;
+  }
+
+  .bili-hub-page .bangumi-mini-grid > div {
+    position: relative;
+    min-width: 0;
+  }
+
+  /* Keep the expanded-item badge out of the equal-height card flow. */
+  .bili-hub-page .bangumi-mini-grid > div > span {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 3;
+    margin-bottom: 0;
+  }
+
+  .bili-hub-page .bangumi-mini-card > div:last-child {
+    min-width: 0;
+    padding: 10px;
+  }
+
+  .bili-hub-page .bangumi-mini-card h3,
+  .bili-hub-page .bangumi-mini-card p {
+    overflow-wrap: anywhere;
+  }
+
+  .bili-hub-page .bangumi-mini-card a,
+  .bili-hub-page .bangumi-mini-card button {
+    max-width: 100%;
+  }
+}

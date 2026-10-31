@@ -10,6 +10,7 @@ import {
   LuSun,
 } from "react-icons/lu";
 import "./fan-screen.css";
+import "./cover-mobile.css";
 
 function Command({ label, icon: Icon, onClick, disabled, className = "" }) {
   return (
@@ -32,12 +33,14 @@ function Command({ label, icon: Icon, onClick, disabled, className = "" }) {
 export default function CoverFan({
   covers,
   previewIndex,
+  highlightedIndex,
   currentIndex,
   readyIndexes,
   failedIndexes,
   busy,
   brightness,
   onPreview,
+  onPreviewEnd,
   onSelect,
   onShuffle,
   onBrightness,
@@ -55,7 +58,8 @@ export default function CoverFan({
   return (
     <section
       className={`fan-room${busy ? " is-unfolding" : ""}`}
-      aria-label="扇面选景"
+      aria-label="封面选景"
+      style={{ "--cover-brightness": brightness / 100 }}
     >
       <svg
         className="fan-room__definitions"
@@ -70,7 +74,7 @@ export default function CoverFan({
         </defs>
       </svg>
       <div className="fan-room__stage">
-        <div className="fan-screen" role="group" aria-label="四景折扇">
+        <div className="fan-screen" role="group" aria-label="四张封面">
           <svg
             className="fan-screen__arc"
             viewBox="0 0 880 520"
@@ -94,7 +98,7 @@ export default function CoverFan({
             return (
               <div
                 key={index}
-                className={`fan-leaf${selected ? " is-preview" : ""}`}
+                className={`fan-leaf${highlightedIndex === index ? " is-preview" : ""}`}
                 style={{
                   "--leaf-angle": `${[-43, -14, 14, 43][position % 4]}deg`,
                   "--leaf-mobile-angle": `${[-28, -9, 9, 28][position % 4]}deg`,
@@ -117,9 +121,11 @@ export default function CoverFan({
                       window.matchMedia("(hover: hover) and (pointer: fine)")
                         .matches
                     )
-                      onPreview(index);
+                      onPreview(index, "pointer");
                   }}
-                  onFocus={() => onPreview(index)}
+                  onMouseLeave={() => onPreviewEnd(index, "pointer")}
+                  onFocus={() => onPreview(index, "focus")}
+                  onBlur={() => onPreviewEnd(index, "focus")}
                   onClick={(event) => onSelect(index, event.currentTarget)}
                 >
                   {ready && <img src={src} alt="" draggable="false" />}

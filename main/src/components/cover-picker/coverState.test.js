@@ -8,6 +8,43 @@ const getState = async () => {
   return import(stateURL.href);
 };
 
+test("quadrant highlighting follows the latest pointer or focus trigger and restores the remaining trigger", async () => {
+  const { updateCoverPreviewTrigger, getHighlightedCoverIndex } =
+    await getState();
+  assert.equal(typeof updateCoverPreviewTrigger, "function");
+  assert.equal(typeof getHighlightedCoverIndex, "function");
+  const ready = [1, 2, 3, 4];
+  let state = [];
+  assert.equal(getHighlightedCoverIndex(state, ready), null);
+  state = updateCoverPreviewTrigger(state, "focus", 1);
+  state = updateCoverPreviewTrigger(state, "pointer", 2);
+  assert.equal(getHighlightedCoverIndex(state, ready), 2);
+  state = updateCoverPreviewTrigger(state, "pointer", 2, false);
+  assert.equal(getHighlightedCoverIndex(state, ready), 1);
+  state = updateCoverPreviewTrigger(state, "focus", 1, false);
+  assert.equal(getHighlightedCoverIndex(state, ready), null);
+});
+
+test("stale leave events, loading images and invalid inputs never highlight the wrong quadrant", async () => {
+  const { updateCoverPreviewTrigger, getHighlightedCoverIndex } =
+    await getState();
+  assert.equal(typeof updateCoverPreviewTrigger, "function");
+  let state = updateCoverPreviewTrigger([], "pointer", 1);
+  const before = state;
+  state = updateCoverPreviewTrigger(state, "pointer", 3);
+  assert.deepEqual(before, [{ source: "pointer", index: 1 }]);
+  state = updateCoverPreviewTrigger(state, "pointer", 1, false);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2, 3]), 3);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2]), null);
+  assert.deepEqual(updateCoverPreviewTrigger(state, "unknown", 1), state);
+  assert.deepEqual(updateCoverPreviewTrigger(state, "focus", 9), state);
+  state = updateCoverPreviewTrigger(state, "command", 2);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2, 3]), 2);
+  state = updateCoverPreviewTrigger(state, "focus", 4);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2, 3]), 2);
+  assert.equal(state.length, 3);
+});
+
 test("cover storage accepts only canonical indices for the four existing images", async () => {
   const { COVER_INDEXES, resolveCoverIndex } = await getState();
   assert.deepEqual(COVER_INDEXES, [1, 2, 3, 4]);
@@ -239,11 +276,27 @@ test("Hero applies brightness to both image layers without filtering its text or
   assert.doesNotMatch(hero, /clearProps:\s*["'][^"']*filter/);
 });
 
+test("Hero randomizes each homepage mount instead of restoring a fixed cover", async () => {
+  const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
+  const { getRandomCoverIndex, COVER_INDEXES } = await getState();
+  assert.deepEqual(
+    [0, 0.25, 0.5, 0.75].map((sample) =>
+      getRandomCoverIndex(COVER_INDEXES, null, sample),
+    ),
+    [1, 2, 3, 4],
+  );
+  assert.match(
+    hero,
+    /useState\(\s*\(\) =>\s*getRandomCoverIndex\(COVER_INDEXES, null\) \?\? 1/,
+  );
+  assert.doesNotMatch(hero, /readCoverPreference/);
+});
+
 test("Hero uses a shared cover picker on desktop and mobile without compass or poetry", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
   assert.match(hero, /<CoverPicker/);
   assert.doesNotMatch(hero, /HERO_POEM|pointedPoem|Compass|compass|转动指南针/);
-  assert.match(hero, /readCoverPreference/);
+  assert.match(hero, /getRandomCoverIndex/);
   assert.match(hero, /writeCoverPreference/);
   assert.match(hero, /\.decode\(/);
   assert.match(hero, /prefers-reduced-motion/);

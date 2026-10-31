@@ -1,4 +1,5 @@
 import AcgNavigation from "../components/AcgNavigation";
+import "./bili-mobile.css";
 
 const BiliHubPage = () => (
   <div className="bili-hub-page seasonal-page seasonal-page--autumn relative min-h-screen overflow-hidden px-3 pb-20 pt-24">

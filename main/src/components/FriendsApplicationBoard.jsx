@@ -13,6 +13,7 @@ import {
 import EmojiPicker from "./EmojiPicker";
 import { appendEmojiToText } from "./emojiInput.js";
 import { buildFriendsApplicationPayload } from "./friendsApplicationContactForm";
+import "./friends-comments.css";
 import {
   appendReplyToFriendsThreads,
   findFriendsThreadRootId,
@@ -381,12 +382,14 @@ const FriendsApplicationBoard = () => {
               className="min-h-[116px] w-full resize-y rounded-[18px] border border-[#CFE6F7] bg-white/58 px-4 py-3 text-base leading-relaxed text-[#2B2B2B] outline-none transition placeholder:text-[#9AA4B2] focus:border-[#74C0FC] focus:bg-white/78 disabled:cursor-not-allowed disabled:opacity-70"
             />
 
-            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="friends-comment-compose-footer mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-[#8A7C74]">
                 {content.length}/{FRIEND_COMMENT_MAX_LENGTH}
               </p>
-              <div className="flex flex-wrap items-center gap-3">
-                <EmojiPicker disabled={submitting} onPick={onPickCommentEmoji} />
+              <div className="friends-comment-editor-toolbar flex flex-wrap items-center gap-3">
+                <div className="friends-comment-emoji">
+                  <EmojiPicker disabled={submitting} onPick={onPickCommentEmoji} />
+                </div>
                 <button
                   type="submit"
                   disabled={submitting}
@@ -444,13 +447,13 @@ const FriendsApplicationBoard = () => {
                     tone,
                   )}
                 >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#8A7C74]">
-                      <span className="font-bold text-[#5F4B52]">
+                <div className="friends-comment-header flex items-start justify-between gap-4">
+                  <div className="friends-comment-identity min-w-0">
+                    <p className="friends-comment-meta flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#8A7C74]">
+                      <span className="friends-comment-name font-bold text-[#5F4B52]">
                         {item.nickname}
                       </span>
-                      <span>发表于 {formatTime(item.createdAt)}</span>
+                      <span className="friends-comment-time">发表于 {formatTime(item.createdAt)}</span>
                       <span className="rounded-full bg-white/62 px-2 py-0.5 text-[11px] font-semibold text-[#6B7280]">
                         {roleLabel(item)}
                       </span>
@@ -460,7 +463,7 @@ const FriendsApplicationBoard = () => {
                     </p>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="friends-comment-actions flex shrink-0 items-center gap-2">
                     {item.replyCount > 0 && (
                       <button
                         type="button"
@@ -490,12 +493,12 @@ const FriendsApplicationBoard = () => {
                   </div>
                 </div>
 
-                <p className="mt-4 whitespace-pre-wrap break-words text-[15px] font-semibold leading-8 text-[#2B2B2B]">
+                <p className="friends-comment-content mt-4 whitespace-pre-wrap break-words text-[15px] font-semibold leading-8 text-[#2B2B2B]">
                   {item.content}
                 </p>
 
                 {isReplying && (
-                  <div className="relative z-30 mt-4 rounded-[18px] border border-white/70 bg-white/54 p-4">
+                  <div className="friends-comment-reply-editor relative z-30 mt-4 rounded-[18px] border border-white/70 bg-white/54 p-4">
                     {!user ? (
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm text-[#6B7280]">
@@ -523,11 +526,13 @@ const FriendsApplicationBoard = () => {
                           placeholder="在这条申请下面回复..."
                           className="w-full resize-y rounded-2xl border border-[#D8E9F8] bg-white/70 px-4 py-3 text-sm leading-7 text-[#2B2B2B] outline-none transition focus:border-[#74C0FC]"
                         />
-                        <div className="mt-3 flex flex-wrap items-center gap-3">
-                          <EmojiPicker
-                            disabled={replySubmittingId === item.id}
-                            onPick={(emoji) => onPickReplyEmoji(item.id, emoji)}
-                          />
+                        <div className="friends-comment-editor-toolbar mt-3 flex flex-wrap items-center gap-3">
+                          <div className="friends-comment-emoji">
+                            <EmojiPicker
+                              disabled={replySubmittingId === item.id}
+                              onPick={(emoji) => onPickReplyEmoji(item.id, emoji)}
+                            />
+                          </div>
                           <p className="text-xs text-[#8A7C74]">
                             {(replyDrafts[item.id] || "").length}/
                             {FRIEND_REPLY_MAX_LENGTH}
@@ -574,12 +579,12 @@ const FriendsApplicationBoard = () => {
                           <div className="contents">
                             <CommentAvatar item={reply} compact />
                             <div className="friends-comment-reply-card">
-                              <div className="flex items-start justify-between gap-3">
-                                <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#8A7C74]">
-                                  <span className="font-bold text-[#5F4B52]">
+                              <div className="friends-comment-header flex items-start justify-between gap-3">
+                                <p className="friends-comment-meta flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#8A7C74]">
+                                  <span className="friends-comment-name font-bold text-[#5F4B52]">
                                     {reply.nickname}
                                   </span>
-                                  <span>
+                                  <span className="friends-comment-time">
                                     发表于 {formatTime(reply.createdAt)}
                                   </span>
                                   <span>{roleLabel(reply)}</span>
@@ -591,7 +596,7 @@ const FriendsApplicationBoard = () => {
                                       current === reply.id ? null : reply.id,
                                     )
                                   }
-                                  className="inline-flex min-h-[30px] shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#5F80C8] transition hover:border-[#74C0FC]"
+                                  className="friends-comment-actions inline-flex min-h-[30px] shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#5F80C8] transition hover:border-[#74C0FC]"
                                   aria-label="回复这条留言"
                                 >
                                   <FiCornerUpLeft
@@ -600,7 +605,7 @@ const FriendsApplicationBoard = () => {
                                   />
                                 </button>
                               </div>
-                              <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-[#4B5563]">
+                              <p className="friends-comment-content mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-[#4B5563]">
                                 {reply.content}
                               </p>
                             </div>
@@ -635,13 +640,15 @@ const FriendsApplicationBoard = () => {
                                     placeholder="接着这条回复往下说..."
                                     className="w-full resize-y rounded-2xl border border-[#D8E9F8] bg-white/70 px-4 py-3 text-sm leading-7 text-[#2B2B2B] outline-none transition focus:border-[#74C0FC]"
                                   />
-                                  <div className="mt-3 flex flex-wrap items-center gap-3">
-                                    <EmojiPicker
-                                      disabled={replySubmittingId === reply.id}
-                                      onPick={(emoji) =>
-                                        onPickReplyEmoji(reply.id, emoji)
-                                      }
-                                    />
+                                  <div className="friends-comment-editor-toolbar mt-3 flex flex-wrap items-center gap-3">
+                                    <div className="friends-comment-emoji">
+                                      <EmojiPicker
+                                        disabled={replySubmittingId === reply.id}
+                                        onPick={(emoji) =>
+                                          onPickReplyEmoji(reply.id, emoji)
+                                        }
+                                      />
+                                    </div>
                                     <p className="text-xs text-[#8A7C74]">
                                       {(replyDrafts[reply.id] || "").length}/
                                       {FRIEND_REPLY_MAX_LENGTH}

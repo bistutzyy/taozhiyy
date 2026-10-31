@@ -9,8 +9,8 @@ import HeroWordmark from "./HeroWordmark";
 import CoverPicker from "./cover-picker/CoverPicker";
 import {
   COVER_INDEXES,
+  getRandomCoverIndex,
   readCoverBrightness,
-  readCoverPreference,
   resolveCoverBrightness,
   writeCoverBrightness,
   writeCoverPreference,
@@ -28,13 +28,9 @@ const covers = COVER_INDEXES.map((index) => ({
 const heroImagePriority = { fetchpriority: "high" };
 
 const Hero = () => {
-  const [currentIndex, setCurrentIndex] = useState(() => {
-    try {
-      return readCoverPreference(window.localStorage);
-    } catch {
-      return 1;
-    }
-  });
+  const [currentIndex, setCurrentIndex] = useState(
+    () => getRandomCoverIndex(COVER_INDEXES, null) ?? 1,
+  );
   const [currentBrightness, setCurrentBrightness] = useState(() => {
     try {
       return readCoverBrightness(window.localStorage);

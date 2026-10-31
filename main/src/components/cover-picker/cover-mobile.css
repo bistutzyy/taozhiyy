@@ -1,0 +1,114 @@
+.cover-picker__title-grid {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .cover-picker__title-fan,
+  .cover-picker .cover-quadrants,
+  .fan-screen__arc,
+  .fan-screen__pivot,
+  .fan-screen__seal,
+  .fan-tassel,
+  .fan-leaf__edge,
+  .fan-leaf__folds,
+  .fan-room__count {
+    display: none;
+  }
+  .cover-picker__title-grid {
+    display: inline;
+  }
+  .cover-picker:not([data-clean="true"]) .cover-picker__media {
+    background: #202429;
+  }
+  .fan-room__stage {
+    padding: 0;
+  }
+  .fan-screen {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(100%, 440px, calc(100dvh - 250px));
+    height: auto;
+    max-height: none;
+    aspect-ratio: 1;
+  }
+  .fan-leaf,
+  .fan-leaf.is-preview {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    transform: none;
+    transition: none;
+    z-index: auto;
+  }
+  .fan-leaf__button {
+    overflow: hidden;
+    border: 1px solid #e6d2c780;
+    border-radius: 8px;
+    background: #e9e5e2;
+    clip-path: none !important;
+  }
+  .fan-leaf__button > img {
+    filter: brightness(var(--cover-brightness, 1));
+  }
+  .fan-leaf.is-preview .fan-leaf__button,
+  .fan-leaf__button[aria-pressed="true"] {
+    border: 2px solid #f4b4c6;
+    box-shadow: 0 0 0 2px #f4b4c626;
+  }
+  .fan-leaf__paper {
+    background: linear-gradient(transparent 55%, #1014199c);
+  }
+  .fan-leaf__label {
+    inset: auto auto 8px 8px;
+    flex-direction: row;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px 6px;
+    transform: none;
+    font-size: 16px;
+  }
+  .fan-leaf__status {
+    inset: auto 8px 11px auto;
+    width: auto;
+    height: auto;
+    max-width: calc(100% - 62px);
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: right;
+    text-shadow: 0 1px 4px #000;
+    pointer-events: none;
+  }
+  .fan-leaf .cover-picker__retry {
+    left: calc(50% - 22px);
+    top: calc(50% - 22px);
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 767px) and (max-height: 450px) {
+  .fan-screen {
+    gap: 8px;
+    width: min(100%, calc(100dvh - 150px));
+  }
+  .fan-leaf__status {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .fan-leaf__label {
+    bottom: 5px;
+    left: 5px;
+    min-height: 24px;
+    min-width: 24px;
+    font-size: 14px;
+  }
+}
