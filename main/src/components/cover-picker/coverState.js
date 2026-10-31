@@ -2,6 +2,34 @@ export const COVER_STORAGE_KEY = "taozhiyy.home-cover.v1";
 export const COVER_BRIGHTNESS_KEY = "taozhiyy.home-cover-brightness.v1";
 export const COVER_INDEXES = [1, 2, 3, 4];
 
+export function updateCoverPreviewTrigger(
+  triggers,
+  source,
+  index,
+  active = true,
+) {
+  if (
+    !["pointer", "focus", "command"].includes(source) ||
+    !COVER_INDEXES.includes(index)
+  )
+    return triggers;
+  if (active)
+    return [
+      ...triggers.filter((trigger) => trigger.source !== source),
+      { source, index },
+    ];
+  const remaining = triggers.filter(
+    (trigger) => trigger.source !== source || trigger.index !== index,
+  );
+  return remaining.length === triggers.length ? triggers : remaining;
+}
+
+export function getHighlightedCoverIndex(triggers, available) {
+  for (let i = triggers.length - 1; i >= 0; i--)
+    if (available.includes(triggers[i].index)) return triggers[i].index;
+  return null;
+}
+
 export function resolveCoverIndex(value) {
   const index =
     typeof value === "string" && /^[1-4]$/.test(value) ? Number(value) : value;

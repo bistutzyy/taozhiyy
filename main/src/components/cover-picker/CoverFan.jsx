@@ -32,12 +32,14 @@ function Command({ label, icon: Icon, onClick, disabled, className = "" }) {
 export default function CoverFan({
   covers,
   previewIndex,
+  highlightedIndex,
   currentIndex,
   readyIndexes,
   failedIndexes,
   busy,
   brightness,
   onPreview,
+  onPreviewEnd,
   onSelect,
   onShuffle,
   onBrightness,
@@ -94,7 +96,7 @@ export default function CoverFan({
             return (
               <div
                 key={index}
-                className={`fan-leaf${selected ? " is-preview" : ""}`}
+                className={`fan-leaf${highlightedIndex === index ? " is-preview" : ""}`}
                 style={{
                   "--leaf-angle": `${[-43, -14, 14, 43][position % 4]}deg`,
                   "--leaf-mobile-angle": `${[-28, -9, 9, 28][position % 4]}deg`,
@@ -117,9 +119,11 @@ export default function CoverFan({
                       window.matchMedia("(hover: hover) and (pointer: fine)")
                         .matches
                     )
-                      onPreview(index);
+                      onPreview(index, "pointer");
                   }}
-                  onFocus={() => onPreview(index)}
+                  onMouseLeave={() => onPreviewEnd(index, "pointer")}
+                  onFocus={() => onPreview(index, "focus")}
+                  onBlur={() => onPreviewEnd(index, "focus")}
                   onClick={(event) => onSelect(index, event.currentTarget)}
                 >
                   {ready && <img src={src} alt="" draggable="false" />}

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -16,6 +17,9 @@ test("screening room module loads server-side and stays empty while closed", asy
   const { createServer } = await import("vite");
   const server = await createServer({
     configFile: false,
+    cacheDir: fileURLToPath(
+      new URL("../../../node_modules/.cache/cover-picker-ssr", import.meta.url),
+    ),
     server: { middlewareMode: true },
     appType: "custom",
     optimizeDeps: { noDiscovery: true, include: [] },
@@ -96,7 +100,9 @@ test("fan leaves preview on fine hover or focus and explicitly select on click",
   );
   assert.match(ui, /onMouseEnter=/);
   assert.match(ui, /\(hover: hover\) and \(pointer: fine\)/);
-  assert.match(ui, /onFocus=\{\(\) => onPreview\(index\)\}/);
+  assert.match(ui, /onFocus=\{\(\) => onPreview\(index, "focus"\)\}/);
+  assert.match(ui, /onMouseLeave=\{\(\) => onPreviewEnd\(index, "pointer"\)\}/);
+  assert.match(ui, /onBlur=\{\(\) => onPreviewEnd\(index, "focus"\)\}/);
   assert.match(ui, /clipPathUnits="objectBoundingBox"/);
   assert.match(ui, /data-fan-hit/);
   assert.match(ui, /disabled=\{!ready \|\| busy\}/);
@@ -157,13 +163,13 @@ test("clean view hides editor and supplies a focusable return with Escape suppor
   assert.match(ui, /cleanReturnRef\.current\?\.focus/);
 });
 
-test("full-screen previews retain real images and never use blur or auto-rotation", () => {
+test("the backdrop uses four regions and only clean view mounts a full-screen photo", () => {
   const ui = source() + room();
-  assert.match(ui, /setPreviousCover\(displayedCover\)/);
-  assert.match(ui, /src=\{previousCover\.src\}/);
+  assert.match(ui, /<CoverQuadrants\b/);
+  assert.match(ui, /cleanView && displayedCover &&/);
   assert.match(ui, /src=\{displayedCover\.src\}/);
   assert.match(ui, /data-preview-index=\{displayedCover\.index\}/);
-  assert.match(ui, /clearTimeout\(timeout\)/);
+  assert.doesNotMatch(ui, /previousCover|setPreviousCover/);
   assert.doesNotMatch(ui, /setInterval|new Image|compass|poem|<canvas/i);
   const css = read("./cover-picker.css") + read("./fan-screen.css");
   assert.doesNotMatch(css, /blur\s*\(|font-size:\s*[^;]*vw/);

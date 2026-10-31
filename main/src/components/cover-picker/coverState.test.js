@@ -8,6 +8,43 @@ const getState = async () => {
   return import(stateURL.href);
 };
 
+test("quadrant highlighting follows the latest pointer or focus trigger and restores the remaining trigger", async () => {
+  const { updateCoverPreviewTrigger, getHighlightedCoverIndex } =
+    await getState();
+  assert.equal(typeof updateCoverPreviewTrigger, "function");
+  assert.equal(typeof getHighlightedCoverIndex, "function");
+  const ready = [1, 2, 3, 4];
+  let state = [];
+  assert.equal(getHighlightedCoverIndex(state, ready), null);
+  state = updateCoverPreviewTrigger(state, "focus", 1);
+  state = updateCoverPreviewTrigger(state, "pointer", 2);
+  assert.equal(getHighlightedCoverIndex(state, ready), 2);
+  state = updateCoverPreviewTrigger(state, "pointer", 2, false);
+  assert.equal(getHighlightedCoverIndex(state, ready), 1);
+  state = updateCoverPreviewTrigger(state, "focus", 1, false);
+  assert.equal(getHighlightedCoverIndex(state, ready), null);
+});
+
+test("stale leave events, loading images and invalid inputs never highlight the wrong quadrant", async () => {
+  const { updateCoverPreviewTrigger, getHighlightedCoverIndex } =
+    await getState();
+  assert.equal(typeof updateCoverPreviewTrigger, "function");
+  let state = updateCoverPreviewTrigger([], "pointer", 1);
+  const before = state;
+  state = updateCoverPreviewTrigger(state, "pointer", 3);
+  assert.deepEqual(before, [{ source: "pointer", index: 1 }]);
+  state = updateCoverPreviewTrigger(state, "pointer", 1, false);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2, 3]), 3);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2]), null);
+  assert.deepEqual(updateCoverPreviewTrigger(state, "unknown", 1), state);
+  assert.deepEqual(updateCoverPreviewTrigger(state, "focus", 9), state);
+  state = updateCoverPreviewTrigger(state, "command", 2);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2, 3]), 2);
+  state = updateCoverPreviewTrigger(state, "focus", 4);
+  assert.equal(getHighlightedCoverIndex(state, [1, 2, 3]), 2);
+  assert.equal(state.length, 3);
+});
+
 test("cover storage accepts only canonical indices for the four existing images", async () => {
   const { COVER_INDEXES, resolveCoverIndex } = await getState();
   assert.deepEqual(COVER_INDEXES, [1, 2, 3, 4]);

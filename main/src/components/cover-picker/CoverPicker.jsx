@@ -4,7 +4,13 @@ import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { LuArrowLeft, LuFlower2, LuX } from "react-icons/lu";
 import CoverFan from "./CoverFan";
-import { getRandomCoverIndex, resolveCoverBrightness } from "./coverState.js";
+import CoverQuadrants from "./CoverQuadrants";
+import {
+  getRandomCoverIndex,
+  resolveCoverBrightness,
+  updateCoverPreviewTrigger,
+  getHighlightedCoverIndex,
+} from "./coverState.js";
 import "./cover-picker.css";
 
 gsap.registerPlugin(Flip);
@@ -39,25 +45,37 @@ function CoverPickerSession({
     resolveCoverBrightness(currentBrightness),
   );
   const [previewIndex, setPreviewIndex] = useState(currentIndex);
-  const [displayedCover, setDisplayedCover] = useState(
-    () =>
-      covers.find(
-        ({ index }) =>
-          index === currentIndex &&
-          readyIndexes.has(index) &&
-          !failedIndexes.has(index),
-      ) ?? null,
-  );
-  const [previousCover, setPreviousCover] = useState(null);
-  const nextCover = covers.find(
-    ({ index }) =>
-      index === previewIndex &&
-      readyIndexes.has(index) &&
-      !failedIndexes.has(index),
-  );
+  const [previewTriggers, setPreviewTriggers] = useState([]);
   const available = covers
     .filter(({ index }) => readyIndexes.has(index) && !failedIndexes.has(index))
     .map(({ index }) => index);
+  const highlightedIndex =
+    selection?.index ?? getHighlightedCoverIndex(previewTriggers, available);
+  const activePreviewIndex = highlightedIndex ?? previewIndex;
+  const nextCover = covers.find(
+    ({ index }) => index === activePreviewIndex && available.includes(index),
+  );
+  const displayedCover =
+    nextCover ?? covers.find(({ index }) => available.includes(index));
+
+  // A restored focus/command must be both the visible preview and the apply target.
+  useLayoutEffect(() => {
+    if (
+      !confirming.current &&
+      highlightedIndex !== null &&
+      highlightedIndex !== previewIndex
+    )
+      setPreviewIndex(highlightedIndex);
+  }, [highlightedIndex, previewIndex]);
+
+  useEffect(() => {
+    setPreviewTriggers((previous) => {
+      const valid = previous.filter(
+        ({ index }) => readyIndexes.has(index) && !failedIndexes.has(index),
+      );
+      return valid.length === previous.length ? previous : valid;
+    });
+  }, [readyIndexes, failedIndexes]);
 
   useEffect(() => {
     if (failedIndexes.has(previewIndex) && previewIndex !== currentIndex)
@@ -117,17 +135,6 @@ function CoverPickerSession({
   }, []);
 
   useEffect(() => {
-    if (!nextCover || nextCover.index === displayedCover?.index) return;
-    setPreviousCover(displayedCover);
-    setDisplayedCover(nextCover);
-  }, [nextCover, displayedCover]);
-  useEffect(() => {
-    if (!previousCover) return;
-    const timeout = window.setTimeout(() => setPreviousCover(null), 320);
-    return () => window.clearTimeout(timeout);
-  }, [previousCover, displayedCover]);
-
-  useEffect(() => {
     if (cleanView) cleanReturnRef.current?.focus({ preventScroll: true });
     else if (editorFocus.current?.isConnected)
       editorFocus.current.focus({ preventScroll: true });
@@ -135,22 +142,37 @@ function CoverPickerSession({
   const enterCleanView = () => {
     if (confirming.current) return;
     editorFocus.current = document.activeElement;
+    setPreviewIndex(activePreviewIndex);
+    setPreviewTriggers([]);
     setCleanView(true);
   };
   const returnToEditor = () => setCleanView(false);
-  const previewCover = (index) => {
-    if (!confirming.current && available.includes(index))
+  const previewCover = (index, source = "pointer") => {
+    if (!confirming.current && available.includes(index)) {
       setPreviewIndex(index);
+      setPreviewTriggers((previous) =>
+        updateCoverPreviewTrigger(previous, source, index),
+      );
+    }
+  };
+  const endPreview = (index, source) => {
+    if (!confirming.current)
+      setPreviewTriggers((previous) =>
+        updateCoverPreviewTrigger(previous, source, index, false),
+      );
   };
   const shuffleCover = () => {
     if (confirming.current) return;
-    const index = getRandomCoverIndex(available, previewIndex);
-    if (index !== null) setPreviewIndex(index);
+    const index = getRandomCoverIndex(available, activePreviewIndex);
+    if (index !== null) previewCover(index, "command");
   };
   const changeBrightness = (value) => {
-    if (!confirming.current) setBrightness(resolveCoverBrightness(value));
+    if (!confirming.current) {
+      setBrightness(resolveCoverBrightness(value));
+      previewCover(activePreviewIndex, "command");
+    }
   };
-  const confirmCover = (requestedIndex = previewIndex, source) => {
+  const confirmCover = (requestedIndex = activePreviewIndex, source) => {
     const index = requestedIndex;
     if (confirming.current || !available.includes(index)) return;
     confirming.current = true;
@@ -236,18 +258,17 @@ function CoverPickerSession({
         aria-hidden="true"
         style={{ filter: `brightness(${brightness / 100})` }}
       >
-        {previousCover && (
+        <CoverQuadrants
+          covers={covers}
+          readyIndexes={readyIndexes}
+          failedIndexes={failedIndexes}
+          highlightedIndex={highlightedIndex}
+          previewIndex={activePreviewIndex}
+          hidden={cleanView}
+        />
+        {cleanView && displayedCover && (
           <img
-            className="cover-picker__preview cover-picker__preview--previous"
-            src={previousCover.src}
-            alt=""
-            draggable="false"
-          />
-        )}
-        {displayedCover && (
-          <img
-            key={displayedCover.src}
-            className={`cover-picker__preview${previousCover ? " cover-picker__preview--entering" : ""}`}
+            className="cover-picker__preview"
             data-preview-index={displayedCover.index}
             src={displayedCover.src}
             alt=""
@@ -275,13 +296,15 @@ function CoverPickerSession({
         </header>
         <CoverFan
           covers={covers}
-          previewIndex={previewIndex}
+          previewIndex={activePreviewIndex}
+          highlightedIndex={highlightedIndex}
           currentIndex={currentIndex}
           readyIndexes={readyIndexes}
           failedIndexes={failedIndexes}
           busy={busy}
           brightness={brightness}
           onPreview={previewCover}
+          onPreviewEnd={endPreview}
           onSelect={confirmCover}
           onShuffle={shuffleCover}
           onBrightness={changeBrightness}

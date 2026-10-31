@@ -77,13 +77,6 @@
   object-fit: cover;
   object-position: center;
 }
-.cover-picker__preview--previous {
-  z-index: 0;
-}
-.cover-picker__preview--entering {
-  z-index: 1;
-  animation: cover-picker-reveal 280ms ease-out both;
-}
 .cover-picker__content {
   position: relative;
   z-index: 3;
@@ -226,14 +219,6 @@
     opacity: 0;
     transform: translate(var(--petal-x), var(--petal-y))
       rotate(var(--petal-rotation)) scale(1);
-  }
-}
-@keyframes cover-picker-reveal {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 @media (max-width: 767px) {

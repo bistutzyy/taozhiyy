@@ -6,7 +6,9 @@
 
 **Implementation:** Isolate background geometry/presentation in a small component. Track pointer, focus and explicit toolbar preview sources in recency order, so leaving a leaf restores any still-focused leaf. A new session starts with no lit region. Failed/loading images remain unselectable. Preserve brightness, cancellation, focus/scroll restoration, reduced motion and the existing Flip handoff.
 
-- [ ] Add failing geometry, interaction and component tests.
-- [ ] Implement the four irregular regions and link fan hover/focus/leave/blur events.
-- [ ] Verify dim/lit pixels, full panel coverage, real assets, keyboard/touch, clean view, failed media, cancellation and captured-index application across desktop/mobile.
-- [ ] Run the production build and scoped review, save a local Git checkpoint, and provide the local preview. Do not push or deploy until the user approves this visual revision.
+- [x] Add failing geometry, interaction and component tests.
+- [x] Implement the four irregular regions and link fan hover/focus/leave/blur events.
+- [x] Verify dim/lit pixels, full panel coverage, real assets, keyboard/touch, clean view, failed media, cancellation and captured-index application across desktop/mobile.
+- [x] Run the production build and scoped review, save a local Git checkpoint, and provide the local preview. Do not push or deploy until the user approves this visual revision.
+
+Verification: 54 focused tests, scoped ESLint, the Vite frontend production build, four-panel pixel checks and real-asset desktop/mobile screenshots passed. The existing cover regression passed all eight viewports plus reduced motion, blocked storage, delayed/failed media, retry, cancellation and exact body restoration. A review caught a restored focus/command preview targeting mismatch; a failing browser assertion reproduced it, and the fix and independent follow-up review passed. Preview: http://127.0.0.1:5203/?cover=select&v=quad-fan-preview. No push or deployment.
