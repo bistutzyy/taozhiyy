@@ -18,28 +18,28 @@ const out = path.resolve(__dirname, '../previews/project-gallery/.qa/home-consol
       await page.route('**/api/**', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }));
       await page.goto(`${base}/build/`, { waitUntil: 'domcontentloaded' });
       await page.locator('.chronicle-record').first().waitFor();
-      assert.equal(await page.locator('.chronicle-record').count(), 18);
-      assert.equal(await page.locator('.chronicle-record').first().getAttribute('id'), 'site-growth-18-home-console');
-      assert.equal(await page.locator('.chronicle-record').nth(1).getAttribute('id'), 'site-growth-17-project-cosmos');
-      await page.getByRole('searchbox').fill('首页控制台');
+      assert.equal(await page.locator('.chronicle-record').count(), 19);
+      assert.equal(await page.locator('.chronicle-record').first().getAttribute('id'), 'site-growth-19-folding-fan-covers');
+      assert.equal(await page.locator('.chronicle-record').nth(1).getAttribute('id'), 'site-growth-18-home-console');
+      await page.getByRole('searchbox').fill('扇面画屏');
       assert.equal(await page.locator('.chronicle-record').count(), 1);
       await page.screenshot({ path: path.join(out, `timeline-${width}.png`) });
       await page.locator('.chronicle-record h2 a').click();
-      await page.waitForURL('**/post/site-growth-18-home-console');
+      await page.waitForURL('**/post/site-growth-19-folding-fan-covers');
       await page.locator('.post-body').waitFor();
-      assert.ok((await page.locator('.post-body').innerText()).includes('游艺'));
+      assert.ok((await page.locator('.post-body').innerText()).includes('花瓣'));
       await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
-      assert.ok((await page.locator('.post-body').innerText()).includes('Arcade'));
+      assert.ok((await page.locator('.post-body').innerText()).includes('folding fan'));
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('.post-body').waitFor();
-      assert.ok((await page.locator('.post-body').innerText()).includes('Arcade'));
+      assert.ok((await page.locator('.post-body').innerText()).includes('folding fan'));
       await page.goto(`${base}/build/post/site-growth-17-project-cosmos`, { waitUntil: 'domcontentloaded' });
       await page.locator('.post-body').waitFor();
       assert.ok((await page.locator('.post-body').innerText()).includes('taozhiyo'));
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
       assert.equal(overflow, false, 'article must not overflow horizontally');
       assert.equal(errors.length, 0, errors.join('\n'));
-      console.log(`PASS ${width}: 18 records, newest order, search, bilingual articles and direct routes`);
+      console.log(`PASS ${width}: 19 records, newest order, search, bilingual articles and direct routes`);
       await context.close();
     }
   } finally {

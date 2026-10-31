@@ -6,8 +6,9 @@ import { Link, useLocation } from "react-router-dom";
 import { useWindowScroll } from "react-use";
 import { cosAsset } from "../lib/cosAsset.js";
 import VisitorNetworkBadge from "./VisitorNetworkBadge";
-import { LuCommand } from "react-icons/lu";
+import { LuCommand, LuImages } from "react-icons/lu";
 import SiteConsole from "./site-console/SiteConsole";
+import "./cover-picker/cover-entry.css";
 
 const navLinks = [
   { label: "HOME", to: "/", end: true },
@@ -411,12 +412,11 @@ const NavBar = () => {
                   <button
                     type="button"
                     onClick={() => window.dispatchEvent(new CustomEvent("showHeroPreview"))}
-                    className={clsx(
-                      "nav-hover-btn hidden md:inline",
-                      isLightNav && `nav-hover-btn--${navTheme}`
-                    )}
+                    className="nav-cover-trigger"
+                    aria-label="切换首页封面"
+                    title="切换首页封面"
                   >
-                    SWITCH COVER
+                    <LuImages aria-hidden="true" /><span>SWITCH COVER</span>
                   </button>
                   <VisitorNetworkBadge className="nav-left-network" />
                 </>

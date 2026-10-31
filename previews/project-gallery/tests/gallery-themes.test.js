@@ -57,7 +57,7 @@ test('Silver has a genuinely light palette with contrasting small normal-blended
 });
 
 // Keep real Three.js objects; replace only browser, WebGL and image-loading boundaries.
-async function galleryHarness({width = 1000, count = 9, pendingCovers = false} = {}) {
+async function galleryHarness({width = 1000, count = 9, pendingCovers = false, reducedMotion = false} = {}) {
   let now = 100, nextFrame = 0, renderer;
   const scheduled = new Map(), coverRequests = [], groups = new Set();
   const context2d = surface => ({
@@ -117,7 +117,7 @@ async function galleryHarness({width = 1000, count = 9, pendingCovers = false} =
   const createGallery = runInNewContext(`${source}\ncreateGallery`, {
     THREE:{...THREE, WebGLRenderer:Renderer, TextureLoader:CoverLoader},
     OrbitControls:Controls, ...navigation, ...themes,
-    window:{matchMedia:() => ({matches:false})}, document,
+    window:{matchMedia:() => ({matches:reducedMotion})}, document,
     innerWidth:width, devicePixelRatio:1, performance:{now:() => now},
     requestAnimationFrame(callback) { const id = ++nextFrame; scheduled.set(id, callback); return id; },
     ResizeObserver:class { observe() {} },
@@ -143,6 +143,43 @@ function navigationState(gallery) {
     'nodeCount', 'cachedProjects', 'retainedProjects', 'createdPanels', 'cacheHits',
   ].map(key => [key, state[key]]))));
 }
+
+test('motion remains enabled through browsing and stops only when explicitly disabled', async () => {
+  const {gallery, canvas, flush, scheduled} = await galleryHarness();
+  assert.equal(gallery.orbit(true), true);
+  flush(4);
+  assert.equal(gallery.debug().motionEnabled, true);
+  canvas.listeners.get('wheel')({ctrlKey:false, preventDefault() {}, deltaX:0, deltaY:120, deltaMode:0});
+  flush();
+  assert.ok(gallery.debug().position > 0);
+  assert.equal(gallery.debug().autoRotate, true);
+  gallery.focus('p8'); flush();
+  assert.equal(gallery.debug().autoRotate, true);
+  gallery.overview(true); flush(4);
+  assert.equal(gallery.debug().autoRotate, true);
+  gallery.orbit(false); flush();
+  assert.equal(gallery.debug().motionEnabled, false);
+  assert.equal(gallery.debug().autoRotate, false);
+  assert.equal(scheduled.size, 0);
+  gallery.overview(); flush();
+  assert.equal(gallery.debug().autoRotate, false);
+});
+
+test('reduced motion keeps automatic movement off even when requested', async () => {
+  const {gallery, scheduled, flush} = await galleryHarness({reducedMotion:true});
+  assert.equal(gallery.orbit(true), false);
+  flush();
+  assert.equal(gallery.debug().motionEnabled, false);
+  assert.equal(gallery.debug().autoRotate, false);
+  assert.equal(scheduled.size, 0);
+});
+
+test('page enables motion on entry and gives the toggle an explicit pause command', () => {
+  const source = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(source, /syncOrbitButton\(scene\.orbit\(true\)\)/);
+  assert.match(source, /暂停动态/);
+  assert.match(source, /开启动态/);
+});
 
 test('gallery exposes setTheme and debug theme, defaults to unchanged Cosmos and wakes on demand', async () => {
   const {gallery, renderer, scheduled, flush} = await galleryHarness();
