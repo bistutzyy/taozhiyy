@@ -1,0 +1,377 @@
+.aperture-dial {
+  --dial-size: min(500px, calc(100vw - 36px), calc(100dvh - 180px));
+  align-self: center;
+  justify-self: center;
+  position: relative;
+  width: var(--dial-size);
+  min-width: 0;
+  color: #f8f5ee;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.aperture-dial__body {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  isolation: isolate;
+}
+.aperture-dial__bezel {
+  position: absolute;
+  inset: 13%;
+  border-radius: 50%;
+  border: 1px solid #f9eddb80;
+  background: conic-gradient(
+    from 30deg,
+    #4b4c4c,
+    #d4d0c480 15%,
+    #343739 28%,
+    #14171b 50%,
+    #8e8d8770 70%,
+    #363a3d 88%,
+    #4b4c4c
+  );
+  box-shadow:
+    0 20px 45px #0007,
+    inset 0 0 0 6px #131619,
+    inset 0 0 0 7px #c3c1ba80;
+  pointer-events: none;
+}
+.aperture-dial__bezel::after {
+  content: "";
+  position: absolute;
+  inset: 9%;
+  border: 1px solid #d8d6cf80;
+  border-radius: 50%;
+  background: #15191de0;
+  box-shadow: inset 0 0 18px #000b;
+}
+.aperture-dial__grip {
+  position: absolute;
+  inset: 11%;
+  z-index: 2;
+  border-radius: 50%;
+  cursor: grab;
+  touch-action: none;
+}
+.aperture-dial__grip:active {
+  cursor: grabbing;
+}
+.aperture-dial__grip[aria-disabled="true"] {
+  cursor: default;
+}
+.aperture-dial__grip:focus-visible {
+  outline: 2px solid #f3b4bb;
+  outline-offset: 6px;
+}
+.aperture-dial__rotor {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+.aperture-dial__ticks {
+  position: absolute;
+  inset: 9.5%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    #e5dfd2d9 0deg 0.6deg,
+    transparent 0.6deg 5deg
+  );
+  mask-image: radial-gradient(transparent 0 65%, #000 65% 69%, transparent 69%);
+  pointer-events: none;
+}
+.aperture-dial__track {
+  position: absolute;
+  inset: 17.5%;
+  border-radius: 50%;
+  border: 1px solid #e5dfd247;
+  pointer-events: none;
+}
+.aperture-dial__frame {
+  position: absolute;
+  z-index: 3;
+  left: var(--frame-x);
+  top: var(--frame-y);
+  width: 22%;
+  transform: translate(-50%, -50%) rotate(var(--counter-rotation, 0deg));
+  pointer-events: auto;
+}
+.aperture-dial__thumbnail {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  width: 100%;
+  padding: 3px;
+  background: #13171b;
+  border: 1px solid #c5c5bfad;
+  border-radius: 5px;
+  color: #fff;
+  box-shadow: 0 5px 12px #0006;
+  overflow: hidden;
+  cursor: pointer;
+}
+.aperture-dial__thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.aperture-dial__thumbnail:hover:not(:disabled) {
+  border-color: #fff;
+}
+.aperture-dial__frame.is-preview .aperture-dial__thumbnail {
+  border-color: #ffc6cd;
+  box-shadow:
+    0 0 0 2px #e7a9b699,
+    0 5px 12px #0006;
+}
+.aperture-dial__thumbnail:disabled {
+  cursor: default;
+}
+.aperture-dial__number {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 18px;
+  padding-inline: 3px;
+  border-radius: 2px;
+  background: #16191ed9;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.aperture-dial__current {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 17px;
+  height: 17px;
+  padding: 2px;
+  background: #16191ed9;
+  border-radius: 2px;
+  color: #ffc6cd;
+}
+.aperture-dial__caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 20px;
+  padding-top: 5px;
+  font-size: 11px;
+  white-space: nowrap;
+  text-shadow: 0 1px 5px #000;
+}
+.aperture-dial__caption span:last-child {
+  color: #ffd0d5;
+  font-size: 11px;
+}
+.aperture-dial__marker {
+  position: absolute;
+  z-index: 4;
+  left: calc(50% - 3px);
+  top: 23%;
+  width: 6px;
+  height: 12px;
+  border-radius: 1px;
+  background: #f6b1bd;
+  box-shadow: 0 0 0 2px #20252a;
+  pointer-events: none;
+}
+.cover-picker__apply.aperture-dial__lens {
+  position: absolute;
+  z-index: 4;
+  inset: 30%;
+  padding: 0;
+  border: 1px solid #c1beb4;
+  border-radius: 50%;
+  background: #15171c;
+  color: #fff;
+  box-shadow:
+    0 0 0 5px #101317,
+    0 0 0 6px #c9b5aa80,
+    0 8px 22px #0009;
+  overflow: hidden;
+  cursor: pointer;
+}
+.aperture-dial__lens-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.aperture-dial__blades {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.aperture-dial__blades i {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, #adb0ad, #262c30 34%, #1b1f23 75%);
+  clip-path: polygon(0 0, 100% 0, 100% 10%, 38% 15%, 0 48%);
+  transform: rotate(calc(var(--blade) * 60deg));
+  opacity: 0.94;
+}
+.aperture-dial__confirm {
+  position: absolute;
+  inset: 48% 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 5px;
+  background: linear-gradient(transparent, #080c10e0);
+  font-size: 12px;
+  text-shadow: 0 1px 4px #000;
+}
+.aperture-dial__confirm svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.4;
+}
+.aperture-dial__lens:disabled {
+  cursor: default;
+}
+.aperture-dial__lens:hover:not(:disabled) {
+  box-shadow:
+    0 0 0 5px #101317,
+    0 0 0 6px #f8c1c9,
+    0 8px 22px #0009;
+}
+.aperture-dial__readout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  margin-top: 10px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 6px #000;
+}
+.aperture-dial__readout strong {
+  font-weight: 500;
+  font-size: 19px;
+}
+.aperture-dial__readout-state {
+  margin-left: 8px;
+  font-size: 11px;
+}
+.aperture-dial__readout-line {
+  height: 1px;
+  width: 36px;
+  background: #ffffff80;
+}
+.aperture-dial__loader {
+  position: absolute;
+  inset: calc(50% - 8px);
+  width: 16px;
+  height: 16px;
+  animation: aperture-loading 1.2s linear infinite;
+}
+.aperture-dial .cover-picker__retry {
+  position: absolute;
+  z-index: 5;
+  top: calc(50% - 25px);
+  left: calc(50% - 20px);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dfc9c9;
+  border-radius: 4px;
+  background: #24282e;
+  color: #fff;
+  cursor: pointer;
+}
+.aperture-dial .cover-picker__retry svg {
+  width: 18px;
+  height: 18px;
+}
+.aperture-dial.is-busy .aperture-dial__blades {
+  transform: rotate(20deg);
+  transition: transform 0.22s;
+}
+@keyframes aperture-loading {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 767px) {
+  .aperture-dial {
+    --dial-size: min(430px, calc(100vw - 28px), calc(100dvh - 180px));
+  }
+  .aperture-dial__caption {
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-height: 18px;
+    line-height: 1.2;
+    padding-top: 3px;
+  }
+  .aperture-dial__thumbnail {
+    min-height: 44px;
+  }
+  .aperture-dial__confirm {
+    font-size: 11px;
+    gap: 3px;
+  }
+  .aperture-dial__confirm svg {
+    width: 17px;
+    height: 17px;
+  }
+  .aperture-dial__number {
+    top: 4px;
+    left: 4px;
+    min-width: 15px;
+    height: 15px;
+    font-size: 9px;
+  }
+  .aperture-dial__current {
+    width: 15px;
+    height: 15px;
+    top: 4px;
+    right: 4px;
+  }
+}
+@media (max-height: 450px) and (orientation: landscape) {
+  .aperture-dial {
+    --dial-size: min(360px, calc(100dvh - 90px), calc(100vw - 100px));
+  }
+  .aperture-dial__readout {
+    position: absolute;
+    top: calc(50% - 18px);
+    right: calc(100% + 24px);
+    margin: 0;
+    width: 114px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .aperture-dial__readout-line {
+    display: none;
+  }
+  .aperture-dial__readout-state {
+    width: 100%;
+    text-align: center;
+    margin: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aperture-dial *,
+  .aperture-dial *::before,
+  .aperture-dial *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

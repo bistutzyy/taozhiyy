@@ -10,218 +10,141 @@ const read = (name) => {
   return readFileSync(url, "utf8");
 };
 const source = () => read("./CoverPicker.jsx");
-const styles = () => read("./cover-picker.css");
+const dial = () => read("./CoverDial.jsx");
 
-test("picker module imports successfully and stays server-safe while closed", async () => {
-  const input = source();
-  const { transformWithOxc } = await import("vite");
-  const result = await transformWithOxc(input, "CoverPicker.jsx", {
-    jsx: { runtime: "automatic" },
+test("picker module and its dial load server-side and stay empty while closed", async () => {
+  const { createServer } = await import("vite");
+  const server = await createServer({
+    configFile: false,
+    server: { middlewareMode: true },
+    appType: "custom",
+    optimizeDeps: { noDiscovery: true, include: [] },
   });
-  assert.deepEqual(result.errors, []);
-  const code = result.code
-    .replace(/import\s+["']\.\/cover-picker\.css["'];?/g, "")
-    .replace(
-      /from (["'])(react(?:\/jsx-runtime)?|react-dom|react-icons\/lu)\1/g,
-      (_, quote, name) => `from ${quote}${import.meta.resolve(name)}${quote}`,
+  try {
+    const { default: CoverPicker } = await server.ssrLoadModule(
+      "/src/components/cover-picker/CoverPicker.jsx",
     );
-  const { default: CoverPicker } = await import(
-    `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`
-  );
-  assert.equal(typeof CoverPicker, "function");
-  assert.equal(
-    renderToStaticMarkup(
-      createElement(CoverPicker, {
-        open: false,
-        covers: [],
-        currentIndex: 1,
-        readyIndexes: new Set(),
-        failedIndexes: new Set(),
-        onApply() {},
-        onClose() {},
-        onRetry() {},
-      }),
-    ),
-    "",
-  );
+    assert.equal(
+      renderToStaticMarkup(createElement(CoverPicker, { open: false })),
+      "",
+    );
+  } finally {
+    await server.close();
+  }
 });
 
-test("picker is a labelled native modal portalled to the document body", () => {
+test("picker remains a labelled native modal portalled outside the hero", () => {
   const ui = source();
-  assert.match(ui, /import\s+\{\s*createPortal\s*\}\s+from "react-dom"/);
   assert.match(ui, /<dialog\b/);
   assert.match(ui, /className="cover-picker"/);
   assert.match(ui, /aria-labelledby="cover-picker-title"/);
   assert.match(ui, /id="cover-picker-title"/);
   assert.match(ui, /\.showModal\(\)/);
   assert.match(ui, /createPortal\([\s\S]*document\.body/);
-  assert.doesNotMatch(ui, /role="(?:application|listbox)"/);
+  assert.match(ui, /<CoverDial\b/);
+  assert.doesNotMatch(ui, /cover-picker__frames|cover-picker__viewfinder/);
 });
 
-test("each opening creates fresh local preview state from the applied index", () => {
+test("each opening starts from the applied cover without touching persistence", () => {
   const ui = source();
   assert.match(
     ui,
     /if \(!open \|\| typeof document === "undefined"\) return null/,
   );
-  assert.match(ui, /<CoverPickerSession\b/);
   assert.match(
     ui,
     /\[previewIndex, setPreviewIndex\] = useState\(currentIndex\)/,
   );
-  for (const prop of [
-    "covers",
-    "currentIndex",
-    "readyIndexes",
-    "failedIndexes",
-    "onApply",
-    "onClose",
-    "onRetry",
-  ]) {
-    assert.match(ui, new RegExp(`\\b${prop}\\b`));
-  }
   assert.doesNotMatch(
-    ui,
+    ui + dial(),
     /localStorage|sessionStorage|writeCoverPreference|fetch\(/,
   );
 });
 
-test("hover and focus preview only decoded ready images without applying", () => {
+test("cancel and Escape preserve the opener, body styles and scroll", () => {
   const ui = source();
-  assert.match(
-    ui,
-    /const isReady = \(index\) =>[\s\S]*?readyIndexes\.has\(index\) && !failedIndexes\.has\(index\)/,
-  );
-  const preview = ui.match(
-    /const previewCover = \(index\) => \{([\s\S]*?)\n  \};/,
-  )?.[1];
-  assert.ok(preview, "ready-only preview handler must exist");
-  assert.match(preview, /if \(isReady\(index\)\) setPreviewIndex\(index\)/);
-  assert.doesNotMatch(preview, /onApply|onClose/);
-  assert.match(
-    ui,
-    /onMouseEnter=\{[\s\S]*?\(hover: hover\) and \(pointer: fine\)[\s\S]*?previewCover\(index\)/,
-  );
-  assert.match(ui, /onFocus=\{\(\) => previewCover\(index\)\}/);
-});
-
-test("thumbnail clicks apply directly through a readiness guard", () => {
-  const ui = source();
-  const apply = ui.match(
-    /const applyCover = \(index\) => \{([\s\S]*?)\n  \};/,
-  )?.[1];
-  assert.ok(apply, "ready-only apply handler must exist");
-  assert.match(apply, /if \(isReady\(index\)\) onApply\(index\)/);
-  assert.match(ui, /data-cover-index=\{index\}/);
-  assert.match(ui, /onClick=\{\(\) => applyCover\(index\)\}/);
-  assert.match(ui, /disabled=\{!ready\}/);
-  assert.match(ui, /aria-pressed=\{currentIndex === index\}/);
-});
-
-test("cancel and native Escape request close without applying a preview", () => {
-  const ui = source();
-  assert.match(
-    ui,
-    /onCancel=\{\(event\) => \{\s*event\.preventDefault\(\);\s*onClose\(\);/,
-  );
-  assert.match(
-    ui,
-    /className="cover-picker__close"[\s\S]*?onClick=\{onClose\}/,
-  );
+  assert.match(ui, /event\.preventDefault\(\);\s*onClose\(\)/);
   assert.match(ui, /aria-label="关闭封面选择"/);
-  assert.doesNotMatch(ui, /document\.addEventListener\("keydown"/);
-});
-
-test("modal preserves the opener, body styles and scroll position", () => {
-  const ui = source();
   assert.match(ui, /const opener = document\.activeElement/);
-  assert.match(ui, /window\.scrollX/);
-  assert.match(ui, /window\.scrollY/);
   assert.match(ui, /getPropertyValue\(property\)/);
   assert.match(ui, /getPropertyPriority\(property\)/);
   assert.match(ui, /setProperty\("overflow", "hidden"\)/);
   assert.match(ui, /setProperty\("position", "fixed"\)/);
   assert.match(ui, /style\.setProperty\(property, value, priority\)/);
   assert.match(ui, /style\.removeProperty\(property\)/);
-  assert.match(ui, /opener\?\.isConnected/);
   assert.match(ui, /opener\.focus\(\{ preventScroll: true \}\)/);
   assert.match(ui, /window\.scrollTo\(/);
   assert.match(ui, /dialog\.close\(\)/);
+  assert.doesNotMatch(ui.match(/<dialog\b[\s\S]*?>/)?.[0] ?? "", /\bonClose=/);
 });
 
-test("failed frames have explicit retry controls and truthful loading status", () => {
+test("dial uses installed GSAP rotational dragging, inertia and ready-only snapping", () => {
+  const ui = dial();
+  assert.match(ui, /Draggable\.create\(/);
+  assert.match(ui, /type:\s*"rotation"/);
+  assert.match(ui, /InertiaPlugin/);
+  assert.match(ui, /snapDialRotation/);
+  assert.match(ui, /\.kill\(\)/);
+  assert.match(ui, /role="slider"/);
+  for (const key of ["ArrowLeft", "ArrowRight", "Home", "End"])
+    assert.ok(ui.includes(key));
+});
+
+test("radial thumbnails only select a preview and the central lens confirms", () => {
+  const ui = dial();
+  assert.match(ui, /data-cover-index=\{index\}/);
+  assert.match(ui, /onClick=\{\(\) => selectCover\(index\)\}/);
+  assert.match(ui, /disabled=\{!ready \|\| busy\}/);
+  assert.match(ui, /className="cover-picker__apply[^"]*"/);
+  assert.match(ui, /onClick=\{onConfirm\}/);
+  assert.match(ui, /aria-label="使用此封面"/);
+  assert.doesNotMatch(ui, /onApply|onConfirm\(index\)/);
+});
+
+test("confirmation has a readiness guard and cancellable one-shot shutter", () => {
   const ui = source();
+  assert.match(ui, /gsap\s*\.timeline\(/);
+  assert.match(ui, /prefers-reduced-motion/);
+  assert.match(ui, /confirming\.current/);
+  assert.match(ui, /onApply\(index\)/);
+  assert.match(ui, /shutterTimeline\.current\?\.kill\(\)/);
+  assert.match(ui, /cover-picker__shutter/);
+});
+
+test("loading and failed frames expose real status and retry without broken images", () => {
+  const ui = dial();
   assert.match(ui, /failedIndexes\.has\(index\)/);
   assert.match(ui, /className="cover-picker__retry"/);
   assert.match(ui, /onClick=\{\(\) => onRetry\(index\)\}/);
-  assert.match(ui, /重试/);
   assert.match(ui, /加载中/);
   assert.match(ui, /加载失败/);
   assert.match(ui, /aria-busy=\{!ready && !failed\}/);
-  assert.match(ui, /from "react-icons\/lu"/);
-  assert.match(ui, /<LuRotateCw\b/);
-});
-
-test("StrictMode cleanup close events are not forwarded to the parent", () => {
-  const dialog = source().match(/<dialog\b[\s\S]*?>/)?.[0];
-  assert.ok(dialog);
-  assert.doesNotMatch(dialog, /\bonClose=/);
-});
-
-test("unavailable thumbnail images unmount so successful retries create fresh images", () => {
-  const ui = source();
   assert.match(ui, /\{ready && \(?\s*<img[\s\S]*?src=\{src\}/);
 });
 
-test("full-screen crossfade retains the previous real image and exposes the current index", () => {
+test("sharp crossfade retains the real previous image without blur or auto-rotation", () => {
   const ui = source();
-  assert.match(ui, /\[previousCover, setPreviousCover\]/);
   assert.match(ui, /setPreviousCover\(displayedCover\)/);
-  assert.match(ui, /if \(\s*!nextCover/);
   assert.match(ui, /src=\{previousCover\.src\}/);
   assert.match(ui, /src=\{displayedCover\.src\}/);
   assert.match(ui, /data-preview-index=\{displayedCover\.index\}/);
-  assert.match(ui, /key=\{displayedCover\.src\}/);
   assert.match(ui, /clearTimeout\(timeout\)/);
-  assert.doesNotMatch(ui, /setInterval|new Image|compass|poem|orb|<canvas/i);
-});
-
-test("preview is full bleed and the tool uses stable four-column frame geometry", () => {
-  const css = styles();
-  assert.match(
-    css,
-    /\.cover-picker\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;/s,
-  );
-  assert.match(css, /height:\s*100dvh/);
-  assert.match(css, /max-width:\s*none/);
-  assert.match(css, /\.cover-picker__preview\s*\{[^}]*object-fit:\s*cover;/s);
-  assert.match(
-    css,
-    /grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/,
-  );
-  assert.match(css, /aspect-ratio:\s*16\s*\/\s*9/);
   assert.doesNotMatch(
-    css,
-    /(?:backdrop-)?filter\s*:|radial-gradient|font-size:\s*[^;]*vw/i,
+    ui + dial(),
+    /setInterval|new Image|compass|poem|<canvas/i,
   );
-  for (const [, radius] of css.matchAll(/border-radius:\s*([\d.]+)px/g)) {
-    assert.ok(Number(radius) <= 8, `radius ${radius}px exceeds 8px`);
-  }
+  const css = read("./cover-picker.css") + read("./aperture-dial.css");
+  assert.doesNotMatch(css, /(?:backdrop-)?filter\s*:|font-size:\s*[^;]*vw/);
 });
 
-test("phone grid, short landscape and reduced motion have dedicated scoped rules", () => {
-  const css = styles();
-  assert.match(css, /@media\s*\(max-width:\s*767px\)/);
-  assert.match(
-    css,
-    /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
-  );
-  assert.match(
-    css,
-    /@media[^\{]*max-height:\s*450px[^\{]*orientation:\s*landscape/,
-  );
-  assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
-  assert.match(css, /animation:\s*none/);
-  assert.match(css, /env\(safe-area-inset-bottom/);
+test("dial geometry accounts for width, short landscape, touch and reduced motion", () => {
+  const css = read("./cover-picker.css") + read("./aperture-dial.css");
+  assert.match(css, /height:\s*100dvh/);
+  assert.match(css, /--dial-size:/);
+  assert.match(css, /100dvh -/);
+  assert.match(css, /touch-action:\s*none/);
   assert.match(css, /:focus-visible/);
+  assert.match(css, /prefers-reduced-motion/);
+  assert.match(css, /orientation:\s*landscape/);
+  assert.match(css, /env\(safe-area-inset-bottom/);
 });

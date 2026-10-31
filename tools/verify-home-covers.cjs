@@ -53,6 +53,63 @@ async function closedPicker(page) {
       document.body.style.position !== "fixed",
   );
 }
+async function turnDial(page, touch = false) {
+  const box = await page.locator(".aperture-dial__body").boundingBox();
+  const cx = box.x + box.width / 2,
+    cy = box.y + box.height / 2,
+    radius = box.width * 0.29;
+  const point = (step) => {
+    const angle = ((45 - (step * 90) / 12) * Math.PI) / 180;
+    return {
+      x: cx + Math.cos(angle) * radius,
+      y: cy + Math.sin(angle) * radius,
+    };
+  };
+  const start = point(0);
+  const cdp = touch ? await page.context().newCDPSession(page) : null;
+  if (cdp)
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ ...start, id: 1 }],
+    });
+  else {
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+  }
+  for (let step = 1; step <= 12; step++) {
+    const next = point(step);
+    if (cdp)
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ ...next, id: 1 }],
+      });
+    else await page.mouse.move(next.x, next.y);
+    await page.waitForTimeout(12);
+  }
+  await page.waitForTimeout(300);
+  if (cdp) {
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+    await cdp.detach();
+  } else await page.mouse.up();
+  await page.waitForFunction(
+    () =>
+      document.querySelector("[data-preview-index]")?.dataset.previewIndex ===
+      "2",
+  );
+  await page.waitForTimeout(750);
+  const rotation = await page
+    .locator(".aperture-dial__body")
+    .evaluate((el) =>
+      parseFloat(el.style.getPropertyValue("--counter-rotation")),
+    );
+  assert.ok(
+    Math.abs(rotation / 90 - Math.round(rotation / 90)) < 0.01,
+    `dial must snap, got ${rotation}`,
+  );
+}
 async function checkFit(page, width, height) {
   const result = await page
     .locator("dialog.cover-picker")
@@ -129,6 +186,31 @@ async function checkFit(page, width, height) {
       const original = await page.locator("#bg-image").getAttribute("src");
       await openPicker(page);
       await checkFit(page, width, height);
+      if (width === 1440 || width === 390) {
+        await turnDial(page, width === 390);
+        assert.equal(
+          await page.evaluate((key) => localStorage.getItem(key), storageKey),
+          null,
+          "rotation must not persist",
+        );
+        const grip = page.getByRole("slider", { name: "旋转光圈选择封面" });
+        await grip.focus();
+        for (const [key, index] of [
+          ["Home", "1"],
+          ["End", "4"],
+          ["ArrowRight", "1"],
+          ["ArrowLeft", "4"],
+          ["Home", "1"],
+        ]) {
+          await page.keyboard.press(key);
+          await page.waitForFunction(
+            (expected) =>
+              document.querySelector("[data-preview-index]")?.dataset
+                .previewIndex === expected,
+            index,
+          );
+        }
+      }
       assert.equal(
         await page.locator("dialog.cover-picker [data-cover-index]").count(),
         4,
@@ -138,7 +220,7 @@ async function checkFit(page, width, height) {
           await page.locator("dialog.cover-picker").innerText(),
         ),
       );
-      await frame(page, 2).focus();
+      await frame(page, 2).click();
       await page.waitForFunction(
         () =>
           document.querySelector("dialog.cover-picker [data-preview-index]")
@@ -154,7 +236,7 @@ async function checkFit(page, width, height) {
         null,
       );
       if (width >= 768) {
-        await frame(page, 4).hover();
+        await frame(page, 4).click();
         await page.waitForFunction(
           () =>
             document.querySelector("dialog.cover-picker [data-preview-index]")
@@ -163,9 +245,9 @@ async function checkFit(page, width, height) {
         assert.equal(
           await page.locator("#bg-image").getAttribute("src"),
           original,
-          "hover must not apply",
+          "thumbnail must only preview",
         );
-        await frame(page, 2).focus();
+        await frame(page, 2).click();
       }
       await page.waitForFunction(() =>
         [...document.querySelectorAll("dialog.cover-picker img")].every(
@@ -186,8 +268,34 @@ async function checkFit(page, width, height) {
         ),
         "切换首页封面",
       );
+      if (width === 1440) {
+        await openPicker(page);
+        await frame(page, 4).click();
+        await page
+          .getByRole("button", { name: "使用此封面", exact: true })
+          .click();
+        assert.equal(
+          await page.locator("dialog.cover-picker").getAttribute("data-phase"),
+          "shutter",
+        );
+        await page.keyboard.press("Escape");
+        await closedPicker(page);
+        await page.waitForTimeout(700);
+        assert.equal(
+          await page.locator("#bg-image").getAttribute("src"),
+          original,
+          "closing a shutter must cancel the queued apply",
+        );
+        assert.equal(
+          await page.evaluate((key) => localStorage.getItem(key), storageKey),
+          null,
+        );
+      }
       await openPicker(page);
       await frame(page, 3).click();
+      await page
+        .getByRole("button", { name: "使用此封面", exact: true })
+        .click();
       await closedPicker(page);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
@@ -247,7 +355,7 @@ async function checkFit(page, width, height) {
       );
       assert.deepEqual(errors, []);
       console.log(
-        `PASS ${width}x${height}: images, bounds, preview/cancel, direct apply, persistence, focus and scrolling`,
+        `PASS ${width}x${height}: images, bounds, preview/cancel, center confirmation, persistence, focus and scrolling`,
       );
       await context.close();
     }
@@ -270,6 +378,7 @@ async function checkFit(page, width, height) {
       () => !document.querySelector('[data-cover-index="2"]').disabled,
     );
     await frame(page, 2).click();
+    await page.getByRole("button", { name: "使用此封面", exact: true }).click();
     await closedPicker(page);
     assert.ok(
       (await page.locator("#bg-image").getAttribute("src")).endsWith(
@@ -321,7 +430,7 @@ async function checkFit(page, width, height) {
       await slowPage.waitForFunction(
         () => !document.querySelector('[data-cover-index="4"]').disabled,
       );
-      await frame(slowPage, 4).focus();
+      await frame(slowPage, 4).click();
       await slowPage.waitForFunction(
         () =>
           document.querySelector("dialog.cover-picker [data-preview-index]")
@@ -377,6 +486,9 @@ async function checkFit(page, width, height) {
       return img?.complete && img.naturalWidth > 0;
     });
     await frame(failedPage, 4).click();
+    await failedPage
+      .getByRole("button", { name: "使用此封面", exact: true })
+      .click();
     await closedPicker(failedPage);
     assert.ok(
       (await failedPage.locator("#bg-image").getAttribute("src")).endsWith(
@@ -407,6 +519,16 @@ async function checkFit(page, width, height) {
           ?.dataset.previewIndex === "1",
       null,
       { timeout: 5000 },
+    );
+    await savedPage.waitForFunction(
+      () =>
+        Math.abs(
+          parseFloat(
+            document
+              .querySelector(".aperture-dial__body")
+              .style.getPropertyValue("--counter-rotation"),
+          ) % 360,
+        ) < 0.1,
     );
     assert.equal(
       await savedPage.evaluate((key) => localStorage.getItem(key), storageKey),
