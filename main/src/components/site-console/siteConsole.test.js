@@ -58,14 +58,15 @@ test("fragment 01 uses the same information treatment as 02 and 03", () => {
   assert.match(card, /linkUrl="\/projects\/"/);
 });
 
-test("cover switching has a usable mobile path rather than opening a hidden desktop selector", () => {
+test("cover switching opens the same visible picker on mobile and desktop", () => {
   const hero = read("../Hero.jsx");
   const handler = hero.slice(
     hero.indexOf("const handler ="),
     hero.indexOf('window.addEventListener("showHeroPreview"'),
   );
-  assert.match(handler, /matchMedia/);
-  assert.match(handler, /setCurrentIndex\(nextIndex\)/);
+  assert.match(handler, /setSelectorOpen\(true\)/);
+  assert.doesNotMatch(handler, /matchMedia|setCurrentIndex/);
+  assert.match(hero, /<CoverPicker/);
 });
 
 test("update actions work in local preview and homepage honors the lottery anchor after mounting", () => {

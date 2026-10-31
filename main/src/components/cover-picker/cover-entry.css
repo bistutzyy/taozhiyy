@@ -1,0 +1,70 @@
+.nav-cover-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 1px solid #ffffff4d;
+  border-radius: 4px;
+  background: #10161c99;
+  color: #fff;
+  font:
+    10px "general",
+    sans-serif;
+  white-space: nowrap;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+.nav-cover-trigger svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+.nav-cover-trigger:hover {
+  background: #10161ccc;
+  border-color: #ffffffa6;
+}
+.nav-cover-trigger:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+.hero-cover-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 9px 12px;
+  border: 1px solid #ffffff66;
+  border-radius: 4px;
+  color: white;
+  background: #11182799;
+  font-size: 11px;
+}
+.hero-cover-retry svg {
+  width: 15px;
+  height: 15px;
+}
+@media (max-width: 767px) {
+  .nav-cover-trigger {
+    width: 31px;
+    height: 31px;
+    min-height: 31px;
+    justify-content: center;
+    padding: 5px;
+    border-color: #ffffff40;
+  }
+  .nav-cover-trigger span {
+    display: none;
+  }
+  .nav-cover-trigger svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-cover-trigger {
+    transition: none;
+  }
+}
