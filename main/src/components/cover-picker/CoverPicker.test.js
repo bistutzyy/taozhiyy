@@ -10,9 +10,9 @@ const read = (name) => {
   return readFileSync(url, "utf8");
 };
 const source = () => read("./CoverPicker.jsx");
-const dial = () => read("./CoverDial.jsx");
+const room = () => read("./CoverScreening.jsx");
 
-test("picker module and its dial load server-side and stay empty while closed", async () => {
+test("screening room module loads server-side and stays empty while closed", async () => {
   const { createServer } = await import("vite");
   const server = await createServer({
     configFile: false,
@@ -33,7 +33,7 @@ test("picker module and its dial load server-side and stay empty while closed", 
   }
 });
 
-test("picker remains a labelled native modal portalled outside the hero", () => {
+test("screening scene remains a labelled native modal portalled outside Hero", () => {
   const ui = source();
   assert.match(ui, /<dialog\b/);
   assert.match(ui, /className="cover-picker"/);
@@ -41,11 +41,14 @@ test("picker remains a labelled native modal portalled outside the hero", () => 
   assert.match(ui, /id="cover-picker-title"/);
   assert.match(ui, /\.showModal\(\)/);
   assert.match(ui, /createPortal\([\s\S]*document\.body/);
-  assert.match(ui, /<CoverDial\b/);
-  assert.doesNotMatch(ui, /cover-picker__frames|cover-picker__viewfinder/);
+  assert.match(ui, /<CoverScreening\b/);
+  assert.doesNotMatch(
+    ui + room(),
+    /CoverDial|Draggable|InertiaPlugin|dialMath/,
+  );
 });
 
-test("each opening starts from the applied cover without touching persistence", () => {
+test("each opening makes an independent image and brightness draft", () => {
   const ui = source();
   assert.match(
     ui,
@@ -55,19 +58,25 @@ test("each opening starts from the applied cover without touching persistence", 
     ui,
     /\[previewIndex, setPreviewIndex\] = useState\(currentIndex\)/,
   );
+  assert.match(
+    ui,
+    /useState\(\(\) =>\s*resolveCoverBrightness\(currentBrightness\)/,
+  );
   assert.doesNotMatch(
-    ui + dial(),
+    ui + room(),
     /localStorage|sessionStorage|writeCoverPreference|fetch\(/,
   );
 });
 
-test("cancel and Escape preserve the opener, body styles and scroll", () => {
+test("cancel keeps native modal opener, body style priorities and scroll restoration", () => {
   const ui = source();
-  assert.match(ui, /event\.preventDefault\(\);\s*onClose\(\)/);
+  assert.match(ui, /event\.preventDefault\(\)/);
   assert.match(ui, /aria-label="关闭封面选择"/);
   assert.match(ui, /const opener = document\.activeElement/);
   assert.match(ui, /getPropertyValue\(property\)/);
   assert.match(ui, /getPropertyPriority\(property\)/);
+  assert.match(ui, /"overflow-x"/);
+  assert.match(ui, /"overflow-y"/);
   assert.match(ui, /setProperty\("overflow", "hidden"\)/);
   assert.match(ui, /setProperty\("position", "fixed"\)/);
   assert.match(ui, /style\.setProperty\(property, value, priority\)/);
@@ -78,73 +87,82 @@ test("cancel and Escape preserve the opener, body styles and scroll", () => {
   assert.doesNotMatch(ui.match(/<dialog\b[\s\S]*?>/)?.[0] ?? "", /\bonClose=/);
 });
 
-test("dial uses installed GSAP rotational dragging, inertia and ready-only snapping", () => {
-  const ui = dial();
-  assert.match(ui, /Draggable\.create\(/);
-  assert.match(ui, /type:\s*"rotation"/);
-  assert.match(ui, /InertiaPlugin/);
-  assert.match(ui, /snapDialRotation/);
-  assert.match(ui, /\.kill\(\)/);
-  assert.match(ui, /role="slider"/);
-  for (const key of ["ArrowLeft", "ArrowRight", "Home", "End"])
-    assert.ok(ui.includes(key));
-});
-
-test("radial thumbnails only select a preview and the central lens confirms", () => {
-  const ui = dial();
+test("floating slides only preview ready images and expose truthful retry state", () => {
+  const ui = room();
   assert.match(ui, /data-cover-index=\{index\}/);
-  assert.match(ui, /onClick=\{\(\) => selectCover\(index\)\}/);
+  assert.match(ui, /onClick=\{\(\) => onPreview\(index\)\}/);
   assert.match(ui, /disabled=\{!ready \|\| busy\}/);
-  assert.match(ui, /className="cover-picker__apply[^"]*"/);
-  assert.match(ui, /onClick=\{onConfirm\}/);
-  assert.match(ui, /aria-label="使用此封面"/);
-  assert.doesNotMatch(ui, /onApply|onConfirm\(index\)/);
-});
-
-test("confirmation has a readiness guard and cancellable one-shot shutter", () => {
-  const ui = source();
-  assert.match(ui, /gsap\s*\.timeline\(/);
-  assert.match(ui, /prefers-reduced-motion/);
-  assert.match(ui, /confirming\.current/);
-  assert.match(ui, /onApply\(index\)/);
-  assert.match(ui, /shutterTimeline\.current\?\.kill\(\)/);
-  assert.match(ui, /cover-picker__shutter/);
-});
-
-test("loading and failed frames expose real status and retry without broken images", () => {
-  const ui = dial();
-  assert.match(ui, /failedIndexes\.has\(index\)/);
+  assert.match(ui, /aria-busy=\{!ready && !failed\}/);
   assert.match(ui, /className="cover-picker__retry"/);
   assert.match(ui, /onClick=\{\(\) => onRetry\(index\)\}/);
-  assert.match(ui, /加载中/);
   assert.match(ui, /加载失败/);
-  assert.match(ui, /aria-busy=\{!ready && !failed\}/);
+  assert.match(ui, /加载中/);
   assert.match(ui, /\{ready && \(?\s*<img[\s\S]*?src=\{src\}/);
 });
 
-test("sharp crossfade retains the real previous image without blur or auto-rotation", () => {
+test("the room has actionable random, brightness, reset and clean-view commands", () => {
+  const ui = room();
+  for (const text of ["随机一景", "亮度", "重置亮度", "纯净观赏", "使用此封面"])
+    assert.ok(ui.includes(text));
+  assert.match(ui, /type="range"/);
+  assert.match(ui, /min=\{70\}/);
+  assert.match(ui, /max=\{115\}/);
+  assert.match(ui, /onShuffle/);
+  assert.match(ui, /onBrightness/);
+  assert.match(ui, /onResetBrightness/);
+  assert.match(ui, /onCleanView/);
+  assert.match(ui, /from "react-icons\/lu"/);
+});
+
+test("random selection stays in the preview and obeys image readiness", () => {
   const ui = source();
+  assert.match(ui, /getRandomCoverIndex/);
+  assert.match(
+    ui,
+    /readyIndexes\.has\(index\) && !failedIndexes\.has\(index\)/,
+  );
+  assert.match(ui, /setPreviewIndex/);
+  assert.match(ui, /confirming\.current/);
+});
+
+test("one-shot projection confirms both drafts and is killed on unmount", () => {
+  const ui = source();
+  assert.match(ui, /gsap\s*\.timeline\(/);
+  assert.match(ui, /prefers-reduced-motion/);
+  assert.match(ui, /onApply\(index, brightness\)/);
+  assert.match(ui, /projectionTimeline\.current\?\.kill\(\)/);
+  assert.match(ui, /data-phase=/);
+});
+
+test("clean view hides editor and supplies a focusable return with Escape support", () => {
+  const ui = source();
+  assert.match(ui, /hidden=\{cleanView\}/);
+  assert.match(ui, /aria-label="返回封面编辑"/);
+  assert.match(ui, /returnToEditor/);
+  assert.match(ui, /data-clean=/);
+  assert.match(ui, /editorFocus\.current/);
+  assert.match(ui, /cleanReturnRef\.current\?\.focus/);
+});
+
+test("full-screen previews retain real images and never use blur or auto-rotation", () => {
+  const ui = source() + room();
   assert.match(ui, /setPreviousCover\(displayedCover\)/);
   assert.match(ui, /src=\{previousCover\.src\}/);
   assert.match(ui, /src=\{displayedCover\.src\}/);
   assert.match(ui, /data-preview-index=\{displayedCover\.index\}/);
   assert.match(ui, /clearTimeout\(timeout\)/);
-  assert.doesNotMatch(
-    ui + dial(),
-    /setInterval|new Image|compass|poem|<canvas/i,
-  );
-  const css = read("./cover-picker.css") + read("./aperture-dial.css");
-  assert.doesNotMatch(css, /(?:backdrop-)?filter\s*:|font-size:\s*[^;]*vw/);
+  assert.doesNotMatch(ui, /setInterval|new Image|compass|poem|<canvas/i);
+  const css = read("./cover-picker.css") + read("./screening-room.css");
+  assert.doesNotMatch(css, /blur\s*\(|font-size:\s*[^;]*vw/);
 });
 
-test("dial geometry accounts for width, short landscape, touch and reduced motion", () => {
-  const css = read("./cover-picker.css") + read("./aperture-dial.css");
-  assert.match(css, /height:\s*100dvh/);
-  assert.match(css, /--dial-size:/);
-  assert.match(css, /100dvh -/);
-  assert.match(css, /touch-action:\s*none/);
+test("room layouts include constrained mobile, short landscape and reduced motion", () => {
+  const css = read("./cover-picker.css") + read("./screening-room.css");
+  assert.match(css, /100dvh/);
+  assert.match(css, /aspect-ratio:/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /orientation:\s*landscape/);
   assert.match(css, /env\(safe-area-inset-bottom/);
+  assert.match(css, /\[hidden\]/);
 });

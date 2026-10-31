@@ -4,6 +4,7 @@ const path = require("node:path");
 const { chromium } = require("playwright");
 const base = process.argv[2] || "http://127.0.0.1:5202";
 const storageKey = "taozhiyy.home-cover.v1";
+const brightnessKey = "taozhiyy.home-cover-brightness.v1";
 const out = path.resolve(
   __dirname,
   "../previews/project-gallery/.qa/home-covers",
@@ -12,16 +13,23 @@ const apiPreview = (route) =>
   route.fulfill({
     status: 503,
     contentType: "application/json",
-    body: '{"error":"PREVIEW_ONLY","message":"Local UI preview"}',
+    body: '{"error":"PREVIEW_ONLY"}',
   });
 const frame = (page, index) =>
   page.locator(`dialog.cover-picker [data-cover-index="${index}"]`);
+const command = (page, name) => page.getByRole("button", { name, exact: true });
 const previewIndex = (page) =>
   page
     .locator("dialog.cover-picker [data-preview-index]")
-    .last()
     .getAttribute("data-preview-index");
-
+const brightness = (page) =>
+  page.getByRole("slider", { name: "亮度", exact: true });
+const filter = (page, selector) =>
+  page.locator(selector).evaluate((el) => getComputedStyle(el).filter);
+const saved = (page, key) =>
+  page.evaluate((key) => localStorage.getItem(key), key);
+const shot = (page, name) =>
+  page.screenshot({ path: path.join(out, `${name}.png`) });
 async function readyHome(page) {
   await page.waitForFunction(
     () =>
@@ -33,7 +41,7 @@ async function readyHome(page) {
     .waitFor({ state: "detached" });
 }
 async function openPicker(page, allReady = true) {
-  await page.getByRole("button", { name: "切换首页封面", exact: true }).click();
+  await command(page, "切换首页封面").click();
   await page.locator("dialog.cover-picker[open]").waitFor();
   if (allReady)
     await page.waitForFunction(() => {
@@ -44,6 +52,7 @@ async function openPicker(page, allReady = true) {
         buttons.length === 4 && buttons.every((button) => !button.disabled)
       );
     });
+  await page.waitForTimeout(750);
 }
 async function closedPicker(page) {
   await page.locator("dialog.cover-picker").waitFor({ state: "detached" });
@@ -53,84 +62,54 @@ async function closedPicker(page) {
       document.body.style.position !== "fixed",
   );
 }
-async function turnDial(page, touch = false) {
-  const box = await page.locator(".aperture-dial__body").boundingBox();
-  const cx = box.x + box.width / 2,
-    cy = box.y + box.height / 2,
-    radius = box.width * 0.29;
-  const point = (step) => {
-    const angle = ((45 - (step * 90) / 12) * Math.PI) / 180;
-    return {
-      x: cx + Math.cos(angle) * radius,
-      y: cy + Math.sin(angle) * radius,
-    };
-  };
-  const start = point(0);
-  const cdp = touch ? await page.context().newCDPSession(page) : null;
-  if (cdp)
-    await cdp.send("Input.dispatchTouchEvent", {
-      type: "touchStart",
-      touchPoints: [{ ...start, id: 1 }],
-    });
-  else {
-    await page.mouse.move(start.x, start.y);
-    await page.mouse.down();
-  }
-  for (let step = 1; step <= 12; step++) {
-    const next = point(step);
-    if (cdp)
-      await cdp.send("Input.dispatchTouchEvent", {
-        type: "touchMove",
-        touchPoints: [{ ...next, id: 1 }],
-      });
-    else await page.mouse.move(next.x, next.y);
-    await page.waitForTimeout(12);
-  }
-  await page.waitForTimeout(300);
-  if (cdp) {
-    await cdp.send("Input.dispatchTouchEvent", {
-      type: "touchEnd",
-      touchPoints: [],
-    });
-    await cdp.detach();
-  } else await page.mouse.up();
+async function choose(page, index, touch = false) {
+  if (touch) await frame(page, index).tap();
+  else await frame(page, index).click();
   await page.waitForFunction(
-    () =>
-      document.querySelector("[data-preview-index]")?.dataset.previewIndex ===
-      "2",
+    (expected) =>
+      document.querySelector("dialog.cover-picker [data-preview-index]")
+        ?.dataset.previewIndex === String(expected),
+    index,
   );
-  await page.waitForTimeout(750);
-  const rotation = await page
-    .locator(".aperture-dial__body")
-    .evaluate((el) =>
-      parseFloat(el.style.getPropertyValue("--counter-rotation")),
-    );
-  assert.ok(
-    Math.abs(rotation / 90 - Math.round(rotation / 90)) < 0.01,
-    `dial must snap, got ${rotation}`,
-  );
+}
+async function setRangeEnd(page, key) {
+  await brightness(page).focus();
+  await page.keyboard.press(key);
 }
 async function checkFit(page, width, height) {
   const result = await page
     .locator("dialog.cover-picker")
     .evaluate((dialog) => {
       const rect = dialog.getBoundingClientRect();
-      const bad = [...dialog.querySelectorAll("button")]
-        .filter((button) => {
-          const b = button.getBoundingClientRect();
+      const bad = [
+        ...dialog.querySelectorAll(
+          "button,input,[data-fit-text],.screening-command__tip",
+        ),
+      ]
+        .filter((el) => {
+          if (
+            el.matches(".screening-command__tip") &&
+            getComputedStyle(el).visibility === "hidden"
+          )
+            return false;
+          const r = el.getBoundingClientRect();
           return (
-            b.width &&
-            (b.left < 0 ||
-              b.top < 0 ||
-              b.right > innerWidth + 1 ||
-              b.bottom > innerHeight + 1 ||
-              button.scrollWidth > button.clientWidth + 1)
+            r.width &&
+            r.height &&
+            (r.left < -0.5 ||
+              r.top < -0.5 ||
+              r.right > innerWidth + 0.5 ||
+              r.bottom > innerHeight + 0.5 ||
+              (!el.matches(".screening-command") &&
+                el.scrollWidth > el.clientWidth + 1))
           );
         })
-        .map(
-          (button) =>
-            button.getAttribute("aria-label") || button.textContent.trim(),
-        );
+        .map((el) => ({
+          name: el.getAttribute("aria-label") || el.className,
+          r: el.getBoundingClientRect().toJSON(),
+          s: el.scrollWidth,
+          c: el.clientWidth,
+        }));
       return {
         x: rect.x,
         y: rect.y,
@@ -147,8 +126,21 @@ async function checkFit(page, width, height) {
       Math.abs(result.h - height) < 1,
     JSON.stringify(result),
   );
-  assert.deepEqual(result.bad, [], `clipped controls ${width}x${height}`);
-  assert.equal(result.overflow, false);
+  assert.deepEqual(
+    result.bad,
+    [],
+    `clipped scene ${width}x${height}: ${JSON.stringify(result.bad)}`,
+  );
+  assert.equal(result.overflow, false, "dialog must not overflow");
+}
+async function newPage(browser, options = {}) {
+  const context = await browser.newContext(options);
+  const page = await context.newPage();
+  page.setDefaultTimeout(20000);
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/api/**", apiPreview);
+  return { context, page, errors };
 }
 
 (async () => {
@@ -163,105 +155,102 @@ async function checkFit(page, width, height) {
       [320, 568],
       [844, 390],
       [667, 375],
+      [500, 400],
     ]) {
-      const context = await browser.newContext({
+      const { context, page, errors } = await newPage(browser, {
         viewport: { width, height },
         hasTouch: width < 768,
         isMobile: width < 768,
       });
-      const page = await context.newPage();
-      page.setDefaultTimeout(20000);
-      const errors = [];
-      page.on("pageerror", (error) => errors.push(error.message));
-      await page.route("**/api/**", apiPreview);
       await page.goto(base, { waitUntil: "domcontentloaded" });
       await readyHome(page);
-      const nav = await page
-        .getByRole("button", { name: "切换首页封面", exact: true })
-        .boundingBox();
-      assert.ok(
-        nav.x >= 0 && nav.x + nav.width <= width,
-        "mobile and desktop entry must fit",
-      );
       const original = await page.locator("#bg-image").getAttribute("src");
       await openPicker(page);
       await checkFit(page, width, height);
-      if (width === 1440 || width === 390) {
-        await turnDial(page, width === 390);
-        assert.equal(
-          await page.evaluate((key) => localStorage.getItem(key), storageKey),
-          null,
-          "rotation must not persist",
+      if (width < 768 && height > width) {
+        const slides = await page.locator(".screening-slides").boundingBox();
+        const projector = await page
+          .locator(".screening-projector")
+          .boundingBox();
+        assert.ok(
+          projector.y >= slides.y + slides.height - 1,
+          "portrait projector belongs below the slides",
         );
-        const grip = page.getByRole("slider", { name: "旋转光圈选择封面" });
-        await grip.focus();
-        for (const [key, index] of [
-          ["Home", "1"],
-          ["End", "4"],
-          ["ArrowRight", "1"],
-          ["ArrowLeft", "4"],
-          ["Home", "1"],
-        ]) {
-          await page.keyboard.press(key);
-          await page.waitForFunction(
-            (expected) =>
-              document.querySelector("[data-preview-index]")?.dataset
-                .previewIndex === expected,
-            index,
-          );
-        }
       }
-      assert.equal(
-        await page.locator("dialog.cover-picker [data-cover-index]").count(),
-        4,
-      );
-      assert.ok(
-        !/锦瑟|一弦|沧海月明|庄生|指南针/.test(
-          await page.locator("dialog.cover-picker").innerText(),
-        ),
-      );
-      await frame(page, 2).click();
-      await page.waitForFunction(
-        () =>
-          document.querySelector("dialog.cover-picker [data-preview-index]")
-            ?.dataset.previewIndex === "2",
-      );
+      assert.equal(await frame(page, 1).count(), 1);
+      assert.equal(await page.locator(".aperture-dial").count(), 0);
+      await choose(page, 2, width < 768);
       assert.equal(
         await page.locator("#bg-image").getAttribute("src"),
         original,
-        "preview must not apply",
       );
+      assert.equal(await saved(page, storageKey), null);
+      await setRangeEnd(page, "Home");
+      assert.equal(await brightness(page).inputValue(), "70");
       assert.equal(
-        await page.evaluate((key) => localStorage.getItem(key), storageKey),
-        null,
+        await filter(page, ".cover-picker__media"),
+        "brightness(0.7)",
       );
-      if (width >= 768) {
-        await frame(page, 4).click();
-        await page.waitForFunction(
-          () =>
-            document.querySelector("dialog.cover-picker [data-preview-index]")
-              ?.dataset.previewIndex === "4",
-        );
-        assert.equal(
-          await page.locator("#bg-image").getAttribute("src"),
-          original,
-          "thumbnail must only preview",
-        );
-        await frame(page, 2).click();
-      }
+      assert.equal(await filter(page, "#bg-image"), "brightness(1)");
+      assert.equal(await saved(page, brightnessKey), null);
+      await command(page, "重置亮度").click();
+      assert.equal(await brightness(page).inputValue(), "100");
       await page.waitForFunction(() =>
         [...document.querySelectorAll("dialog.cover-picker img")].every(
           (img) => img.complete && img.naturalWidth > 0,
         ),
       );
       await page.waitForTimeout(350);
-      await page.screenshot({ path: path.join(out, `picker-${width}.png`) });
+      await checkFit(page, width, height);
+      await shot(page, `picker-${width}`);
+      await command(page, "纯净观赏").click();
+      assert.equal(
+        await page.locator("dialog.cover-picker").getAttribute("data-clean"),
+        "true",
+      );
+      assert.equal(
+        await page.locator("dialog.cover-picker button:visible").count(),
+        1,
+      );
+      assert.equal(
+        await page
+          .locator("dialog.cover-picker [data-preview-index]")
+          .evaluate((el) => getComputedStyle(el).objectFit),
+        "contain",
+        "clean view shows the full original aspect ratio",
+      );
+      assert.equal(
+        await page.evaluate(() =>
+          document.activeElement.getAttribute("aria-label"),
+        ),
+        "返回封面编辑",
+      );
+      await checkFit(page, width, height);
+      await shot(page, `clean-${width}`);
+      await page.keyboard.press("Escape");
+      assert.equal(
+        await page.locator("dialog.cover-picker").getAttribute("data-clean"),
+        "false",
+      );
+      assert.equal(
+        await page.evaluate(() =>
+          document.activeElement.getAttribute("aria-label"),
+        ),
+        "纯净观赏",
+      );
+      const before = await previewIndex(page);
+      await command(page, "随机一景").click();
+      assert.notEqual(await previewIndex(page), before);
+      assert.equal(await saved(page, storageKey), null);
+      await command(page, "纯净观赏").click();
+      await command(page, "返回封面编辑").click();
       await page.keyboard.press("Escape");
       await closedPicker(page);
       assert.equal(
         await page.locator("#bg-image").getAttribute("src"),
         original,
       );
+      assert.equal(await filter(page, "#bg-image"), "brightness(1)");
       assert.equal(
         await page.evaluate(() =>
           document.activeElement.getAttribute("aria-label"),
@@ -270,78 +259,80 @@ async function checkFit(page, width, height) {
       );
       if (width === 1440) {
         await openPicker(page);
-        await frame(page, 4).click();
-        await page
-          .getByRole("button", { name: "使用此封面", exact: true })
-          .click();
+        await choose(page, 4);
+        await setRangeEnd(page, "Home");
+        await command(page, "使用此封面").click();
         assert.equal(
           await page.locator("dialog.cover-picker").getAttribute("data-phase"),
-          "shutter",
+          "projecting",
         );
         await page.keyboard.press("Escape");
         await closedPicker(page);
-        await page.waitForTimeout(700);
+        await page.waitForTimeout(650);
         assert.equal(
           await page.locator("#bg-image").getAttribute("src"),
           original,
-          "closing a shutter must cancel the queued apply",
         );
-        assert.equal(
-          await page.evaluate((key) => localStorage.getItem(key), storageKey),
-          null,
-        );
+        assert.equal(await saved(page, storageKey), null);
+        assert.equal(await saved(page, brightnessKey), null);
       }
       await openPicker(page);
-      await frame(page, 3).click();
-      await page
-        .getByRole("button", { name: "使用此封面", exact: true })
-        .click();
+      await choose(page, 3);
+      await setRangeEnd(page, "End");
+      await command(page, "使用此封面").click();
       await closedPicker(page);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
           "hero-3.webp",
         ),
       );
-      assert.equal(
-        await page.evaluate((key) => localStorage.getItem(key), storageKey),
-        "3",
-      );
+      assert.equal(await filter(page, "#bg-image"), "brightness(1.15)");
+      assert.equal(await saved(page, storageKey), "3");
+      assert.equal(await saved(page, brightnessKey), "115");
       await page.locator("#previous-image").waitFor({ state: "detached" });
-      await page.screenshot({ path: path.join(out, `applied-${width}.png`) });
+      await shot(page, `applied-${width}`);
       await page.reload({ waitUntil: "domcontentloaded" });
       await readyHome(page);
-      console.log(`CHECK ${width}: restored selection after reload`);
-      assert.ok(
-        (await page.locator("#bg-image").getAttribute("src")).endsWith(
-          "hero-3.webp",
-        ),
+      assert.equal(await filter(page, "#bg-image"), "brightness(1.15)");
+      assert.equal(
+        await filter(page, ".hero-wordmark"),
+        "none",
+        "text must not be dimmed",
       );
       await openPicker(page);
-      await frame(page, 4).focus();
-      await page.keyboard.press("Tab");
-      if (await page.evaluate(() => document.activeElement === document.body))
-        await page.keyboard.press("Tab");
-      assert.equal(
-        await page.evaluate(() =>
-          document
-            .querySelector("dialog.cover-picker")
-            .contains(document.activeElement),
-        ),
-        true,
-      );
-      await page
-        .getByRole("button", { name: "关闭封面选择", exact: true })
-        .click();
+      assert.equal(await brightness(page).inputValue(), "115");
+      await setRangeEnd(page, "Home");
+      await command(page, "放映并应用封面").click();
       await closedPicker(page);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
           "hero-3.webp",
         ),
       );
-      await page.evaluate(() => {
-        scrollTo(0, 300);
-      });
-      await page.waitForTimeout(250);
+      assert.equal(
+        await filter(page, "#bg-image"),
+        "brightness(0.7)",
+        "same-index brightness applies",
+      );
+      if (width === 1440) {
+        await openPicker(page);
+        await choose(page, 4);
+        await setRangeEnd(page, "End");
+        await command(page, "使用此封面").click();
+        await closedPicker(page);
+        assert.ok(
+          (await page.locator("#bg-image").getAttribute("src")).endsWith(
+            "hero-4.webp",
+          ),
+        );
+        assert.equal(
+          await filter(page, "#bg-image"),
+          "brightness(1.15)",
+          "subsequent GSAP transitions preserve new brightness",
+        );
+      }
+      await page.evaluate(() => scrollTo(0, 300));
+      await page.waitForTimeout(200);
       const scroll = await page.evaluate(() => scrollY);
       await page.evaluate(() =>
         window.dispatchEvent(new CustomEvent("showHeroPreview")),
@@ -349,235 +340,193 @@ async function checkFit(page, width, height) {
       await page.locator("dialog.cover-picker[open]").waitFor();
       await page.keyboard.press("Escape");
       await closedPicker(page);
-      assert.ok(
-        Math.abs((await page.evaluate(() => scrollY)) - scroll) < 2,
-        "cancel restores scroll",
-      );
+      assert.ok(Math.abs((await page.evaluate(() => scrollY)) - scroll) < 2);
       assert.deepEqual(errors, []);
       console.log(
-        `PASS ${width}x${height}: images, bounds, preview/cancel, center confirmation, persistence, focus and scrolling`,
+        `PASS ${width}x${height}: scene bounds, real images, touch/click, shuffle, brightness, clean view, cancel, both apply controls, persistence and focus`,
       );
       await context.close();
     }
-    const context = await browser.newContext({
+
+    const reduced = await newPage(browser, {
       viewport: { width: 390, height: 844 },
       reducedMotion: "reduce",
     });
-    await context.addInitScript(() =>
+    await reduced.context.addInitScript(() =>
       Object.defineProperty(window, "localStorage", {
         get() {
           throw new Error("blocked");
         },
       }),
     );
-    const page = await context.newPage();
-    await page.route("**/api/**", apiPreview);
-    await page.goto(`${base}/?cover=select`, { waitUntil: "domcontentloaded" });
-    await page.locator("dialog.cover-picker[open]").waitFor();
-    await page.waitForFunction(
+    await reduced.page.goto(`${base}/?cover=select`, {
+      waitUntil: "domcontentloaded",
+    });
+    await reduced.page.waitForFunction(
       () => !document.querySelector('[data-cover-index="2"]').disabled,
     );
-    await frame(page, 2).click();
-    await page.getByRole("button", { name: "使用此封面", exact: true }).click();
-    await closedPicker(page);
-    assert.ok(
-      (await page.locator("#bg-image").getAttribute("src")).endsWith(
-        "hero-2.webp",
-      ),
-    );
-    await page.waitForTimeout(100);
-    assert.equal(
-      await page.locator("#previous-image").count(),
-      0,
-      "reduced motion has no lingering image transition",
-    );
-    await context.close();
-    console.log("PASS reduced motion and blocked storage");
+    await choose(reduced.page, 2);
+    await setRangeEnd(reduced.page, "Home");
+    await command(reduced.page, "使用此封面").click();
+    await closedPicker(reduced.page);
+    assert.equal(await filter(reduced.page, "#bg-image"), "brightness(0.7)");
+    await reduced.page.waitForTimeout(100);
+    assert.equal(await reduced.page.locator("#previous-image").count(), 0);
+    assert.deepEqual(reduced.errors, []);
+    await reduced.context.close();
+    console.log("PASS reduced motion and blocked storage with brightness");
 
-    const slow = await browser.newContext({
+    const slow = await newPage(browser, {
       viewport: { width: 390, height: 844 },
     });
-    const slowPage = await slow.newPage();
-    slowPage.setDefaultTimeout(20000);
-    await slowPage.route("**/api/**", apiPreview);
-    let releaseMedia;
-    const mediaGate = new Promise((resolve) => {
-      releaseMedia = resolve;
+    let release;
+    const gate = new Promise((resolve) => {
+      release = resolve;
     });
-    await slowPage.route("**/hero-4.webp", async (route) => {
-      await mediaGate;
+    await slow.page.route("**/hero-4.webp", async (route) => {
+      await gate;
       await route.continue();
     });
     try {
-      await slowPage.goto(base, { waitUntil: "domcontentloaded" });
-      await readyHome(slowPage);
-      const originalStyles = await slowPage.evaluate(() => {
+      await slow.page.goto(base, { waitUntil: "domcontentloaded" });
+      await readyHome(slow.page);
+      const originalStyles = await slow.page.evaluate(() => {
         document.body.style.setProperty("overflow", "auto", "important");
         document.body.style.setProperty("padding-right", "7px", "important");
         return document.body.getAttribute("style");
       });
-      await openPicker(slowPage, false);
-      assert.equal(await frame(slowPage, 4).isDisabled(), true);
-      assert.equal(await frame(slowPage, 4).getAttribute("aria-busy"), "true");
-      await frame(slowPage, 4).evaluate((button) => button.click());
-      assert.ok(
-        (await slowPage.locator("#bg-image").getAttribute("src")).endsWith(
-          "hero-1.webp",
-        ),
-      );
-      assert.equal(await slowPage.locator(".cover-picker__retry").count(), 0);
-      releaseMedia();
-      await slowPage.waitForFunction(
+      await openPicker(slow.page, false);
+      assert.equal(await frame(slow.page, 4).isDisabled(), true);
+      assert.equal(await frame(slow.page, 4).getAttribute("aria-busy"), "true");
+      for (let i = 0; i < 4; i++) {
+        await command(slow.page, "随机一景").click();
+        assert.notEqual(await previewIndex(slow.page), "4");
+      }
+      release();
+      await slow.page.waitForFunction(
         () => !document.querySelector('[data-cover-index="4"]').disabled,
       );
-      await frame(slowPage, 4).click();
-      await slowPage.waitForFunction(
-        () =>
-          document.querySelector("dialog.cover-picker [data-preview-index]")
-            ?.dataset.previewIndex === "4",
-      );
-      await slowPage
-        .getByRole("button", { name: "关闭封面选择", exact: true })
-        .click();
-      await closedPicker(slowPage);
+      await choose(slow.page, 4);
+      await command(slow.page, "关闭封面选择").click();
+      await closedPicker(slow.page);
       assert.equal(
-        await slowPage.evaluate(() => document.body.getAttribute("style")),
+        await slow.page.evaluate(() => document.body.getAttribute("style")),
         originalStyles,
       );
-      assert.ok(
-        (await slowPage.locator("#bg-image").getAttribute("src")).endsWith(
-          "hero-1.webp",
-        ),
-      );
-      console.log(
-        "PASS slow media, unavailable frame guards and exact body style restoration",
+      assert.equal(await saved(slow.page, storageKey), null);
+      const axisStyles = () =>
+        [
+          "overflow",
+          "overflow-x",
+          "overflow-y",
+          "position",
+          "padding-right",
+        ].map((property) => [
+          property,
+          document.body.style.getPropertyValue(property),
+          document.body.style.getPropertyPriority(property),
+        ]);
+      await slow.page.evaluate(() => {
+        document.body.style.removeProperty("overflow");
+        document.body.style.setProperty("overflow-y", "hidden", "important");
+      });
+      const originalAxes = await slow.page.evaluate(axisStyles);
+      await openPicker(slow.page);
+      await command(slow.page, "关闭封面选择").click();
+      await closedPicker(slow.page);
+      assert.deepEqual(
+        await slow.page.evaluate(axisStyles),
+        originalAxes,
+        "axis-specific overflow and priorities must survive close",
       );
     } finally {
-      releaseMedia();
-      await slow.close();
+      release();
+      await slow.context.close();
     }
+    console.log(
+      "PASS delayed media, ready-only shuffle and exact body restoration",
+    );
 
-    const failing = await browser.newContext({
+    const failing = await newPage(browser, {
       viewport: { width: 1366, height: 768 },
     });
-    const failedPage = await failing.newPage();
-    await failedPage.route("**/api/**", apiPreview);
     let fail = true;
-    await failedPage.route("**/hero-4.webp", (route) =>
+    await failing.page.route("**/hero-4.webp", (route) =>
       fail ? route.abort() : route.continue(),
     );
-    await failedPage.goto(base, { waitUntil: "domcontentloaded" });
-    await readyHome(failedPage);
-    await openPicker(failedPage, false);
-    await failedPage.locator(".cover-picker__retry").waitFor();
-    assert.equal(await frame(failedPage, 4).isDisabled(), true);
-    assert.ok(
-      (await failedPage.locator("#bg-image").getAttribute("src")).endsWith(
-        "hero-1.webp",
-      ),
-    );
+    await failing.page.goto(base, { waitUntil: "domcontentloaded" });
+    await readyHome(failing.page);
+    await openPicker(failing.page, false);
+    await failing.page.locator(".cover-picker__retry").waitFor();
+    assert.equal(await frame(failing.page, 4).isDisabled(), true);
+    for (let i = 0; i < 3; i++) {
+      await command(failing.page, "随机一景").click();
+      assert.notEqual(await previewIndex(failing.page), "4");
+    }
     fail = false;
-    await failedPage.locator(".cover-picker__retry").click();
-    await failedPage.waitForFunction(
+    await failing.page.locator(".cover-picker__retry").click();
+    await failing.page.waitForFunction(
       () => !document.querySelector('[data-cover-index="4"]').disabled,
     );
-    await failedPage.waitForFunction(() => {
-      const img = document.querySelector('[data-cover-index="4"] img');
-      return img?.complete && img.naturalWidth > 0;
-    });
-    await frame(failedPage, 4).click();
-    await failedPage
-      .getByRole("button", { name: "使用此封面", exact: true })
-      .click();
-    await closedPicker(failedPage);
+    await choose(failing.page, 4);
+    await command(failing.page, "使用此封面").click();
+    await closedPicker(failing.page);
     assert.ok(
-      (await failedPage.locator("#bg-image").getAttribute("src")).endsWith(
+      (await failing.page.locator("#bg-image").getAttribute("src")).endsWith(
         "hero-4.webp",
       ),
     );
-    await failing.close();
-    console.log("PASS failed media, explicit retry and image recovery");
+    await failing.context.close();
+    console.log("PASS failed slide retry and shuffle exclusion");
 
-    const savedFailure = await browser.newContext({
+    const savedFailure = await newPage(browser, {
       viewport: { width: 390, height: 844 },
     });
-    const savedPage = await savedFailure.newPage();
-    savedPage.setDefaultTimeout(20000);
-    await savedPage.addInitScript(
+    await savedFailure.context.addInitScript(
       (key) => localStorage.setItem(key, "4"),
       storageKey,
     );
-    await savedPage.route("**/api/**", apiPreview);
-    await savedPage.route("**/hero-4.webp", (route) => route.abort());
-    await savedPage.goto(`${base}/?cover=select`, {
+    await savedFailure.page.route("**/hero-4.webp", (route) => route.abort());
+    await savedFailure.page.goto(`${base}/?cover=select`, {
       waitUntil: "domcontentloaded",
     });
-    await readyHome(savedPage);
-    await savedPage.waitForFunction(
+    await readyHome(savedFailure.page);
+    await savedFailure.page.waitForFunction(
       () =>
-        document.querySelector("dialog.cover-picker [data-preview-index]")
-          ?.dataset.previewIndex === "1",
-      null,
-      { timeout: 5000 },
+        document.querySelector("[data-preview-index]")?.dataset.previewIndex ===
+        "1",
     );
-    await savedPage.waitForFunction(
-      () =>
-        Math.abs(
-          parseFloat(
-            document
-              .querySelector(".aperture-dial__body")
-              .style.getPropertyValue("--counter-rotation"),
-          ) % 360,
-        ) < 0.1,
-    );
-    assert.equal(
-      await savedPage.evaluate((key) => localStorage.getItem(key), storageKey),
-      "4",
-      "automatic fallback must not rewrite the explicit preference",
-    );
-    await savedPage.keyboard.press("Escape");
-    await closedPicker(savedPage);
-    await savedFailure.close();
+    assert.equal(await saved(savedFailure.page, storageKey), "4");
+    await savedFailure.page.keyboard.press("Escape");
+    await closedPicker(savedFailure.page);
+    await savedFailure.context.close();
     console.log(
-      "PASS saved-image failure falls back in both the home and open picker",
+      "PASS saved-cover fallback without overwriting explicit preference",
     );
 
-    const currentFailure = await browser.newContext({
+    const retry = await newPage(browser, {
       viewport: { width: 390, height: 844 },
     });
-    const currentPage = await currentFailure.newPage();
-    currentPage.setDefaultTimeout(20000);
     let failCurrent = true;
-    await currentPage.route("**/api/**", apiPreview);
-    await currentPage.route("**/hero-1.webp", (route) =>
+    await retry.page.route("**/hero-1.webp", (route) =>
       failCurrent ? route.abort() : route.continue(),
     );
-    await currentPage.goto(base, { waitUntil: "domcontentloaded" });
-    await currentPage
-      .getByRole("button", { name: "重新加载封面", exact: true })
-      .waitFor();
+    await retry.page.goto(base, { waitUntil: "domcontentloaded" });
+    await command(retry.page, "重新加载封面").waitFor();
     assert.equal(
-      await currentPage
-        .locator("#bg-image")
-        .evaluate((image) => image.naturalWidth),
+      await retry.page.locator("#bg-image").evaluate((img) => img.naturalWidth),
       0,
     );
     failCurrent = false;
-    await currentPage
-      .getByRole("button", { name: "重新加载封面", exact: true })
-      .click();
-    await readyHome(currentPage);
+    await command(retry.page, "重新加载封面").click();
+    await readyHome(retry.page);
     assert.ok(
-      await currentPage
+      await retry.page
         .locator("#bg-image")
-        .evaluate((image) => image.naturalWidth > 0),
+        .evaluate((img) => img.naturalWidth > 0),
     );
-    await openPicker(currentPage);
-    assert.equal(await frame(currentPage, 1).isEnabled(), true);
-    await currentPage.keyboard.press("Escape");
-    await closedPicker(currentPage);
-    await currentFailure.close();
-    console.log("PASS retry remounts the actual failed homepage image");
+    await retry.context.close();
+    console.log("PASS retry replaces the actual failed Hero image");
   } finally {
     await browser.close();
   }

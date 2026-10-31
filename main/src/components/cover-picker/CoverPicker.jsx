@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
-import { LuAperture, LuX } from "react-icons/lu";
-import CoverDial from "./CoverDial";
+import { LuArrowLeft, LuClapperboard, LuX } from "react-icons/lu";
+import CoverScreening from "./CoverScreening";
+import { getRandomCoverIndex, resolveCoverBrightness } from "./coverState.js";
 import "./cover-picker.css";
 
 function CoverPickerSession({
   covers,
   currentIndex,
+  currentBrightness = 100,
   readyIndexes,
   failedIndexes,
   onApply,
@@ -16,10 +18,16 @@ function CoverPickerSession({
 }) {
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
-  const shutterRef = useRef(null);
-  const shutterTimeline = useRef(null);
+  const cleanReturnRef = useRef(null);
+  const editorFocus = useRef(null);
+  const projectionRef = useRef(null);
+  const projectionTimeline = useRef(null);
   const confirming = useRef(false);
   const [busy, setBusy] = useState(false);
+  const [cleanView, setCleanView] = useState(false);
+  const [brightness, setBrightness] = useState(() =>
+    resolveCoverBrightness(currentBrightness),
+  );
   const [previewIndex, setPreviewIndex] = useState(currentIndex);
   const [displayedCover, setDisplayedCover] = useState(
     () =>
@@ -37,6 +45,9 @@ function CoverPickerSession({
       readyIndexes.has(index) &&
       !failedIndexes.has(index),
   );
+  const available = covers
+    .filter(({ index }) => readyIndexes.has(index) && !failedIndexes.has(index))
+    .map(({ index }) => index);
 
   useEffect(() => {
     if (failedIndexes.has(previewIndex) && previewIndex !== currentIndex)
@@ -47,10 +58,12 @@ function CoverPickerSession({
     const dialog = dialogRef.current;
     const opener = document.activeElement;
     const body = document.body;
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
+    const scrollX = window.scrollX,
+      scrollY = window.scrollY;
     const properties = [
       "overflow",
+      "overflow-x",
+      "overflow-y",
       "position",
       "top",
       "left",
@@ -79,9 +92,9 @@ function CoverPickerSession({
       );
     closeRef.current?.focus({ preventScroll: true });
     return () => {
-      shutterTimeline.current?.kill();
+      projectionTimeline.current?.kill();
       confirming.current = false;
-      // Native close events may arrive after StrictMode has reopened the dialog.
+      // Ignore native close events left behind by StrictMode's effect cleanup.
       if (dialog.open) dialog.close();
       savedStyles.forEach(({ property, value, priority }) => {
         if (value) body.style.setProperty(property, value, priority);
@@ -98,50 +111,59 @@ function CoverPickerSession({
     setPreviousCover(displayedCover);
     setDisplayedCover(nextCover);
   }, [nextCover, displayedCover]);
-
   useEffect(() => {
     if (!previousCover) return;
     const timeout = window.setTimeout(() => setPreviousCover(null), 320);
     return () => window.clearTimeout(timeout);
   }, [previousCover, displayedCover]);
 
+  useEffect(() => {
+    if (cleanView) cleanReturnRef.current?.focus({ preventScroll: true });
+    else if (editorFocus.current?.isConnected)
+      editorFocus.current.focus({ preventScroll: true });
+  }, [cleanView]);
+  const enterCleanView = () => {
+    if (confirming.current) return;
+    editorFocus.current = document.activeElement;
+    setCleanView(true);
+  };
+  const returnToEditor = () => setCleanView(false);
   const previewCover = (index) => {
-    if (
-      !confirming.current &&
-      readyIndexes.has(index) &&
-      !failedIndexes.has(index)
-    )
+    if (!confirming.current && available.includes(index))
       setPreviewIndex(index);
+  };
+  const shuffleCover = () => {
+    if (confirming.current) return;
+    const index = getRandomCoverIndex(available, previewIndex);
+    if (index !== null) setPreviewIndex(index);
+  };
+  const changeBrightness = (value) => {
+    if (!confirming.current) setBrightness(resolveCoverBrightness(value));
   };
   const confirmCover = () => {
     const index = previewIndex;
-    if (
-      confirming.current ||
-      !readyIndexes.has(index) ||
-      failedIndexes.has(index)
-    )
-      return;
+    if (confirming.current || !available.includes(index)) return;
     confirming.current = true;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      onApply(index);
+      onApply(index, brightness);
       return;
     }
     setBusy(true);
-    shutterTimeline.current = gsap
+    projectionTimeline.current = gsap
       .timeline({
         onComplete: () => {
-          if (confirming.current) onApply(index);
+          if (confirming.current) onApply(index, brightness);
         },
       })
-      .to(shutterRef.current, {
-        "--iris": "0vmax",
-        duration: 0.22,
-        ease: "power2.in",
+      .to(projectionRef.current, {
+        opacity: 0.2,
+        duration: 0.14,
+        ease: "power2.out",
       })
       .to(
-        shutterRef.current,
-        { "--iris": "150vmax", duration: 0.3, ease: "power2.out" },
-        "+=0.06",
+        projectionRef.current,
+        { opacity: 0, duration: 0.28, ease: "power1.out" },
+        "+=0.08",
       );
   };
 
@@ -150,13 +172,19 @@ function CoverPickerSession({
       ref={dialogRef}
       className="cover-picker"
       aria-labelledby="cover-picker-title"
-      data-phase={busy ? "shutter" : "select"}
+      data-clean={cleanView}
+      data-phase={busy ? "projecting" : "select"}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (cleanView) returnToEditor();
+        else onClose();
       }}
     >
-      <div className="cover-picker__media" aria-hidden="true">
+      <div
+        className="cover-picker__media"
+        aria-hidden="true"
+        style={{ filter: `brightness(${brightness / 100})` }}
+      >
         {previousCover && (
           <img
             className="cover-picker__preview cover-picker__preview--previous"
@@ -176,11 +204,11 @@ function CoverPickerSession({
           />
         )}
       </div>
-      <div className="cover-picker__content">
+      <div className="cover-picker__content" hidden={cleanView}>
         <header className="cover-picker__header">
           <div className="cover-picker__heading">
-            <LuAperture aria-hidden="true" />
-            <h2 id="cover-picker-title">首页封面</h2>
+            <LuClapperboard aria-hidden="true" />
+            <h2 id="cover-picker-title">封面放映室</h2>
             <span>TAOZHIYO</span>
           </div>
           <button
@@ -194,21 +222,39 @@ function CoverPickerSession({
             <LuX aria-hidden="true" />
           </button>
         </header>
-        <CoverDial
+        <CoverScreening
           covers={covers}
           previewIndex={previewIndex}
           currentIndex={currentIndex}
           readyIndexes={readyIndexes}
           failedIndexes={failedIndexes}
           busy={busy}
+          brightness={brightness}
           onPreview={previewCover}
+          onShuffle={shuffleCover}
+          onBrightness={changeBrightness}
+          onResetBrightness={() => changeBrightness(100)}
+          onCleanView={enterCleanView}
           onConfirm={confirmCover}
           onRetry={onRetry}
         />
       </div>
+      {cleanView && (
+        <button
+          ref={cleanReturnRef}
+          type="button"
+          className="cover-picker__return"
+          aria-label="返回封面编辑"
+          title="返回封面编辑"
+          onClick={returnToEditor}
+        >
+          <LuArrowLeft aria-hidden="true" />
+          <span>返回编辑</span>
+        </button>
+      )}
       <div
-        className="cover-picker__shutter"
-        ref={shutterRef}
+        className="cover-picker__projection"
+        ref={projectionRef}
         aria-hidden="true"
       />
     </dialog>
