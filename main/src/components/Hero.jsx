@@ -16,13 +16,9 @@ import {
   writeCoverPreference,
 } from "./cover-picker/coverState";
 import { isHeroImageReady } from "./heroImageState";
-import { cosAsset } from "../lib/cosAsset.js";
+import { getHeroCoverSrc as getImgSrc } from "./heroCoverAssets.js";
 
 gsap.registerPlugin(ScrollTrigger);
-const COS = cosAsset(
-  "AI%E8%87%AA%E5%8A%A8%E5%8C%96%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87/main",
-);
-const getImgSrc = (index) => `${COS}/img/hero-${index}.webp`;
 const covers = COVER_INDEXES.map((index) => ({
   index,
   src: getImgSrc(index),

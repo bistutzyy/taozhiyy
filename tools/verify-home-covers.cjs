@@ -162,6 +162,8 @@ async function newPage(browser, options = {}) {
 }
 
 (async () => {
+  const { getHeroCoverSrc } = await import("../main/src/components/heroCoverAssets.js");
+  const coverFile = (index) => getHeroCoverSrc(index).split("/").at(-1);
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({ channel: "msedge", headless: true });
   try {
@@ -313,7 +315,7 @@ async function newPage(browser, options = {}) {
       await applyLeaf(page, 3, width < 768);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
-          "hero-3.webp",
+          coverFile(3),
         ),
       );
       assert.equal(await filter(page, "#bg-image"), "brightness(1.15)");
@@ -337,7 +339,7 @@ async function newPage(browser, options = {}) {
       await closedPicker(page);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
-          "hero-3.webp",
+          coverFile(3),
         ),
       );
       assert.equal(
