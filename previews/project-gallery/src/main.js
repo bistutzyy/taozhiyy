@@ -24,6 +24,7 @@ let detailProject = null;
 let sectionObserver;
 let readerOverflow = '';
 let catalogueScroll = 0;
+let browseAfterReader = false;
 const dialog = $('#project-dialog');
 let galleryTheme = 'cosmos';
 try { galleryTheme = resolveGalleryTheme(localStorage.getItem(GALLERY_THEME_STORAGE)); } catch { /* Use the default without storage. */ }
@@ -50,9 +51,10 @@ if (import.meta.env.PROD) $('.preview-badge')?.remove();
 $('#scene-view span').textContent = '星空';
 $('.intro .eyebrow').innerHTML = '<span class="accent-rule"></span>AN ATLAS OF IDEAS';
 $('.intro p').textContent = '让作品与灵感，在这里交汇。';
-$('.collection-filters').innerHTML = `<span class="collection-count">PROJECT INDEX / ${String(projects.length).padStart(2,'0')}</span>`;
+const actualProjectCount = projects.filter(project => !project.isGuide).length;
+$('.collection-filters').innerHTML = `<span class="collection-count">PROJECT INDEX / ${String(actualProjectCount).padStart(2,'0')} + GUIDE</span>`;
 $('.collection-filters').removeAttribute('role');
-$('.collection-filters').setAttribute('aria-label', '项目数量');
+$('.collection-filters').setAttribute('aria-label', `${actualProjectCount} 个项目与板块介绍`);
 $('.exhibit-meta > span').textContent = 'EXPLORE THE UNKNOWN';
 $('.exhibit-meta small').textContent = 'PROJECTS / SOURCES';
 $('#reset-camera').title = '星空全景';
@@ -82,6 +84,7 @@ function renderSelection() {
     $('#selected-info').dataset.selection=selected.id;
   }
   $('.exhibit-meta strong').innerHTML = `${number} <i>/</i> ${String(projects.length).padStart(2, '0')}`;
+  $('#open-project span').textContent = selected.isGuide ? '查看介绍' : '查看项目';
   const dock=$('#project-dock');
   const existing=new Map([...dock.children].map(button=>[button.dataset.project,button]));
   const needed=new Set(sceneItems.map(p=>p.id));
@@ -107,11 +110,11 @@ function select(id, focus = true) {
 }
 function renderCatalogue() {
   visible = filterProjects(projects, query);
-  $('#result-count').textContent = `${visible.length} 个项目`;
+  $('#result-count').textContent = `${visible.length} 项内容`;
   $('#empty-state').hidden = visible.length > 0;
   const bucket = projectPage(visible, listPage, 12); listPage = bucket.page;
   updatePager(bucket);
-  $('#project-grid').innerHTML = bucket.items.map(p => `<button class="project-card" data-detail="${e(p.id)}" aria-label="查看${e(p.title)}详情"><img class="card-cover" src="${e(p.cover)}" alt="${e(p.title)}官方页面或演示截图" width="960" height="600" loading="lazy" /><span class="card-copy"><span class="card-meta">${e(p.category)}</span><h2>${e(p.title)}</h2><p>${e(p.summary)}</p><span class="card-bottom"><span>${e(p.author)}</span><i data-lucide="arrow-up-right"></i></span></span></button>`).join('');
+  $('#project-grid').innerHTML = bucket.items.map(p => `<button class="project-card" data-detail="${e(p.id)}" aria-label="查看${e(p.title)}详情"><img class="card-cover" src="${e(p.cover)}" alt="${e(p.title)}${p.isGuide ? '页面实景' : '官方页面或演示截图'}" width="960" height="600" loading="lazy" /><span class="card-copy"><span class="card-meta">${e(p.category)}</span><h2>${e(p.title)}</h2><p>${e(p.summary)}</p><span class="card-bottom"><span>${e(p.author)}</span><i data-lucide="arrow-up-right"></i></span></span></button>`).join('');
   if (visible.length && !visible.some(p => p.id === selected.id)) select(visible[0].id, false);
   scene?.setProjects(visible);
   scene?.focus(selected.id,false);
@@ -136,6 +139,7 @@ function openDetail(id) {
   readerOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
   $('#project-detail').innerHTML = renderProjectDetail(p);
+  $('.reader-toolbar-title > span').textContent = p.isGuide ? '/ ABOUT THIS SPACE' : '/ PROJECT FILE';
   $('#reader-back span').textContent = view === 'list' ? '返回目录' : '返回星空';
   iconize(); dialog.showModal(); dialog.scrollTop = 0;
   $('#reader-back').focus({preventScroll:true}); scene?.setPaused(true);
@@ -169,6 +173,13 @@ dialog.addEventListener('close', () => {
   sectionObserver?.disconnect();
   dialog.querySelector('video')?.pause();
   document.body.style.overflow = readerOverflow;
+  if (browseAfterReader) {
+    browseAfterReader = false;
+    query = ''; listPage = 0; $('#project-search').value = '';
+    renderCatalogue(); setView('list'); $('#catalogue').scrollTop = 0;
+    $('#project-search').focus({preventScroll:true});
+    return;
+  }
   if (view === 'list') $('#catalogue').scrollTop = catalogueScroll;
   scene?.setPaused(view !== 'scene');
   if (opener?.isConnected) opener.focus({preventScroll:true});
@@ -187,6 +198,11 @@ dialog.addEventListener('change', event => {
   if (event.target.id === 'reader-section-select') jumpReaderSection(event.target.value);
 });
 $('#open-project').addEventListener('click', () => openDetail(selected.id));
+dialog.addEventListener('click', event => {
+  if (!event.target.closest('[data-guide-browse]')) return;
+  browseAfterReader = true;
+  dialog.close();
+});
 $('#project-dock').addEventListener('click', event => { const button = event.target.closest('[data-project]'); if (button) select(button.dataset.project); });
 $('#project-grid').addEventListener('click', event => { const button = event.target.closest('[data-detail]'); if (button) openDetail(button.dataset.detail); });
 $('#scene-view').addEventListener('click', () => setView('scene'));
