@@ -42,33 +42,36 @@ func startSyncLoops(db *sql.DB, cfg AppConfig, cacheDir string) {
 	_ = upsertRadarCreators(db, cfg.RadarCreators)
 
 	go func() {
-		runSyncJob("bangumi", func() {
+		runSyncJob("startup", func() {
+			_ = runOwnerVideosSync(db, bili, cacheDir)
 			runBangumiSync(db, bili, cacheDir)
-		})
-		t := time.NewTicker(1 * time.Hour)
-		for range t.C {
-			runSyncJob("bangumi", func() {
-				runBangumiSync(db, bili, cacheDir)
-			})
-		}
-	}()
-
-	go func() {
-		runSyncJob("radar", func() {
 			runRadarSync(db, bili, cfg, cacheDir)
 		})
-		t := time.NewTicker(15 * time.Minute)
-		for range t.C {
-			runSyncJob("radar", func() {
-				runRadarSync(db, bili, cfg, cacheDir)
-			})
+		hourly := time.NewTicker(time.Hour)
+		radar := time.NewTicker(15 * time.Minute)
+		defer hourly.Stop()
+		defer radar.Stop()
+		for {
+			select {
+			case <-hourly.C:
+				runSyncJob("owner videos and bangumi", func() {
+					_ = runOwnerVideosSync(db, bili, cacheDir)
+					runBangumiSync(db, bili, cacheDir)
+				})
+			case <-radar.C:
+				runSyncJob("radar", func() { runRadarSync(db, bili, cfg, cacheDir) })
+			}
 		}
 	}()
 }
 
 func runSyncJob(name string, run func()) {
-	if !tryRunSyncJob(run) {
-		log.Printf("sync: %s skipped; another sync is running", name)
+	if tryRunSyncJob(run) {
+		return
+	}
+	log.Printf("sync: %s waiting for active sync", name)
+	for !tryRunSyncJob(run) {
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 

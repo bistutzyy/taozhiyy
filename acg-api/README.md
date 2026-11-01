@@ -11,7 +11,7 @@ Lightweight API for guestbook (SQLite) and Bilibili tracker placeholders.
   - 黑马程序员 `37974444`
   - 挪威的月亮 `398915225`
 
-Sync: bangumi every **1h**, radar every **15m**, image cache cleanup **7 days**.
+Sync: owner uploads and bangumi every **1h**, radar every **15m**, image cache cleanup **7 days**.
 
 ## Run locally
 
@@ -31,12 +31,30 @@ Trigger manual sync: `POST /api/v1/sync/trigger`
 - `POST /api/v1/guestbook` — JSON `{ "name": "...", "content": "..." }`
 - `GET /api/v1/bangumi/list`
 - `GET /api/v1/radar/feed`
+- `GET /api/v1/bili/videos` - cached public uploads for the configured Bilibili UID
 - `GET /api/chat` — quota status (blog AI assistant)
 - `POST /api/chat` — `{ "message": "...", "pageUrl", "pageTitle" }` → DeepSeek-v4-flash (see `blog/AI-ASSISTANT.md`)
 - `POST /api/auth/register` — 邮箱注册（站长邮箱不可注册）
 - `POST /api/auth/login` — 登录；站长邮箱需再调 `verify-security`
 - `POST /api/auth/verify-security` — `{ "challengeToken", "answer" }` 学号验证 → 无限 AI
 - `POST /api/auth/logout` / `GET /api/auth/me`
+
+### Owner Video Cache
+
+`/api/v1/bili/videos` is read-only and accepts no UID or refresh query parameters.
+It returns `owner`, `items`, `ready`, and `syncedAt`. Before the first successful
+sync, `ready` is false; a successfully empty public list has `ready: true` and
+`items: []`. Startup, the hourly loop, and the existing authorized manual sync
+update an owner-scoped SQLite snapshot atomically. Failed, partial or rejected
+upstream requests retain the last successful snapshot. No Bilibili password or
+Cookie is used.
+
+Owner covers use the existing image endpoint and a shared cleanup/sync lock.
+The cache is limited to 256 MiB / 1024 owner files, including old versions;
+each image is limited to 8 MiB, 8192 pixels per side, and 16 Mi pixels in total.
+JPEG, PNG and bounded GIF images are fully decoded before caching; unsupported
+formats such as WebP remain remote. Invalid images or exhausted cache budgets
+keep a previous good cover when available, otherwise a validated CDN URL.
 
 ### 站长控制器（`/api/owner/`）
 
