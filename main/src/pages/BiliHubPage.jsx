@@ -1,4 +1,5 @@
 import AcgNavigation from "../components/AcgNavigation";
+import MyBiliVideos from "../components/MyBiliVideos";
 import "./bili-mobile.css";
 
 const BiliHubPage = () => (
@@ -29,6 +30,7 @@ const BiliHubPage = () => (
     </div>
 
     <div className="autumn-recipes-shell">
+      <MyBiliVideos />
       <AcgNavigation />
     </div>
   </div>
