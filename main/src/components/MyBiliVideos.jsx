@@ -4,11 +4,13 @@ import {
   LuArrowUpRight,
   LuCalendarDays,
   LuClock3,
+  LuChevronDown,
   LuPlay,
   LuVideo,
   LuX,
 } from "react-icons/lu";
 import { biliOwner, ownerVideos } from "../data/biliOwnerVideos.js";
+import { getBiliOwnerFeed } from "../services/biliOwnerApi.js";
 import {
   formatVideoDate,
   getBiliEmbedSrc,
@@ -98,7 +100,8 @@ function BiliVideoPlayer({ video, onClose }) {
 }
 
 function VideoCard({ video, onPlay }) {
-  const [coverFailed, setCoverFailed] = useState(false);
+  const [failedCover, setFailedCover] = useState(null);
+  const coverFailed = failedCover === video.cover;
   return (
     <article className="owner-video-card" data-video-bvid={video.bvid}>
       <button
@@ -108,17 +111,17 @@ function VideoCard({ video, onPlay }) {
         aria-label={`播放：${video.title}`}
         title={`播放：${video.title}`}
       >
-        {!coverFailed && (
+        {video.cover && !coverFailed && (
           <img
             src={video.cover}
             alt=""
             loading="lazy"
             decoding="async"
             referrerPolicy="no-referrer"
-            onError={() => setCoverFailed(true)}
+            onError={() => setFailedCover(video.cover)}
           />
         )}
-        {coverFailed && (
+        {(!video.cover || coverFailed) && (
           <LuVideo className="owner-video-card__fallback" aria-hidden="true" />
         )}
         <span className="owner-video-card__play" aria-hidden="true">
@@ -150,9 +153,60 @@ function VideoCard({ video, onPlay }) {
   );
 }
 
-export default function MyBiliVideos({ videos = ownerVideos }) {
+export default function MyBiliVideos({ videos }) {
   const [playingVideo, setPlayingVideo] = useState(null);
-  const publicVideos = videos.filter((video) => getBiliVideoHref(video.bvid));
+  const [feed, setFeed] = useState({ owner: biliOwner, items: ownerVideos });
+  const [syncState, setSyncState] = useState("loading");
+  const [visibleCount, setVisibleCount] = useState(6);
+  const gridRef = useRef(null);
+  const sourceVideos = videos === undefined ? feed.items : videos;
+  const owner = videos === undefined ? feed.owner : biliOwner;
+  const publicVideos = (Array.isArray(sourceVideos) ? sourceVideos : []).filter(
+    (video) => video && getBiliVideoHref(video.bvid),
+  );
+
+  useEffect(() => {
+    if (videos !== undefined) return;
+    const controller = new AbortController();
+    let active = true;
+    getBiliOwnerFeed({ signal: controller.signal })
+      .then((result) => {
+        if (!active) return;
+        if (result.ready) {
+          setFeed(result);
+          setSyncState("ready");
+        } else setSyncState("pending");
+      })
+      .catch((error) => {
+        if (active && error.name !== "AbortError") setSyncState("fallback");
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [videos]);
+
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [sourceVideos]);
+  useEffect(() => {
+    if (
+      playingVideo &&
+      !sourceVideos?.some((video) => video?.bvid === playingVideo.bvid)
+    )
+      setPlayingVideo(null);
+  }, [playingVideo, sourceVideos]);
+
+  const loadMore = () => {
+    const nextCard = visibleCount;
+    setVisibleCount((count) => count + 6);
+    requestAnimationFrame(() => {
+      const buttons = gridRef.current?.querySelectorAll(
+        ".owner-video-card__cover",
+      );
+      buttons?.[nextCard]?.focus({ preventScroll: true });
+    });
+  };
   return (
     <section className="owner-videos" aria-labelledby="owner-videos-title">
       <header className="owner-videos__heading">
@@ -166,22 +220,36 @@ export default function MyBiliVideos({ videos = ownerVideos }) {
         </div>
         <a
           className="owner-videos__profile"
-          href={biliOwner.profileUrl}
+          href={owner.profileUrl}
           target="_blank"
           rel="noopener noreferrer"
         >
-          {biliOwner.name}
+          {owner.name}
           <LuArrowUpRight aria-hidden="true" />
         </a>
       </header>
+      {videos === undefined && ["pending", "fallback"].includes(syncState) && (
+        <p className="owner-videos__sync-status" role="status">
+          {syncState === "pending" ? "等待首次同步" : "暂用已收录视频"}
+        </p>
+      )}
       <div
+        ref={gridRef}
         className="owner-videos__grid"
         data-layout={getVideoGridVariant(publicVideos.length)}
       >
-        {publicVideos.map((video) => (
+        {publicVideos.slice(0, visibleCount).map((video) => (
           <VideoCard key={video.bvid} video={video} onPlay={setPlayingVideo} />
         ))}
       </div>
+      {visibleCount < publicVideos.length && (
+        <div className="owner-videos__more">
+          <button type="button" onClick={loadMore} aria-label="加载更多视频">
+            <LuChevronDown aria-hidden="true" />
+            加载更多 <span>{publicVideos.length - visibleCount}</span>
+          </button>
+        </div>
+      )}
       {!publicVideos.length && (
         <p className="owner-videos__empty">还没有公开的视频</p>
       )}

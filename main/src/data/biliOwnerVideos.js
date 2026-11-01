@@ -4,7 +4,7 @@ export const biliOwner = {
   profileUrl: "https://space.bilibili.com/1061280173/",
 };
 
-// Public metadata snapshot for the local layout preview, not a live sync feed.
+// Known public metadata used only when the cached API is not yet available.
 export const ownerVideos = [
   {
     bvid: "BV1jK7W6MEAj",

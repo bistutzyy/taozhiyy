@@ -44,7 +44,11 @@ test("owner video cards render real content and never preload an iframe", async 
         createElement(MyBiliVideos, { videos }),
       );
       assert.match(html, new RegExp(`data-layout="${layout}"`));
-      assert.equal((html.match(/data-video-bvid=/g) || []).length, count);
+      assert.equal(
+        (html.match(/data-video-bvid=/g) || []).length,
+        Math.min(count, 6),
+      );
+      if (count > 6) assert.match(html, /加载更多视频/);
       assert.doesNotMatch(html, /<iframe/);
     }
     const unsafe = renderToStaticMarkup(

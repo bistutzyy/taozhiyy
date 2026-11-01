@@ -99,7 +99,11 @@ const shot = (page, name) => page.screenshot({ path: path.join(out, `${name}.png
             videos: Array.from({ length: count }, (_, index) => ({ ...ownerVideos[0], bvid: `BV1jK7W6MEA${index}`, title: index === 1 ? "LongUnbrokenVideoTitle".repeat(5) : ownerVideos[0].title })),
           }));
         }, count);
-        await page.waitForFunction(count => document.querySelectorAll("body > .bili-hub-page .owner-video-card").length === count, count);
+        await page.waitForFunction(count => document.querySelectorAll("body > .bili-hub-page .owner-video-card").length === Math.min(count, 6), count);
+        if (count > 6) {
+          await page.getByRole("button", { name: "加载更多视频", exact: true }).click();
+          assert.equal(await page.locator("body > .bili-hub-page .owner-video-card").count(), count);
+        }
         const grid = page.locator("body > .bili-hub-page .owner-videos__grid");
         const columns = await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(" ").length);
         assert.equal(columns, count === 2 || width < 768 ? 2 : 3);

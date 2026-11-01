@@ -193,6 +193,40 @@
   font-size: 14px;
   text-align: center;
 }
+.owner-videos__sync-status {
+  margin: -12px 0 16px;
+  font-size: 11px;
+  color: #827269;
+}
+.owner-videos__more {
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+}
+.owner-videos__more button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--autumn-line, #dcc9ac);
+  border-radius: 6px;
+  background: #fffcf4a8;
+  color: var(--autumn-pumpkin-dark, #924c2a);
+  font-size: 12px;
+  cursor: pointer;
+}
+.owner-videos__more button:hover {
+  background: #f7e8d4;
+}
+.owner-videos__more svg {
+  width: 16px;
+  height: 16px;
+}
+.owner-videos__more span {
+  color: #827269;
+  font-variant-numeric: tabular-nums;
+}
 .owner-videos a:focus-visible,
 .owner-videos button:focus-visible,
 .bili-video-player :where(a, button):focus-visible {
