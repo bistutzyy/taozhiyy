@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -27,6 +29,21 @@ var (
 	ownerVideoDurationRE = regexp.MustCompile(`^(?:[0-9]{1,4}:[0-5][0-9]|[0-9]{1,4}:[0-5][0-9]:[0-5][0-9])$`)
 	ownerVideoCDNRE      = regexp.MustCompile(`^i[0-9]+\.hdslb\.com$`)
 )
+
+type ownerVideoSyncError struct {
+	reason string
+	code   *int
+	cause  error
+}
+
+func (e *ownerVideoSyncError) Error() string {
+	if e.code != nil {
+		return fmt.Sprintf("owner video sync %s (code=%d)", e.reason, *e.code)
+	}
+	return "owner video sync " + e.reason
+}
+
+func (e *ownerVideoSyncError) Unwrap() error { return e.cause }
 
 func validOwnerVideoUID(uid string) bool {
 	if !ownerVideoUIDRE.MatchString(uid) {
@@ -118,15 +135,20 @@ func (c *BiliClient) fetchOwnerVideoPage(ctx context.Context, page int) (ownerAr
 	req.Header.Set("Referer", "https://space.bilibili.com/"+c.cfg.BilibiliUID+"/")
 	res, err := ownerVideoHTTPClient(c.http).Do(req)
 	if err != nil {
-		return payload, err
+		return payload, &ownerVideoSyncError{reason: "network_error", cause: err}
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return payload, fmt.Errorf("owner archive HTTP %d", res.StatusCode)
+		return payload, &ownerVideoSyncError{reason: "upstream_rejected", code: &res.StatusCode}
 	}
 	body, err := readOwnerVideoBody(res.Body, ownerVideoMaxBody)
 	if err != nil {
-		return payload, err
+		reason := "invalid_response"
+		var networkErr net.Error
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) || errors.As(err, &networkErr) {
+			reason = "network_error"
+		}
+		return payload, &ownerVideoSyncError{reason: reason, cause: err}
 	}
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return payload, fmt.Errorf("owner archive JSON: %w", err)
@@ -135,7 +157,7 @@ func (c *BiliClient) fetchOwnerVideoPage(ctx context.Context, page int) (ownerAr
 		return payload, fmt.Errorf("owner archive missing API code")
 	}
 	if *payload.Code != 0 {
-		return payload, fmt.Errorf("owner archive API rejected request (code=%d)", *payload.Code)
+		return payload, &ownerVideoSyncError{reason: "upstream_rejected", code: payload.Code}
 	}
 	if payload.Data == nil || payload.Data.Page == nil || payload.Data.Page.Count == nil ||
 		payload.Data.List == nil || payload.Data.List.VList == nil {

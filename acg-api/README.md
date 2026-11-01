@@ -49,6 +49,30 @@ update an owner-scoped SQLite snapshot atomically. Failed, partial or rejected
 upstream requests retain the last successful snapshot. No Bilibili password or
 Cookie is used.
 
+The response also includes optional additive diagnostics:
+
+```json
+{"sync":{"state":"error","attemptedAt":"2026-11-01T00:00:00Z","reason":"upstream_rejected","upstreamCode":-412}}
+```
+
+`sync.state` is `pending`, `syncing`, `ok`, or `error`. `attemptedAt` is the
+latest attempt's UTC ISO timestamp (start time), or an empty string before any
+attempt. `reason` is empty unless an error occurred, then one of
+`upstream_rejected`, `network_error`, `invalid_response`, or `cache_error`.
+`upstreamCode` is present only for rejections: an HTTP status or nonzero Bilibili
+API code. No upstream messages, URLs, headers, credentials or internal paths
+are included in diagnostics. Success clears the previous reason and code.
+
+Attempts persist separately from successful snapshots, scoped by owner UID,
+including failures before the first successful sync. `ready` and `syncedAt`
+still describe only the last successful snapshot; cover-download fallbacks do
+not fail an otherwise successful sync. A legacy snapshot without an attempt
+record reports `ok` with its `syncedAt` as `attemptedAt`. Diagnostic read errors
+report `error` / `cache_error` with an empty timestamp while keeping feed data.
+Diagnostic write errors never prevent successful snapshot publication. A crash
+or failed final diagnostic write can leave `syncing` until the next attempt.
+Reading this endpoint never starts a sync or writes diagnostic records.
+
 Owner covers use the existing image endpoint and a shared cleanup/sync lock.
 The cache is limited to 256 MiB / 1024 owner files, including old versions;
 each image is limited to 8 MiB, 8192 pixels per side, and 16 Mi pixels in total.
