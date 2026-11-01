@@ -28,7 +28,11 @@ const heroImagePriority = { fetchpriority: "high" };
 const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(() => {
     try {
-      return getInitialCoverIndex(window.sessionStorage);
+      return getInitialCoverIndex(
+        window.sessionStorage,
+        undefined,
+        window.performance?.getEntriesByType("navigation")[0]?.type,
+      );
     } catch {
       return 1;
     }

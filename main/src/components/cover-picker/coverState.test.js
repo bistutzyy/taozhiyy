@@ -107,8 +107,16 @@ test("a fresh session starts at cover one without mutating storage during initia
   assert.equal(data.size, 0);
   markHomeCoverVisited(storage);
   assert.equal(data.get(HOME_COVER_VISIT_KEY), "1");
+  assert.equal(
+    getInitialCoverIndex(storage, 0.99, "navigate"),
+    1,
+    "a new tab with copied storage still starts at cover one",
+  );
+  assert.equal(getInitialCoverIndex(storage, 0.99, "back_forward"), 1);
   assert.deepEqual(
-    [0, 0.25, 0.5, 0.75].map((sample) => getInitialCoverIndex(storage, sample)),
+    [0, 0.25, 0.5, 0.75].map((sample) =>
+      getInitialCoverIndex(storage, sample, "reload"),
+    ),
     [1, 2, 3, 4],
   );
   data.set(HOME_COVER_VISIT_KEY, "invalid");
@@ -217,7 +225,8 @@ test("Hero keeps both image layers without a hidden brightness filter", () => {
 
 test("Hero reads the first-visit rule and marks a visit after mounting", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
-  assert.match(hero, /getInitialCoverIndex\(window\.sessionStorage\)/);
+  assert.match(hero, /getInitialCoverIndex\(\s*window\.sessionStorage,/);
+  assert.match(hero, /getEntriesByType\("navigation"\)/);
   assert.match(
     hero,
     /useEffect\(\(\) => \{\s*try \{\s*markHomeCoverVisited\(window\.sessionStorage\)/,

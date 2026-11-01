@@ -37,14 +37,14 @@ const command = (page, name) => page.getByRole("button", { name, exact: true });
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
-      await page.route("**/api/**", (route) =>
+      await context.route("**/api/**", (route) =>
         route.fulfill({
           status: 503,
           contentType: "application/json",
           body: "{}",
         }),
       );
-      await page.route("**/hero-*.webp", (route) =>
+      await context.route("**/hero-*.webp", (route) =>
         route.fulfill({ contentType: "image/webp", body: fixture }),
       );
       await page.goto(base, { waitUntil: "domcontentloaded" });
@@ -98,14 +98,12 @@ const command = (page, name) => page.getByRole("button", { name, exact: true });
       assert.equal(await page.getByRole("slider").count(), 0);
       assert.equal(await page.locator(".fan-brightness").count(), 0);
       if (width < 768) {
-        const geometry = await page
-          .locator(".fan-leaf")
-          .evaluateAll((leaves) =>
-            leaves.map((el) => ({
-              rect: el.getBoundingClientRect().toJSON(),
-              transform: getComputedStyle(el).transform,
-            })),
-          );
+        const geometry = await page.locator(".fan-leaf").evaluateAll((leaves) =>
+          leaves.map((el) => ({
+            rect: el.getBoundingClientRect().toJSON(),
+            transform: getComputedStyle(el).transform,
+          })),
+        );
         assert.ok(Math.abs(geometry[0].rect.y - geometry[1].rect.y) < 1);
         assert.ok(geometry[2].rect.y > geometry[0].rect.y);
         for (const { rect, transform } of geometry) {
@@ -157,6 +155,26 @@ const command = (page, name) => page.getByRole("button", { name, exact: true });
         getHeroCoverSrc(expected),
       );
       if (width >= 768) {
+        const popupReady = page.waitForEvent("popup");
+        await page.evaluate(() => window.open("/", "_blank"));
+        const popup = await popupReady;
+        await popup.waitForFunction(
+          () => document.getElementById("bg-image")?.naturalWidth > 0,
+        );
+        assert.equal(
+          await popup.locator("#bg-image").getAttribute("src"),
+          getHeroCoverSrc(1),
+          "an opener's copied session marker must not randomize a new tab",
+        );
+        await popup.reload({ waitUntil: "domcontentloaded" });
+        await popup.waitForFunction(
+          () => document.getElementById("bg-image")?.naturalWidth > 0,
+        );
+        assert.equal(
+          await popup.locator("#bg-image").getAttribute("src"),
+          getHeroCoverSrc(expected),
+        );
+        await popup.close();
         for (const from of ["/", "/bili"]) {
           if (from !== "/")
             await page.goto(`${base}${from}`, {

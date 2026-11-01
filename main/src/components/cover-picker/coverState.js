@@ -52,9 +52,16 @@ export function writeCoverPreference(storage, index) {
   }
 }
 
-export function getInitialCoverIndex(storage, random = Math.random()) {
+export function getInitialCoverIndex(
+  storage,
+  random = Math.random(),
+  navigationType = "navigate",
+) {
   try {
-    if (storage?.getItem(HOME_COVER_VISIT_KEY) === "1")
+    if (
+      navigationType === "reload" &&
+      storage?.getItem(HOME_COVER_VISIT_KEY) === "1"
+    )
       return getRandomCoverIndex(COVER_INDEXES, null, random) ?? 1;
   } catch {
     /* A blocked session store keeps the first cover as a safe default. */
