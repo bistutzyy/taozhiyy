@@ -51,10 +51,10 @@ func main() {
 
 	go func() {
 		t := time.NewTicker(24 * time.Hour)
-		cleanupCache(cacheDir, 7*24*time.Hour)
+		cleanupACGCache(db, cacheDir, 7*24*time.Hour)
 		pruneChatHourlyStats(db)
 		for range t.C {
-			cleanupCache(cacheDir, 7*24*time.Hour)
+			cleanupACGCache(db, cacheDir, 7*24*time.Hour)
 			pruneChatHourlyStats(db)
 		}
 	}()
@@ -64,6 +64,7 @@ func main() {
 	mux.HandleFunc("/api/v1/guestbook", guestbookHandler)
 	mux.HandleFunc("/api/v1/bangumi/list", bangumiListHandler)
 	mux.HandleFunc("/api/v1/radar/feed", radarFeedHandler)
+	mux.HandleFunc("/api/v1/bili/videos", biliOwnerVideosHandler(cfg))
 	mux.HandleFunc("/api/v1/wallpapers/draw", wallpaperDrawHandler)
 	mux.HandleFunc("/api/v1/acg/image/", imageHandler)
 	mux.HandleFunc("/api/v1/health", func(w http.ResponseWriter, _ *http.Request) {
@@ -89,6 +90,7 @@ var syncRunning atomic.Bool
 var syncTriggerQueue = func(cfg AppConfig) bool {
 	bili := NewBiliClient(cfg)
 	return tryStartSyncJob(func() {
+		_ = runOwnerVideosSync(db, bili, cacheDir)
 		runBangumiSync(db, bili, cacheDir)
 		runRadarSync(db, bili, cfg, cacheDir)
 	})

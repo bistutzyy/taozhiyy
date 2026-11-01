@@ -217,7 +217,7 @@ func migrateAll(db *sql.DB) error {
 	if err := ensureColumn(db, "ai_fixed_answers", "normalized_question", "TEXT NOT NULL DEFAULT ''"); err != nil {
 		return err
 	}
-	return nil
+	return migrateOwnerVideos(db)
 }
 
 func ensureColumn(db *sql.DB, table, column, colDef string) error {
