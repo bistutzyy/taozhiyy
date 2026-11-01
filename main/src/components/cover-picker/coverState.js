@@ -1,5 +1,5 @@
 export const COVER_STORAGE_KEY = "taozhiyy.home-cover.v1";
-export const COVER_BRIGHTNESS_KEY = "taozhiyy.home-cover-brightness.v1";
+export const HOME_COVER_VISIT_KEY = "taozhiyy.home-cover-visited.v1";
 export const COVER_INDEXES = [1, 2, 3, 4];
 
 export function updateCoverPreviewTrigger(
@@ -52,32 +52,21 @@ export function writeCoverPreference(storage, index) {
   }
 }
 
-export function resolveCoverBrightness(value) {
-  const brightness =
-    typeof value === "string" && /^[1-9]\d*$/.test(value)
-      ? Number(value)
-      : value;
-  return Number.isInteger(brightness) && brightness >= 70 && brightness <= 115
-    ? brightness
-    : 100;
-}
-
-export function readCoverBrightness(storage) {
+export function getInitialCoverIndex(storage, random = Math.random()) {
   try {
-    return resolveCoverBrightness(storage?.getItem(COVER_BRIGHTNESS_KEY));
+    if (storage?.getItem(HOME_COVER_VISIT_KEY) === "1")
+      return getRandomCoverIndex(COVER_INDEXES, null, random) ?? 1;
   } catch {
-    return 100;
+    /* A blocked session store keeps the first cover as a safe default. */
   }
+  return 1;
 }
 
-export function writeCoverBrightness(storage, value) {
+export function markHomeCoverVisited(storage) {
   try {
-    storage?.setItem(
-      COVER_BRIGHTNESS_KEY,
-      String(resolveCoverBrightness(value)),
-    );
+    storage?.setItem(HOME_COVER_VISIT_KEY, "1");
   } catch {
-    /* Brightness remains available when storage is blocked. */
+    /* Cover switching remains available when storage is blocked. */
   }
 }
 

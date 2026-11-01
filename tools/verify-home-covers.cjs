@@ -4,7 +4,6 @@ const path = require("node:path");
 const { chromium } = require("playwright");
 const base = process.argv[2] || "http://127.0.0.1:5202";
 const storageKey = "taozhiyy.home-cover.v1";
-const brightnessKey = "taozhiyy.home-cover-brightness.v1";
 const out = path.resolve(
   __dirname,
   "../previews/project-gallery/.qa/home-covers",
@@ -22,8 +21,6 @@ const previewIndex = (page) =>
   page
     .locator("dialog.cover-picker [data-preview-index]")
     .getAttribute("data-preview-index");
-const brightness = (page) =>
-  page.getByRole("slider", { name: "亮度", exact: true });
 const filter = (page, selector) =>
   page.locator(selector).evaluate((el) => getComputedStyle(el).filter);
 const saved = (page, key) =>
@@ -89,10 +86,6 @@ async function applyLeaf(page, index, touch = false) {
     1,
     "the completed reveal hands off without a flash",
   );
-}
-async function setRangeEnd(page, key) {
-  await brightness(page).focus();
-  await page.keyboard.press(key);
 }
 async function checkFit(page, width, height) {
   const result = await page
@@ -205,16 +198,16 @@ async function newPage(browser, options = {}) {
         original,
       );
       assert.equal(await saved(page, storageKey), null);
-      await setRangeEnd(page, "Home");
-      assert.equal(await brightness(page).inputValue(), "70");
+      assert.equal(await page.getByRole("slider").count(), 0);
+      assert.equal(await command(page, "重置亮度").count(), 0);
+      assert.equal(await page.locator(".fan-controls button").count(), 3);
       assert.equal(
         await filter(page, ".cover-picker__media"),
-        "brightness(0.7)",
+        "none",
       );
-      assert.equal(await filter(page, "#bg-image"), "brightness(1)");
-      assert.equal(await saved(page, brightnessKey), null);
-      await command(page, "重置亮度").click();
-      assert.equal(await brightness(page).inputValue(), "100");
+      const controls = await page.locator(".fan-controls").boundingBox();
+      assert.ok(Math.abs(controls.x + controls.width / 2 - width / 2) < 1);
+      assert.ok(controls.width < 280 && controls.height <= 60, "controls stay compact");
       await page.waitForFunction(() =>
         [...document.querySelectorAll("dialog.cover-picker img")].every(
           (img) => img.complete && img.naturalWidth > 0,
@@ -274,7 +267,6 @@ async function newPage(browser, options = {}) {
         await page.locator("#bg-image").getAttribute("src"),
         original,
       );
-      assert.equal(await filter(page, "#bg-image"), "brightness(1)");
       assert.equal(
         await page.evaluate(() =>
           document.activeElement.getAttribute("aria-label"),
@@ -284,7 +276,6 @@ async function newPage(browser, options = {}) {
       if (width === 1440) {
         await openPicker(page);
         await choose(page, 4);
-        await setRangeEnd(page, "Home");
         await command(page, "使用此封面").click();
         assert.equal(
           await page.locator("dialog.cover-picker").getAttribute("data-phase"),
@@ -315,34 +306,28 @@ async function newPage(browser, options = {}) {
           original,
         );
         assert.equal(await saved(page, storageKey), null);
-        assert.equal(await saved(page, brightnessKey), null);
       }
       await openPicker(page);
       await choose(page, 3);
-      await setRangeEnd(page, "End");
       await applyLeaf(page, 3, width < 768);
       assert.ok(
         (await page.locator("#bg-image").getAttribute("src")).endsWith(
           coverFile(3),
         ),
       );
-      assert.equal(await filter(page, "#bg-image"), "brightness(1.15)");
       assert.equal(await saved(page, storageKey), "3");
-      assert.equal(await saved(page, brightnessKey), "115");
       await page.locator("#previous-image").waitFor({ state: "detached" });
       await shot(page, `applied-${width}`);
       await page.reload({ waitUntil: "domcontentloaded" });
       await readyHome(page);
       assert.ok((await page.locator("#bg-image").getAttribute("src")).endsWith(coverFile(1)), "reload must randomize instead of restoring applied cover 3");
-      assert.equal(await filter(page, "#bg-image"), "brightness(1.15)");
       assert.equal(
         await filter(page, ".hero-wordmark"),
         "none",
         "text must not be dimmed",
       );
       await openPicker(page);
-      assert.equal(await brightness(page).inputValue(), "115");
-      await setRangeEnd(page, "Home");
+      assert.equal(await page.getByRole("slider").count(), 0);
       await frame(page, 3).focus();
       await page.keyboard.press("Enter");
       await closedPicker(page);
@@ -351,26 +336,15 @@ async function newPage(browser, options = {}) {
           coverFile(3),
         ),
       );
-      assert.equal(
-        await filter(page, "#bg-image"),
-        "brightness(0.7)",
-        "same-index brightness applies",
-      );
       if (width === 1440) {
         await openPicker(page);
         await choose(page, 3);
-        await setRangeEnd(page, "End");
         await frame(page, 4).evaluate((button) => button.click());
         await closedPicker(page);
         assert.ok(
           (await page.locator("#bg-image").getAttribute("src")).endsWith(
             "hero-4.webp",
           ),
-        );
-        assert.equal(
-          await filter(page, "#bg-image"),
-          "brightness(1.15)",
-          "subsequent GSAP transitions preserve new brightness",
         );
       }
       await page.evaluate(() => scrollTo(0, 300));
@@ -385,7 +359,7 @@ async function newPage(browser, options = {}) {
       assert.ok(Math.abs((await page.evaluate(() => scrollY)) - scroll) < 2);
       assert.deepEqual(errors, []);
       console.log(
-        `PASS ${width}x${height}: responsive cover layout, preview, selection, brightness, clean view, cancellation, random entry and keyboard`,
+        `PASS ${width}x${height}: responsive cover layout, compact controls without a slider, preview, selection, clean view, cancellation, random entry and keyboard`,
       );
       await context.close();
     }
@@ -408,15 +382,14 @@ async function newPage(browser, options = {}) {
       () => !document.querySelector('[data-cover-index="2"]').disabled,
     );
     await choose(reduced.page, 2);
-    await setRangeEnd(reduced.page, "Home");
+    assert.equal(await reduced.page.getByRole("slider").count(), 0);
     await command(reduced.page, "使用此封面").click();
     await closedPicker(reduced.page);
-    assert.equal(await filter(reduced.page, "#bg-image"), "brightness(0.7)");
     await reduced.page.waitForTimeout(100);
     assert.equal(await reduced.page.locator("#previous-image").count(), 0);
     assert.deepEqual(reduced.errors, []);
     await reduced.context.close();
-    console.log("PASS reduced motion and blocked storage with brightness");
+    console.log("PASS reduced motion and blocked storage without a slider");
 
     const slow = await newPage(browser, {
       viewport: { width: 390, height: 844 },

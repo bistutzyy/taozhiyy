@@ -52,7 +52,7 @@ test("screening scene remains a labelled native modal portalled outside Hero", (
   );
 });
 
-test("each opening makes an independent image and brightness draft", () => {
+test("each opening makes an independent image draft without brightness state", () => {
   const ui = source();
   assert.match(
     ui,
@@ -62,10 +62,7 @@ test("each opening makes an independent image and brightness draft", () => {
     ui,
     /\[previewIndex, setPreviewIndex\] = useState\(currentIndex\)/,
   );
-  assert.match(
-    ui,
-    /useState\(\(\) =>\s*resolveCoverBrightness\(currentBrightness\)/,
-  );
+  assert.doesNotMatch(ui + room(), /brightness|LuSun|LuRotateCcw/i);
   assert.doesNotMatch(
     ui + room(),
     /localStorage|sessionStorage|writeCoverPreference|fetch\(/,
@@ -114,18 +111,27 @@ test("fan leaves preview on fine hover or focus and explicitly select on click",
   assert.match(ui, /\{ready && \(?\s*<img[\s\S]*?src=\{src\}/);
 });
 
-test("the room has actionable random, brightness, reset and clean-view commands", () => {
+test("the room has only random, clean-view and apply commands without a slider", () => {
   const ui = room();
-  for (const text of ["随机一景", "亮度", "重置亮度", "纯净观赏", "使用此封面"])
+  for (const text of ["随机一景", "纯净观赏", "使用此封面"])
     assert.ok(ui.includes(text));
-  assert.match(ui, /type="range"/);
-  assert.match(ui, /min=\{70\}/);
-  assert.match(ui, /max=\{115\}/);
+  assert.doesNotMatch(ui, /<input\b|<output\b|type="range"|亮度/);
   assert.match(ui, /onShuffle/);
-  assert.match(ui, /onBrightness/);
-  assert.match(ui, /onResetBrightness/);
   assert.match(ui, /onCleanView/);
+  assert.match(ui, /onClick=\{onConfirm\}/);
+  assert.match(ui, /disabled=\{busy \|\| !readyPreview\}/);
   assert.match(ui, /from "react-icons\/lu"/);
+});
+
+test("remaining controls form a compact centered row without brightness styles", () => {
+  const css = read("./fan-screen.css");
+  const controls = css.match(/\.fan-controls\s*\{([^}]+)\}/)?.[1] ?? "";
+  assert.match(controls, /display:\s*flex/);
+  assert.match(controls, /justify-content:\s*center/);
+  assert.match(controls, /justify-self:\s*center/);
+  assert.match(controls, /width:\s*fit-content/);
+  assert.match(controls, /max-width:\s*100%/);
+  assert.doesNotMatch(css + read("./cover-mobile.css"), /brightness|__reset/i);
 });
 
 test("random selection stays in the preview and obeys image readiness", () => {
@@ -143,8 +149,11 @@ test("selected leaf expands to full-screen with cancellable captured-index Flip"
   const ui = source();
   assert.match(ui, /gsap\s*\.timeline\(/);
   assert.match(ui, /prefers-reduced-motion/);
-  assert.match(ui, /onApply\(index, brightness,/);
-  assert.match(ui, /skipTransition:\s*true/);
+  assert.match(ui, /onApply\(index,\s*\{ skipTransition:\s*true \}\)/);
+  assert.match(
+    ui,
+    /latestApply\.current\(index,\s*\{ skipTransition:\s*true \}\)/,
+  );
   assert.match(ui, /projectionTimeline\.current\?\.kill\(\)/);
   assert.match(ui, /Flip\.fit\(/);
   assert.match(ui, /getVars:\s*true/);

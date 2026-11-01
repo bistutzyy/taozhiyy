@@ -13,6 +13,11 @@ export const categories: { id: ArchiveCategory | 'all'; label: Copy }[] = [
 ];
 
 const notes: Record<string, EntryNotes> = {
+  'site-growth-20-home-covers-bili-videos': {
+    category: 'feature', title: ['四景预览与个人投稿，都有了新位置', 'Four previews and a place for personal videos'],
+    tags: ['Cover', 'Mobile', 'Bilibili'],
+    note: ['首页加入不规则 2x2 预览和手机四选一，移除亮度入口，控制台右下角改为切换封面。新标签页首访显示 wallpaper1，刷新随机；个人投稿放在追番上方，点击才加载播放器。生产自动同步仍待就绪，当前展示已收录视频。', 'Home adds irregular 2x2 previews and a mobile four-choice picker, removes brightness controls, and puts Switch Cover at the bottom-right of the console. A new tab starts with wallpaper1; refreshes choose randomly. Personal videos sit above the anime tracker with an on-demand player; production sync is pending and known videos remain the fallback.'],
+  },
   'site-growth-19-folding-fan-covers': {
     category: 'design', title: ['把四幅封面，展开成一面折扇', 'Four covers unfold into a fan'],
     tags: ['Cover', 'Motion', 'Folding Fan'],

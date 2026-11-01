@@ -7,7 +7,6 @@ import CoverFan from "./CoverFan";
 import CoverQuadrants from "./CoverQuadrants";
 import {
   getRandomCoverIndex,
-  resolveCoverBrightness,
   updateCoverPreviewTrigger,
   getHighlightedCoverIndex,
 } from "./coverState.js";
@@ -22,7 +21,6 @@ const FAN_END_CLIP =
 function CoverPickerSession({
   covers,
   currentIndex,
-  currentBrightness = 100,
   readyIndexes,
   failedIndexes,
   onApply,
@@ -41,9 +39,6 @@ function CoverPickerSession({
   const [busy, setBusy] = useState(false);
   const [cleanView, setCleanView] = useState(false);
   const [selection, setSelection] = useState(null);
-  const [brightness, setBrightness] = useState(() =>
-    resolveCoverBrightness(currentBrightness),
-  );
   const [previewIndex, setPreviewIndex] = useState(currentIndex);
   const [previewTriggers, setPreviewTriggers] = useState([]);
   const available = covers
@@ -166,12 +161,6 @@ function CoverPickerSession({
     const index = getRandomCoverIndex(available, activePreviewIndex);
     if (index !== null) previewCover(index, "command");
   };
-  const changeBrightness = (value) => {
-    if (!confirming.current) {
-      setBrightness(resolveCoverBrightness(value));
-      previewCover(activePreviewIndex, "command");
-    }
-  };
   const confirmCover = (requestedIndex = activePreviewIndex, source) => {
     const index = requestedIndex;
     if (confirming.current || !available.includes(index)) return;
@@ -180,14 +169,13 @@ function CoverPickerSession({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
       window.matchMedia("(max-width: 767px)").matches
     ) {
-      onApply(index, brightness, { skipTransition: true });
+      onApply(index, { skipTransition: true });
       return;
     }
     setBusy(true);
     setPreviewIndex(index);
     setSelection({
       index,
-      brightness,
       src: covers.find((cover) => cover.index === index).src,
       source:
         source ??
@@ -197,7 +185,7 @@ function CoverPickerSession({
 
   useLayoutEffect(() => {
     if (!selection) return;
-    const { index, brightness, source } = selection;
+    const { index, source } = selection;
     const reveal = revealRef.current;
     gsap.set(reveal, {
       x: 0,
@@ -220,7 +208,7 @@ function CoverPickerSession({
       .timeline({
         onComplete: () => {
           if (confirming.current)
-            latestApply.current(index, brightness, { skipTransition: true });
+            latestApply.current(index, { skipTransition: true });
         },
       })
       .fromTo(
@@ -256,11 +244,7 @@ function CoverPickerSession({
         else onClose();
       }}
     >
-      <div
-        className="cover-picker__media"
-        aria-hidden="true"
-        style={{ filter: `brightness(${brightness / 100})` }}
-      >
+      <div className="cover-picker__media" aria-hidden="true">
         <CoverQuadrants
           covers={covers}
           readyIndexes={readyIndexes}
@@ -308,13 +292,10 @@ function CoverPickerSession({
           readyIndexes={readyIndexes}
           failedIndexes={failedIndexes}
           busy={busy}
-          brightness={brightness}
           onPreview={previewCover}
           onPreviewEnd={endPreview}
           onSelect={confirmCover}
           onShuffle={shuffleCover}
-          onBrightness={changeBrightness}
-          onResetBrightness={() => changeBrightness(100)}
           onCleanView={enterCleanView}
           onConfirm={() => confirmCover()}
           onRetry={onRetry}
@@ -340,11 +321,7 @@ function CoverPickerSession({
             ref={revealRef}
             aria-hidden="true"
           >
-            <img
-              src={selection.src}
-              alt=""
-              style={{ filter: `brightness(${selection.brightness / 100})` }}
-            />
+            <img src={selection.src} alt="" />
           </div>
           <div className="cover-picker__petal-burst" aria-hidden="true">
             {[

@@ -9,10 +9,8 @@ import HeroWordmark from "./HeroWordmark";
 import CoverPicker from "./cover-picker/CoverPicker";
 import {
   COVER_INDEXES,
-  getRandomCoverIndex,
-  readCoverBrightness,
-  resolveCoverBrightness,
-  writeCoverBrightness,
+  getInitialCoverIndex,
+  markHomeCoverVisited,
   writeCoverPreference,
 } from "./cover-picker/coverState";
 import { isHeroImageReady } from "./heroImageState";
@@ -28,14 +26,11 @@ const covers = COVER_INDEXES.map((index) => ({
 const heroImagePriority = { fetchpriority: "high" };
 
 const Hero = () => {
-  const [currentIndex, setCurrentIndex] = useState(
-    () => getRandomCoverIndex(COVER_INDEXES, null) ?? 1,
-  );
-  const [currentBrightness, setCurrentBrightness] = useState(() => {
+  const [currentIndex, setCurrentIndex] = useState(() => {
     try {
-      return readCoverBrightness(window.localStorage);
+      return getInitialCoverIndex(window.sessionStorage);
     } catch {
-      return 100;
+      return 1;
     }
   });
   const [previousIndex, setPreviousIndex] = useState(currentIndex);
@@ -48,6 +43,14 @@ const Hero = () => {
   const initialIndex = useRef(currentIndex);
   const pending = useRef(new Map());
   const mounted = useRef(false);
+
+  useEffect(() => {
+    try {
+      markHomeCoverVisited(window.sessionStorage);
+    } catch {
+      /* Keep the first cover when browser session storage is unavailable. */
+    }
+  }, []);
 
   const requestImage = useCallback((index) => {
     if (!COVER_INDEXES.includes(index) || pending.current.has(index)) return;
@@ -123,20 +126,13 @@ const Hero = () => {
     return () => window.removeEventListener("showHeroPreview", handler);
   }, []);
 
-  const applyCover = (
-    index,
-    brightness = currentBrightness,
-    { skipTransition = false } = {},
-  ) => {
+  const applyCover = (index, { skipTransition = false } = {}) => {
     if (!isHeroImageReady(index, loadedHeroIndexes)) return;
-    const nextBrightness = resolveCoverBrightness(brightness);
     try {
       writeCoverPreference(window.localStorage, index);
-      writeCoverBrightness(window.localStorage, nextBrightness);
     } catch {
       /* Preserve in-memory selection. */
     }
-    setCurrentBrightness(nextBrightness);
     setSelectorOpen(false);
     if (index === currentIndex) return;
     setPreviousIndex(currentIndex);
@@ -216,7 +212,6 @@ const Hero = () => {
               alt=""
               aria-hidden="true"
               className="pointer-events-none absolute left-0 top-0 z-30 size-full object-cover object-center"
-              style={{ filter: `brightness(${currentBrightness / 100})` }}
             />
           )}
           {/* A decoded retry must replace a previously failed DOM image. */}
@@ -226,7 +221,6 @@ const Hero = () => {
             id="bg-image"
             alt="首页封面"
             className="absolute left-0 top-0 size-full object-cover object-center"
-            style={{ filter: `brightness(${currentBrightness / 100})` }}
             {...heroImagePriority}
             decoding="async"
           />
@@ -276,7 +270,6 @@ const Hero = () => {
         open={selectorOpen}
         covers={covers}
         currentIndex={currentIndex}
-        currentBrightness={currentBrightness}
         readyIndexes={loadedHeroIndexes}
         failedIndexes={failedIndexes}
         onApply={applyCover}

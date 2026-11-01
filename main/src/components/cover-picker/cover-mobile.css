@@ -51,9 +51,6 @@
     background: #e9e5e2;
     clip-path: none !important;
   }
-  .fan-leaf__button > img {
-    filter: brightness(var(--cover-brightness, 1));
-  }
   .fan-leaf.is-preview .fan-leaf__button,
   .fan-leaf__button[aria-pressed="true"] {
     border: 2px solid #f4b4c6;

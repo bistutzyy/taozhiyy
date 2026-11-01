@@ -24,7 +24,6 @@ import {
   LuLink,
   LuUserRound,
   LuMoon,
-  LuPower,
   LuSparkles,
   LuStar,
   LuVolumeX,
@@ -55,6 +54,7 @@ const fragmentDestination = (href) =>
 export default function SiteConsole({
   open,
   onClose,
+  onSwitchCover,
   isAudioPlaying,
   onToggleAudio,
 }) {
@@ -442,12 +442,12 @@ export default function SiteConsole({
             <button
               type="button"
               className="console-tool-key console-power-key"
-              aria-label="收起"
-              onClick={onClose}
-              title="收起控制台"
+              aria-label="切换封面"
+              onClick={onSwitchCover}
+              title="切换首页封面"
             >
-              <LuPower />
-              <span>收起</span>
+              <LuImages />
+              <span>切换封面</span>
             </button>
           </div>
           <span className="console-copy-status" role="status">
