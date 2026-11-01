@@ -4,19 +4,17 @@ import {
   LuExpand,
   LuFlower2,
   LuLoaderCircle,
-  LuRotateCcw,
   LuRotateCw,
   LuShuffle,
-  LuSun,
 } from "react-icons/lu";
 import "./fan-screen.css";
 import "./cover-mobile.css";
 
-function Command({ label, icon: Icon, onClick, disabled, className = "" }) {
+function Command({ label, icon: Icon, onClick, disabled }) {
   return (
     <button
       type="button"
-      className={`fan-command ${className}`}
+      className="fan-command"
       aria-label={label}
       title={label}
       onClick={onClick}
@@ -38,13 +36,10 @@ export default function CoverFan({
   readyIndexes,
   failedIndexes,
   busy,
-  brightness,
   onPreview,
   onPreviewEnd,
   onSelect,
   onShuffle,
-  onBrightness,
-  onResetBrightness,
   onCleanView,
   onConfirm,
   onRetry,
@@ -59,7 +54,6 @@ export default function CoverFan({
     <section
       className={`fan-room${busy ? " is-unfolding" : ""}`}
       aria-label="封面选景"
-      style={{ "--cover-brightness": brightness / 100 }}
     >
       <svg
         className="fan-room__definitions"
@@ -205,41 +199,12 @@ export default function CoverFan({
           disabled={
             busy || !available.some(({ index }) => index !== previewIndex)
           }
-          className="fan-controls__shuffle"
         />
-        <div className="fan-brightness">
-          <label htmlFor="cover-brightness">
-            <LuSun aria-hidden="true" />
-            <span>亮度</span>
-          </label>
-          <input
-            id="cover-brightness"
-            aria-label="亮度"
-            type="range"
-            min={70}
-            max={115}
-            step={1}
-            value={brightness}
-            disabled={busy}
-            onChange={(event) => onBrightness(Number(event.target.value))}
-          />
-          <output htmlFor="cover-brightness" data-fit-text>
-            {brightness}%
-          </output>
-          <Command
-            label="重置亮度"
-            icon={LuRotateCcw}
-            onClick={onResetBrightness}
-            disabled={busy || brightness === 100}
-            className="fan-controls__reset"
-          />
-        </div>
         <Command
           label="纯净观赏"
           icon={LuExpand}
           onClick={onCleanView}
           disabled={busy || !readyPreview}
-          className="fan-controls__clean"
         />
         <button
           type="button"

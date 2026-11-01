@@ -288,11 +288,13 @@
 .fan-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: min(710px, 100%);
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
   justify-self: center;
-  min-height: 64px;
-  padding: 9px 11px;
+  min-height: 60px;
+  padding: 8px;
   border: 1px solid #f1e6d9b8;
   border-radius: 7px;
   background: #f4f6efdc;
@@ -344,51 +346,6 @@
 .fan-command:hover:not(:disabled) .fan-command__tip,
 .fan-command:focus-visible .fan-command__tip {
   display: block;
-}
-.fan-brightness {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-}
-.fan-brightness label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  font-size: 12px;
-}
-.fan-brightness label svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 1.4;
-}
-.fan-brightness input {
-  flex: 1 1 auto;
-  width: 100%;
-  min-width: 45px;
-  height: 30px;
-  accent-color: #ba8191;
-  cursor: pointer;
-}
-.fan-brightness output {
-  width: 38px;
-  flex: 0 0 38px;
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-.fan-controls .fan-controls__reset {
-  flex: 0 0 29px;
-  width: 29px;
-  height: 32px;
-  border: 0;
-  background: transparent;
-}
-.fan-controls__reset > svg {
-  width: 15px;
-  height: 15px;
 }
 .fan-apply {
   display: inline-flex;
@@ -479,44 +436,13 @@
   .fan-screen__seal {
     right: 7%;
   }
-  .fan-controls {
-    display: grid;
-    grid-template-columns: 40px 40px minmax(0, 1fr);
-    gap: 7px 9px;
-    width: min(440px, 100%);
-    padding: 9px;
-    min-height: 0;
-  }
-  .fan-controls__shuffle {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .fan-controls__clean {
-    grid-column: 2;
-    grid-row: 1;
-  }
   .fan-apply {
-    grid-column: 3;
-    grid-row: 1;
     min-height: 42px;
     padding-inline: 8px;
-  }
-  .fan-brightness {
-    grid-column: 1/-1;
-    grid-row: 2;
-    gap: 8px;
-    padding-inline: 3px;
-  }
-  .fan-brightness input {
-    min-width: 40px;
   }
   .fan-command__tip {
     left: 0;
     transform: none;
-  }
-  .fan-controls__reset .fan-command__tip {
-    left: auto;
-    right: 0;
   }
 }
 @media (max-height: 450px) and (orientation: landscape) {
@@ -561,26 +487,13 @@
     bottom: 8%;
   }
   .fan-controls {
-    display: flex;
-    flex-wrap: nowrap;
-    width: min(650px, 100%);
-    gap: 8px;
+    min-height: 50px;
     padding: 6px 8px;
   }
   .fan-command {
     width: 36px;
     height: 36px;
     flex-basis: 36px;
-  }
-  .fan-brightness {
-    gap: 7px;
-  }
-  .fan-brightness label span {
-    display: none;
-  }
-  .fan-brightness input {
-    min-width: 45px;
-    width: 90px;
   }
   .fan-apply {
     width: 40px;

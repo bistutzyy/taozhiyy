@@ -10,7 +10,10 @@ import {
   LuX,
 } from "react-icons/lu";
 import { biliOwner, ownerVideos } from "../data/biliOwnerVideos.js";
-import { getBiliOwnerFeed } from "../services/biliOwnerApi.js";
+import {
+  getBiliOwnerFeed,
+  getBiliSyncNotice,
+} from "../services/biliOwnerApi.js";
 import {
   formatVideoDate,
   getBiliEmbedSrc,
@@ -156,7 +159,7 @@ function VideoCard({ video, onPlay }) {
 export default function MyBiliVideos({ videos }) {
   const [playingVideo, setPlayingVideo] = useState(null);
   const [feed, setFeed] = useState({ owner: biliOwner, items: ownerVideos });
-  const [syncState, setSyncState] = useState("loading");
+  const [syncNotice, setSyncNotice] = useState("");
   const [visibleCount, setVisibleCount] = useState(6);
   const gridRef = useRef(null);
   const sourceVideos = videos === undefined ? feed.items : videos;
@@ -174,11 +177,12 @@ export default function MyBiliVideos({ videos }) {
         if (!active) return;
         if (result.ready) {
           setFeed(result);
-          setSyncState("ready");
-        } else setSyncState("pending");
+        }
+        setSyncNotice(getBiliSyncNotice(result));
       })
       .catch((error) => {
-        if (active && error.name !== "AbortError") setSyncState("fallback");
+        if (active && error.name !== "AbortError")
+          setSyncNotice("暂用已收录视频");
       });
     return () => {
       active = false;
@@ -228,9 +232,9 @@ export default function MyBiliVideos({ videos }) {
           <LuArrowUpRight aria-hidden="true" />
         </a>
       </header>
-      {videos === undefined && ["pending", "fallback"].includes(syncState) && (
+      {videos === undefined && syncNotice && (
         <p className="owner-videos__sync-status" role="status">
-          {syncState === "pending" ? "等待首次同步" : "暂用已收录视频"}
+          {syncNotice}
         </p>
       )}
       <div

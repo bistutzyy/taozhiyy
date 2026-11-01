@@ -2,6 +2,51 @@ import { apiUrl } from "../lib/apiBase.js";
 import { biliOwner } from "../data/biliOwnerVideos.js";
 import { getBiliVideoHref } from "../components/biliVideoModel.js";
 
+function normalizeSyncStatus(value) {
+  if (!value || !["pending", "syncing", "ok", "error"].includes(value.state))
+    return null;
+  if (
+    ![
+      "",
+      "upstream_rejected",
+      "network_error",
+      "invalid_response",
+      "cache_error",
+    ].includes(value.reason ?? "")
+  )
+    return null;
+  if (
+    typeof value.attemptedAt !== "string" ||
+    (value.attemptedAt && !Number.isFinite(Date.parse(value.attemptedAt)))
+  )
+    return null;
+  return {
+    state: value.state,
+    reason: value.reason || "",
+    attemptedAt: value.attemptedAt,
+    ...(Number.isSafeInteger(value.upstreamCode)
+      ? { upstreamCode: value.upstreamCode }
+      : {}),
+  };
+}
+
+export function getBiliSyncNotice(feed) {
+  if (feed.sync?.state === "error") {
+    const reason =
+      {
+        upstream_rejected: "B站投稿接口暂不可用",
+        network_error: "投稿同步网络暂不可用",
+        invalid_response: "投稿数据校验未通过",
+        cache_error: "投稿缓存暂不可用",
+      }[feed.sync.reason] || "投稿同步暂未完成";
+    return `${reason}，暂用${feed.ready ? "上次同步" : "已收录"}视频`;
+  }
+  if (feed.ready) return "";
+  return feed.sync?.state === "syncing"
+    ? "正在同步投稿，暂用已收录视频"
+    : "等待首次同步";
+}
+
 function normalizeCover(value) {
   if (!value) return "";
   if (typeof value !== "string") throw new Error("Invalid video cover");
@@ -70,6 +115,7 @@ export function normalizeBiliOwnerFeed(data) {
     items,
     ready: data.ready,
     syncedAt: data.ready ? data.syncedAt : "",
+    sync: normalizeSyncStatus(data.sync),
   };
 }
 

@@ -88,74 +88,45 @@ test("cover selection persists safely without requiring browser storage", async 
   assert.doesNotThrow(() => writeCoverPreference(blocked, 4));
 });
 
-test("brightness accepts only integers and canonical integer strings from 70 to 115", async () => {
-  const { resolveCoverBrightness } = await getState();
-  assert.equal(typeof resolveCoverBrightness, "function");
-  for (let value = 70; value <= 115; value += 1) {
-    assert.equal(resolveCoverBrightness(value), value);
-    assert.equal(resolveCoverBrightness(String(value)), value);
-  }
-  for (const value of [
-    null,
-    undefined,
-    "",
-    "069",
-    "085",
-    " 85",
-    "85 ",
-    "85\n",
-    "85\r",
-    "85\r\n",
-    "85\u2028",
-    "+85",
-    "85.0",
-    "8.5e1",
-    "0x55",
-    "__proto__",
-    "69",
-    "116",
-    69,
-    116,
-    85.5,
-    NaN,
-    Infinity,
-    -Infinity,
-    true,
-    [],
-    {},
-  ]) {
-    assert.equal(resolveCoverBrightness(value), 100);
-  }
-});
-
-test("brightness persists validated values under its own versioned key", async () => {
-  const {
-    COVER_STORAGE_KEY,
-    COVER_BRIGHTNESS_KEY,
-    readCoverBrightness,
-    writeCoverBrightness,
-  } = await getState();
-  assert.equal(COVER_BRIGHTNESS_KEY, "taozhiyy.home-cover-brightness.v1");
-  const data = new Map([[COVER_STORAGE_KEY, "3"]]);
+test("a fresh session starts at cover one without mutating storage during initialization", async () => {
+  const { getInitialCoverIndex, markHomeCoverVisited, HOME_COVER_VISIT_KEY } =
+    await getState();
+  assert.equal(typeof getInitialCoverIndex, "function");
+  assert.equal(typeof markHomeCoverVisited, "function");
+  const data = new Map();
   const storage = {
     getItem: (key) => data.get(key),
     setItem: (key, value) => data.set(key, value),
   };
-  assert.equal(readCoverBrightness(storage), 100);
-  writeCoverBrightness(storage, "85");
-  assert.equal(data.get(COVER_BRIGHTNESS_KEY), "85");
-  assert.equal(readCoverBrightness(storage), 85);
-  assert.equal(data.get(COVER_STORAGE_KEY), "3");
-  data.set(COVER_BRIGHTNESS_KEY, "085");
-  assert.equal(readCoverBrightness(storage), 100);
-  writeCoverBrightness(storage, 116);
-  assert.equal(data.get(COVER_BRIGHTNESS_KEY), "100");
+  assert.equal(getInitialCoverIndex(storage, 0.99), 1);
+  assert.equal(
+    getInitialCoverIndex(storage, 0.99),
+    1,
+    "StrictMode reads must not consume the first visit",
+  );
+  assert.equal(data.size, 0);
+  markHomeCoverVisited(storage);
+  assert.equal(data.get(HOME_COVER_VISIT_KEY), "1");
+  assert.equal(
+    getInitialCoverIndex(storage, 0.99, "navigate"),
+    1,
+    "a new tab with copied storage still starts at cover one",
+  );
+  assert.equal(getInitialCoverIndex(storage, 0.99, "back_forward"), 1);
+  assert.deepEqual(
+    [0, 0.25, 0.5, 0.75].map((sample) =>
+      getInitialCoverIndex(storage, sample, "reload"),
+    ),
+    [1, 2, 3, 4],
+  );
+  data.set(HOME_COVER_VISIT_KEY, "invalid");
+  assert.equal(getInitialCoverIndex(storage, 0.99), 1);
 });
 
-test("brightness falls back safely with missing or blocked storage", async () => {
-  const { readCoverBrightness, writeCoverBrightness } = await getState();
-  assert.equal(typeof readCoverBrightness, "function");
-  assert.equal(typeof writeCoverBrightness, "function");
+test("session cover selection falls back safely with missing or blocked storage", async () => {
+  const { getInitialCoverIndex, markHomeCoverVisited } = await getState();
+  assert.equal(typeof getInitialCoverIndex, "function");
+  assert.equal(typeof markHomeCoverVisited, "function");
   const blocked = {
     getItem() {
       throw new Error("blocked");
@@ -165,8 +136,8 @@ test("brightness falls back safely with missing or blocked storage", async () =>
     },
   };
   for (const storage of [undefined, null, {}, blocked]) {
-    assert.equal(readCoverBrightness(storage), 100);
-    assert.doesNotThrow(() => writeCoverBrightness(storage, 85));
+    assert.equal(getInitialCoverIndex(storage, 0.99), 1);
+    assert.doesNotThrow(() => markHomeCoverVisited(storage));
   }
 });
 
@@ -208,31 +179,22 @@ test("shuffle returns null when there is no valid alternate cover", async () => 
   }
 });
 
-test("Hero restores brightness and passes the applied value into the cover picker", () => {
+test("Hero ignores legacy brightness and mounts its images at their original brightness", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
-  assert.match(
+  assert.doesNotMatch(
     hero,
-    /\[currentBrightness, setCurrentBrightness\]\s*=\s*useState\(/,
-  );
-  assert.match(hero, /readCoverBrightness\(window\.localStorage\)/);
-  assert.match(
-    hero,
-    /readCoverBrightness\(window\.localStorage\);\s*\}\s*catch\s*\{\s*return 100;/,
-  );
-  assert.match(
-    hero,
-    /<CoverPicker\b[^>]*currentBrightness=\{currentBrightness\}/s,
+    /currentBrightness|readCoverBrightness|writeCoverBrightness|brightness\(/,
   );
 });
 
-test("Hero validates and applies brightness before the same-cover early return", () => {
+test("Hero applies a ready cover and closes the picker before the same-cover early return", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
   const apply = hero.match(
-    /const applyCover = \(\s*index,\s*brightness = currentBrightness,[\s\S]*?\) => \{([\s\S]*?)\n {2}\};/,
+    /const applyCover = \(\s*index,\s*\{ skipTransition = false \} = \{\},?\s*\) => \{([\s\S]*?)\n {2}\};/,
   );
   assert.ok(
     apply,
-    "applyCover must accept brightness with the applied value as its default",
+    "applyCover must accept only the cover and transition options",
   );
   const body = apply[1];
   assert.match(body, /setHasClicked\(!skipTransition\)/);
@@ -240,54 +202,34 @@ test("Hero validates and applies brightness before the same-cover early return",
   const readyGuard = body.indexOf(
     "if (!isHeroImageReady(index, loadedHeroIndexes)) return;",
   );
-  const validate = body.indexOf("resolveCoverBrightness(brightness)");
   const persistCover = body.indexOf(
     "writeCoverPreference(window.localStorage, index)",
   );
-  const persistBrightness = body.indexOf(
-    "writeCoverBrightness(window.localStorage,",
-  );
-  const setBrightness = body.indexOf("setCurrentBrightness(");
   const close = body.indexOf("setSelectorOpen(false)");
   const sameCover = body.indexOf("if (index === currentIndex) return;");
-  assert.ok(readyGuard >= 0 && validate > readyGuard);
-  for (const position of [
-    persistCover,
-    persistBrightness,
-    setBrightness,
-    close,
-  ]) {
-    assert.ok(position > validate && position < sameCover);
+  assert.ok(readyGuard >= 0);
+  for (const position of [persistCover, close]) {
+    assert.ok(position > readyGuard && position < sameCover);
   }
 });
 
-test("Hero applies brightness to both image layers without filtering its text or clearing the filter", () => {
+test("Hero keeps both image layers without a hidden brightness filter", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
   const imageTags = hero.match(/<img\b[\s\S]*?\/>/g) ?? [];
   for (const id of ["bg-image", "previous-image"]) {
     const image = imageTags.find((tag) => tag.includes(`id="${id}"`));
     assert.ok(image, `${id} must remain an image`);
-    assert.match(
-      image,
-      /style=\{\{\s*filter:\s*`brightness\(\$\{currentBrightness \/ 100\}\)`\s*,?\s*\}\}/,
-    );
+    assert.doesNotMatch(image, /filter:/);
   }
-  assert.equal((hero.match(/filter:/g) ?? []).length, 2);
-  assert.doesNotMatch(hero, /clearProps:\s*["'][^"']*filter/);
 });
 
-test("Hero randomizes each homepage mount instead of restoring a fixed cover", async () => {
+test("Hero reads the first-visit rule and marks a visit after mounting", () => {
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
-  const { getRandomCoverIndex, COVER_INDEXES } = await getState();
-  assert.deepEqual(
-    [0, 0.25, 0.5, 0.75].map((sample) =>
-      getRandomCoverIndex(COVER_INDEXES, null, sample),
-    ),
-    [1, 2, 3, 4],
-  );
+  assert.match(hero, /getInitialCoverIndex\(\s*window\.sessionStorage,/);
+  assert.match(hero, /getEntriesByType\("navigation"\)/);
   assert.match(
     hero,
-    /useState\(\s*\(\) =>\s*getRandomCoverIndex\(COVER_INDEXES, null\) \?\? 1/,
+    /useEffect\(\(\) => \{\s*try \{\s*markHomeCoverVisited\(window\.sessionStorage\)/,
   );
   assert.doesNotMatch(hero, /readCoverPreference/);
 });
@@ -296,7 +238,7 @@ test("Hero uses a shared cover picker on desktop and mobile without compass or p
   const hero = readFileSync(new URL("../Hero.jsx", import.meta.url), "utf8");
   assert.match(hero, /<CoverPicker/);
   assert.doesNotMatch(hero, /HERO_POEM|pointedPoem|Compass|compass|转动指南针/);
-  assert.match(hero, /getRandomCoverIndex/);
+  assert.match(hero, /getInitialCoverIndex/);
   assert.match(hero, /writeCoverPreference/);
   assert.match(hero, /\.decode\(/);
   assert.match(hero, /prefers-reduced-motion/);

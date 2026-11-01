@@ -20,10 +20,18 @@ type ownerVideo struct {
 }
 
 type ownerVideosSnapshot struct {
-	Owner    biliVideoOwner `json:"owner"`
-	Items    []ownerVideo   `json:"items"`
-	Ready    bool           `json:"ready"`
-	SyncedAt string         `json:"syncedAt"`
+	Owner    biliVideoOwner         `json:"owner"`
+	Items    []ownerVideo           `json:"items"`
+	Ready    bool                   `json:"ready"`
+	SyncedAt string                 `json:"syncedAt"`
+	Sync     *ownerVideosSyncStatus `json:"sync,omitempty"`
+}
+
+type ownerVideosSyncStatus struct {
+	State        string `json:"state"`
+	AttemptedAt  string `json:"attemptedAt"`
+	Reason       string `json:"reason"`
+	UpstreamCode *int   `json:"upstreamCode,omitempty"`
 }
 
 func biliOwnerVideosHandler(cfg AppConfig) http.HandlerFunc {
@@ -42,6 +50,11 @@ func biliOwnerVideosHandler(cfg AppConfig) http.HandlerFunc {
 			http.Error(w, "owner video cache unavailable", http.StatusInternalServerError)
 			return
 		}
+		status, err := readOwnerVideosSyncAttempt(db, cfg.BilibiliUID, snapshot)
+		if err != nil {
+			status = ownerVideosSyncStatus{State: "error", Reason: "cache_error"}
+		}
+		snapshot.Sync = &status
 		writeJSON(w, snapshot)
 	}
 }

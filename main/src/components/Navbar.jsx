@@ -2,7 +2,7 @@ import clsx from "clsx";
 import gsap from "gsap";
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useWindowScroll } from "react-use";
 import { cosAsset } from "../lib/cosAsset.js";
 import VisitorNetworkBadge from "./VisitorNetworkBadge";
@@ -40,6 +40,7 @@ const getNavTheme = (pathname) => {
 
 const NavBar = () => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isIndicatorActive, setIsIndicatorActive] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -62,6 +63,14 @@ const NavBar = () => {
       target?.focus({ preventScroll: true });
     });
   }, []);
+
+  const switchCoverFromConsole = () => {
+    closeConsole();
+    requestAnimationFrame(() => {
+      if (pathname !== "/") navigate("/?cover=select");
+      else window.dispatchEvent(new CustomEvent("showHeroPreview"));
+    });
+  };
 
   const openConsole = () => {
     if (!window.matchMedia("(min-width: 768px)").matches) return;
@@ -479,6 +488,7 @@ const NavBar = () => {
       <SiteConsole
         open={consoleOpen}
         onClose={closeConsole}
+        onSwitchCover={switchCoverFromConsole}
         isAudioPlaying={isAudioPlaying}
         onToggleAudio={toggleAudioIndicator}
       />

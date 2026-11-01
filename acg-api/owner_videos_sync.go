@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"database/sql"
+	"errors"
 	"fmt"
 	"image"
 	"image/gif"
@@ -175,9 +176,23 @@ func runOwnerVideosSync(db *sql.DB, c *BiliClient, dir string) error {
 
 func runOwnerVideosSyncWithBudget(db *sql.DB, c *BiliClient, dir string, budget ownerVideoCoverBudget) (syncErr error) {
 	log.Println("sync: owner videos start")
+	status := ownerVideosSyncStatus{State: "syncing", AttemptedAt: time.Now().UTC().Format(time.RFC3339Nano)}
+	if err := writeOwnerVideosSyncAttempt(db, c.cfg.BilibiliUID, status); err != nil {
+		log.Println("sync: owner video attempt start could not be recorded")
+	}
 	defer func() {
+		status.State = "ok"
 		if syncErr != nil {
+			status.State, status.Reason = "error", "invalid_response"
+			var classified *ownerVideoSyncError
+			if errors.As(syncErr, &classified) {
+				status.Reason, status.UpstreamCode = classified.reason, classified.code
+			}
 			log.Println("sync: owner videos keeping cached snapshot:", syncErr)
+		}
+		// Diagnostic persistence is independent of the atomic successful snapshot.
+		if err := writeOwnerVideosSyncAttempt(db, c.cfg.BilibiliUID, status); err != nil {
+			log.Println("sync: owner video attempt result could not be recorded")
 		}
 	}()
 	ctx, cancel := context.WithTimeout(context.Background(), ownerVideoSyncTimeout)
@@ -190,7 +205,7 @@ func runOwnerVideosSyncWithBudget(db *sql.DB, c *BiliClient, dir string, budget 
 	defer ownerVideoCacheMu.Unlock()
 	previous, err := readOwnerVideos(db, c.cfg.BilibiliUID)
 	if err != nil {
-		return err
+		return &ownerVideoSyncError{reason: "cache_error", cause: err}
 	}
 	if snapshot.Owner.Name == "" {
 		snapshot.Owner.Name = previous.Owner.Name
@@ -220,7 +235,7 @@ func runOwnerVideosSyncWithBudget(db *sql.DB, c *BiliClient, dir string, budget 
 	}
 	snapshot.SyncedAt = time.Now().UTC().Format(time.RFC3339Nano)
 	if err := replaceOwnerVideos(db, snapshot); err != nil {
-		return err
+		return &ownerVideoSyncError{reason: "cache_error", cause: err}
 	}
 	log.Printf("sync: owner videos done (%d items)", len(snapshot.Items))
 	return nil

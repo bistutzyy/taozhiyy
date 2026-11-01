@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -75,8 +76,70 @@ func replaceOwnerVideos(db *sql.DB, snapshot ownerVideosSnapshot) error {
 	return tx.Commit()
 }
 
+func writeOwnerVideosSyncAttempt(db *sql.DB, uid string, status ownerVideosSyncStatus) error {
+	_, err := db.Exec(`INSERT INTO bili_owner_video_attempt(uid, state, attempted_at, reason, upstream_code)
+		VALUES (?, ?, ?, ?, ?) ON CONFLICT(uid) DO UPDATE SET
+		state=excluded.state, attempted_at=excluded.attempted_at,
+		reason=excluded.reason, upstream_code=excluded.upstream_code`,
+		uid, status.State, status.AttemptedAt, status.Reason, status.UpstreamCode)
+	return err
+}
+
+func readOwnerVideosSyncAttempt(db *sql.DB, uid string, snapshot ownerVideosSnapshot) (ownerVideosSyncStatus, error) {
+	status := ownerVideosSyncStatus{State: "pending"}
+	var code sql.NullInt64
+	err := db.QueryRow(`SELECT state, attempted_at, reason, upstream_code
+		FROM bili_owner_video_attempt WHERE uid=?`, uid).
+		Scan(&status.State, &status.AttemptedAt, &status.Reason, &code)
+	if errors.Is(err, sql.ErrNoRows) {
+		if snapshot.Ready {
+			if _, err := time.Parse(time.RFC3339Nano, snapshot.SyncedAt); err != nil {
+				return status, fmt.Errorf("invalid owner video sync timestamp")
+			}
+			status.State, status.AttemptedAt = "ok", snapshot.SyncedAt
+		}
+		return status, nil
+	}
+	if err != nil {
+		return status, err
+	}
+	// Validate persisted values before exposing diagnostics on the public endpoint.
+	if _, err := time.Parse(time.RFC3339Nano, status.AttemptedAt); err != nil {
+		return status, fmt.Errorf("invalid owner video attempt timestamp")
+	}
+	switch status.State {
+	case "syncing", "ok":
+		if status.Reason != "" || code.Valid {
+			return status, fmt.Errorf("invalid owner video attempt result")
+		}
+	case "error":
+		switch status.Reason {
+		case "upstream_rejected", "network_error", "invalid_response", "cache_error":
+		default:
+			return status, fmt.Errorf("invalid owner video attempt reason")
+		}
+		if code.Valid {
+			value := int(code.Int64)
+			if status.Reason != "upstream_rejected" || int64(value) != code.Int64 {
+				return status, fmt.Errorf("invalid owner video upstream code")
+			}
+			status.UpstreamCode = &value
+		}
+	default:
+		return status, fmt.Errorf("invalid owner video attempt state")
+	}
+	return status, nil
+}
+
 func migrateOwnerVideos(db *sql.DB) error {
 	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS bili_owner_video_attempt (
+			uid TEXT PRIMARY KEY,
+			state TEXT NOT NULL CHECK (state IN ('syncing', 'ok', 'error')),
+			attempted_at TEXT NOT NULL,
+			reason TEXT NOT NULL CHECK (reason IN ('', 'upstream_rejected', 'network_error', 'invalid_response', 'cache_error')),
+			upstream_code INTEGER
+		);
 		CREATE TABLE IF NOT EXISTS bili_owner_video_state (
 			uid TEXT PRIMARY KEY,
 			name TEXT NOT NULL,

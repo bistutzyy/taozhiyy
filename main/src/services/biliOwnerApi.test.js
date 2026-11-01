@@ -56,6 +56,48 @@ test("distinguishes pending synchronization from a successfully empty list", asy
   assert.equal(normalizeBiliOwnerFeed(feed({ items: [] })).ready, true);
 });
 
+test("accepts only sanitized synchronization diagnostics and ignores raw upstream details", async () => {
+  const { normalizeBiliOwnerFeed, getBiliSyncNotice } = await service();
+  assert.equal(typeof getBiliSyncNotice, "function");
+  const sync = {
+    state: "error",
+    reason: "upstream_rejected",
+    attemptedAt: "2026-11-01T11:00:00Z",
+    upstreamCode: 412,
+    message: "private raw response",
+  };
+  const pending = normalizeBiliOwnerFeed(
+    feed({ ready: false, items: [], syncedAt: "", sync }),
+  );
+  assert.deepEqual(pending.sync, {
+    state: sync.state,
+    reason: sync.reason,
+    attemptedAt: sync.attemptedAt,
+    upstreamCode: 412,
+  });
+  assert.equal(
+    getBiliSyncNotice(pending),
+    "B站投稿接口暂不可用，暂用已收录视频",
+  );
+  assert.equal(
+    getBiliSyncNotice({ ready: true, sync: pending.sync }),
+    "B站投稿接口暂不可用，暂用上次同步视频",
+  );
+  assert.equal(getBiliSyncNotice({ ready: true }), "");
+  assert.equal(getBiliSyncNotice({ ready: false }), "等待首次同步");
+  assert.equal(
+    getBiliSyncNotice({ ready: false, sync: { state: "syncing" } }),
+    "正在同步投稿，暂用已收录视频",
+  );
+  for (const invalid of [
+    { ...sync, reason: "raw-secret" },
+    { ...sync, state: "unknown" },
+    { ...sync, attemptedAt: "invalid" },
+  ]) {
+    assert.equal(normalizeBiliOwnerFeed(feed({ sync: invalid })).sync, null);
+  }
+});
+
 test("rejects malformed, wrong-owner and incomplete feed data instead of clearing a good list", async () => {
   const { normalizeBiliOwnerFeed } = await service();
   for (const value of [

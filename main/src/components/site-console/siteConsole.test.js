@@ -94,7 +94,7 @@ test("console entries are text controls and the journal shows complete messages 
 test("journal contains only short dated updates, newest first", async () => {
   const content = await import("./consoleContent.js");
   assert.equal(content.CONSOLE_ANNOUNCEMENTS, undefined);
-  assert.equal(content.CONSOLE_UPDATES[0].id, "fan-covers");
+  assert.equal(content.CONSOLE_UPDATES[0].id, "cover-session");
   let previous = "9999-12-31";
   for (const item of content.CONSOLE_UPDATES) {
     assert.match(item.date, /^\d{4}-\d{2}-\d{2}$/);
@@ -139,7 +139,22 @@ test("console offers four distinct themes with validated fallback and a theme co
   const ui = read("./SiteConsole.jsx");
   assert.match(ui, /data-console-theme=\{theme\}/);
   assert.match(ui, /<ConsoleThemePicker/);
-  assert.doesNotMatch(ui, /onSwitchCover/);
+  assert.match(ui, /onSwitchCover/);
+});
+
+test("console bottom-right opens the home cover picker after closing the console", () => {
+  const ui = read("./SiteConsole.jsx");
+  assert.match(ui, /aria-label="切换封面"/);
+  assert.match(ui, /title="切换首页封面"/);
+  assert.match(ui, /onClick=\{onSwitchCover\}/);
+  assert.doesNotMatch(ui, /aria-label="收起"|<LuPower/);
+  const nav = read("../Navbar.jsx");
+  assert.match(nav, /onSwitchCover=\{switchCoverFromConsole\}/);
+  assert.match(
+    nav,
+    /const switchCoverFromConsole = \(\) => \{\s*closeConsole\(\);\s*requestAnimationFrame\(/,
+  );
+  assert.match(nav, /navigate\("\/\?cover=select"\)/);
 });
 
 test("first open uses Arcade and later opens rotate without repeating the previous choice", async () => {
