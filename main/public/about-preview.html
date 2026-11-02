@@ -388,6 +388,23 @@ body::after {
 .project.p-quizcard .project-cover {
   --cover-bg: linear-gradient(135deg, #ffe1eb 0%, #d4d6ff 50%, #c5e8ff 100%);
 }
+.project.p-opencheck .project-cover { background: #eef7fc; }
+.project.p-opencheck .cover-img,
+.project.p-opencheck:hover .cover-img {
+  inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: top; filter: none;
+}
+.project.p-opencheck .project-cover::before,
+.project.p-opencheck .project-cover::after { display: none; }
+.project.p-opencheck .project-code {
+  font-family: var(--font-mono); font-size: 1rem; line-height: 1; letter-spacing: 0;
+  padding: 6px 8px; border-radius: 5px; background: #fff; color: var(--ink-2);
+}
+.project.p-opencheck .project-tag { letter-spacing: 0; }
+.project.p-opencheck .project-credit {
+  flex: 0; min-height: 0; margin: 0 0 0.8rem; font-size: 11px;
+  overflow-wrap: anywhere;
+}
 .project.p-soon-1 .project-cover {
   --cover-bg: linear-gradient(135deg, #f5f5f8 0%, #ebebef 100%);
 }
@@ -629,22 +646,23 @@ slot[name="server-status"] { display: block; }
           </span>
         </div>
       </a>
-      <article class="project p-coming p-soon-1">
+      <a class="project p-real p-opencheck" href="/showcase/opencheck.html">
         <div class="project-cover">
-          <img loading="eager" decoding="async" class="cover-img" alt="" src="/cos/about-page/20260624/project-cover-02-ac8b3971c2.svg"/>
+          <img loading="eager" decoding="async" class="cover-img" alt="OpenCheck 上游仓库首页截图" src="/showcase/opencheck-home.png" width="2530" height="1388"/>
           <span class="project-code">02</span>
-          <span class="project-tag is-soon"><span class="pulse"></span>SOON</span>
+          <span class="project-tag">开源 MVP</span>
         </div>
         <div class="project-body">
-          <h3>敬请期待</h3>
-          <p>这一格留给下一份让我兴奋的小作品。</p>
-          <div class="meta"><span>WIP</span></div>
+          <h3>OpenCheck</h3>
+          <p>开源仓库规范体检：检查文档、协作与 CI，生成评分、建议和 Markdown 报告。纯前端 MVP。</p>
+          <div class="meta"><span>React</span><span>TypeScript</span><span>GPL-3.0</span></div>
+          <p class="project-credit">来源：Bistu-OSSDT-2026 / Team-18</p>
           <span class="arrow">
-            <span>Coming Soon</span>
-            <span class="tail">·</span>
+            <span>查看项目</span>
+            <span class="tail">↗</span>
           </span>
         </div>
-      </article>
+      </a>
       <article class="project p-coming p-soon-2">
         <div class="project-cover">
           <img loading="eager" decoding="async" class="cover-img" alt="" src="/cos/about-page/20260624/project-cover-03-c5c7effb53.svg"/>

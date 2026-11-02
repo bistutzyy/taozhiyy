@@ -6,7 +6,7 @@ import { peekAboutPreview } from "../lib/homeWarmup.js";
 import { rewriteAboutPreviewAssets } from "./aboutPreviewAssets.js";
 
 const ABOUT_PREVIEW_URL = "/about-preview.html";
-const ABOUT_PREVIEW_VERSION = "20260930-server-status";
+const ABOUT_PREVIEW_VERSION = "20261101-opencheck-showcase";
 
 const getAboutPreviewUrl = () =>
   `${ABOUT_PREVIEW_URL}?${new URLSearchParams({ v: ABOUT_PREVIEW_VERSION })}`;
