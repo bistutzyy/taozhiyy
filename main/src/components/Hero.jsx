@@ -6,6 +6,7 @@ import { LuRotateCw } from "react-icons/lu";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import HeroWordmark from "./HeroWordmark";
+import { getHeroTextStyle } from "./heroWordmarkTheme.js";
 import CoverPicker from "./cover-picker/CoverPicker";
 import {
   COVER_INDEXES,
@@ -47,6 +48,24 @@ const Hero = () => {
   const initialIndex = useRef(currentIndex);
   const pending = useRef(new Map());
   const mounted = useRef(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const colors = getHeroTextStyle(currentIndex);
+    const saved = ["--hero-nav-ink", "--hero-nav-shadow"].map((property) => ({
+      property,
+      value: root.style.getPropertyValue(property),
+      priority: root.style.getPropertyPriority(property),
+    }));
+    saved.forEach(({ property }) =>
+      root.style.setProperty(property, colors[property]),
+    );
+    return () =>
+      saved.forEach(({ property, value, priority }) => {
+        if (value) root.style.setProperty(property, value, priority);
+        else root.style.removeProperty(property);
+      });
+  }, [currentIndex]);
 
   useEffect(() => {
     try {
@@ -191,7 +210,11 @@ const Hero = () => {
   const loading =
     !loadedHeroIndexes.has(currentIndex) && !failedIndexes.has(currentIndex);
   return (
-    <div className="relative h-dvh w-screen overflow-hidden">
+    <div
+      className="relative h-dvh w-screen overflow-hidden"
+      data-home-cover={currentIndex}
+      style={getHeroTextStyle(currentIndex)}
+    >
       {loading && (
         <div
           className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden bg-violet-50"
@@ -230,13 +253,13 @@ const Hero = () => {
           />
         </div>
         <HeroWordmark heroIndex={currentIndex} />
-        <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
+        <h1 className="hero-signature special-font hero-heading absolute bottom-5 right-5 z-40">
           桃之<b>夭</b>夭
         </h1>
         <div className="absolute left-0 top-0 z-40 size-full">
           <div className="mt-24 px-5 sm:px-10">
-            <h1 className="special-font hero-heading text-blue-100">WELCOME</h1>
-            <p className="mb-5 max-w-64 font-robert-regular text-blue-100">
+            <h1 className="hero-welcome special-font hero-heading">WELCOME</h1>
+            <p className="hero-description mb-5 max-w-64 font-robert-regular">
               This is only the beginning
             </p>
             <div className="flex items-center gap-4">
@@ -249,7 +272,7 @@ const Hero = () => {
                 />
               </div>
               {showScrollHint && (
-                <span className="animate-pulse font-circular-web text-sm tracking-[0.3em] text-blue-75/85 md:text-base">
+                <span className="hero-description animate-pulse font-circular-web text-sm tracking-[0.3em] md:text-base">
                   ↓ 下滑探索
                 </span>
               )}

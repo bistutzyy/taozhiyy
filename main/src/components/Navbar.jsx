@@ -386,6 +386,7 @@ const NavBar = () => {
         ref={navContainerRef}
         className={clsx(
           "fixed inset-x-0 top-2 z-50 h-14 border-none transition-all duration-700 sm:inset-x-4 sm:top-4 sm:h-16 md:inset-x-6",
+          pathname === "/" && currentScrollY === 0 && "hero-nav-at-top",
           navTheme === "bili" && currentScrollY === 0 && "floating-nav-bili",
           navTheme === "ai" && currentScrollY === 0 && "floating-nav-ai",
           navTheme === "friends" && currentScrollY === 0 && "floating-nav-friends",

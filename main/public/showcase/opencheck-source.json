@@ -1,0 +1,34 @@
+{
+  "repository": "https://github.com/Bistu-OSSDT-2026/OpenCheck",
+  "commit": "ebb47349ec42dacfea613833504669d028cc7dba",
+  "author": "Bistu-OSSDT-2026 / Team-18",
+  "license": "GPL-3.0",
+  "licenseFile": "opencheck-LICENSE.txt",
+  "assets": [
+    {
+      "file": "opencheck-logo.svg",
+      "upstream": "public/favicon.svg",
+      "blob": "ada42b55d5afdca6eb902ad22b3c28de928f4b10"
+    },
+    {
+      "file": "opencheck-home.png",
+      "upstream": "screenshots/home.png",
+      "blob": "e509bb2d73e61e3d3e9123e9242b49dcac0ef7b9"
+    },
+    {
+      "file": "opencheck-mobile-home.png",
+      "upstream": "screenshots/mobile-home.png",
+      "blob": "48d4c0e528c03963c99c0592af6f3d3af9406fff"
+    },
+    {
+      "file": "opencheck-result.png",
+      "upstream": "screenshots/result.png",
+      "blob": "9c93e574fba23b452f11633c32c780e0346db4f8"
+    },
+    {
+      "file": "opencheck-report.png",
+      "upstream": "screenshots/report.png",
+      "blob": "beba66d2b9844d8b13639dd68f0f41fd003cbe42"
+    }
+  ]
+}

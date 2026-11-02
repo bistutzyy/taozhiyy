@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="OpenCheck 项目展示：Team-18 的开源项目体检助手，纯前端 MVP。项目资料与截图来自上游仓库。" />
+  <title>OpenCheck · 开源项目体检助手</title>
+  <link rel="icon" href="opencheck-logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="opencheck.css" />
+</head>
+<body>
+  <nav class="topbar" aria-label="项目导航">
+    <div class="shell">
+      <a href="/about"><span aria-hidden="true">&larr;</span>返回关于页</a>
+      <span>项目展示 / 02</span>
+    </div>
+  </nav>
+  <main class="shell">
+    <header class="intro">
+      <div class="identity">
+        <img src="opencheck-logo.svg" alt="" width="48" height="48" />
+        <h1>OpenCheck</h1>
+      </div>
+      <p class="subtitle">开源项目体检助手</p>
+      <p class="lead">面向开源课程实践，检查 GitHub 公开仓库的文档与协作规范，整理评分、改进建议和 Markdown 报告。</p>
+      <ul class="facts" aria-label="项目信息">
+        <li>纯前端 MVP</li>
+        <li>React 18 + TypeScript</li>
+        <li>Team-18</li>
+        <li>GPL-3.0</li>
+      </ul>
+      <div class="source-links">
+        <a class="primary" href="https://github.com/Bistu-OSSDT-2026/OpenCheck" target="_blank" rel="noopener noreferrer">GitHub 源码<span aria-hidden="true">&nearr;</span></a>
+        <a href="https://github.com/Bistu-OSSDT-2026/OpenCheck/blob/ebb47349ec42dacfea613833504669d028cc7dba/README.md" target="_blank" rel="noopener noreferrer">项目 README<span aria-hidden="true">&nearr;</span></a>
+        <a href="https://github.com/Bistu-OSSDT-2026/OpenCheck/blob/ebb47349ec42dacfea613833504669d028cc7dba/LICENSE" target="_blank" rel="noopener noreferrer">开源许可<span aria-hidden="true">&nearr;</span></a>
+      </div>
+    </header>
+
+    <figure class="overview-shot">
+      <picture>
+        <source media="(max-width: 599px)" srcset="opencheck-mobile-home.png" width="600" height="1268" />
+        <img src="opencheck-home.png" alt="OpenCheck 首页：仓库地址输入区与演示样例" width="2530" height="1388" fetchpriority="high" />
+      </picture>
+      <figcaption>首页 · 桌面 / 移动端。截图与品牌标识来源：上游仓库 Bistu-OSSDT-2026/OpenCheck，Team-18。</figcaption>
+    </figure>
+
+    <section class="details" aria-labelledby="checks-title">
+      <h2 id="checks-title">从仓库规范到改进报告</h2>
+      <dl class="checks">
+        <div>
+          <dt>文档与运行</dt>
+          <dd>检查 README、LICENSE、运行说明与项目结构，定位缺失或不完整的信息。</dd>
+        </div>
+        <div>
+          <dt>协作与 CI</dt>
+          <dd>检查贡献指南等协作文件和 GitHub Actions 自动化配置，给出规则判定依据。</dd>
+        </div>
+        <div>
+          <dt>评分与 Markdown</dt>
+          <dd>汇总评分、改进建议与检测明细，生成可复制、可下载的 Markdown 报告。</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="details" aria-labelledby="screenshots-title">
+      <h2 id="screenshots-title">结果与报告</h2>
+      <div class="screenshots">
+        <figure>
+          <a href="opencheck-result.png" target="_blank" rel="noopener noreferrer" aria-label="打开检测结果原始截图">
+            <img src="opencheck-result.png" alt="OpenCheck 检测结果页：仓库评分、检查项与改进建议" width="2519" height="1384" loading="lazy" decoding="async" />
+          </a>
+          <figcaption>01 / 检测结果 · 上游仓库截图</figcaption>
+        </figure>
+        <figure>
+          <a href="opencheck-report.png" target="_blank" rel="noopener noreferrer" aria-label="打开 Markdown 报告原始截图">
+            <img src="opencheck-report.png" alt="OpenCheck 报告页：Markdown 检测报告与复制、下载入口" width="2533" height="1371" loading="lazy" decoding="async" />
+          </a>
+          <figcaption>02 / Markdown 报告 · 上游仓库截图</figcaption>
+        </figure>
+      </div>
+      <p class="scope">版本范围：仅面向 GitHub 公开仓库，基于启发式规则检查，不能替代人工 Review；不含后端数据库、账号系统或云端同步。此处为项目资料与截图展示，运行方式请见上游 README。</p>
+    </section>
+  </main>
+  <footer>
+    <div class="shell">
+      <p class="credit">项目来源 / 作者：<a href="https://github.com/Bistu-OSSDT-2026" target="_blank" rel="noopener noreferrer">Bistu-OSSDT-2026 / Team-18</a>。项目资料、品牌标识与截图归上游项目作者所有。</p>
+      <p>资料对应源码版本 <a href="https://github.com/Bistu-OSSDT-2026/OpenCheck/tree/ebb47349ec42dacfea613833504669d028cc7dba" target="_blank" rel="noopener noreferrer">ebb4734</a> · <a href="opencheck-LICENSE.txt">GPL-3.0 许可全文</a> · <a href="opencheck-source.json">素材来源记录</a></p>
+    </div>
+  </footer>
+</body>
+</html>

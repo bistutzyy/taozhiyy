@@ -1,0 +1,35 @@
+[
+  {
+    "id": "localsend",
+    "repository": "https://github.com/localsend/localsend",
+    "revision": "92e133aa43869e94d394fd04fa70c50a0f796a64",
+    "reviewedAt": "2026-11-01",
+    "sourceUrl": "https://localsend.org/",
+    "assetUrls": ["https://localsend.org/img/hero-desktop.webp", "https://localsend.org/img/hero-mobile.webp"],
+    "credit": "LocalSend / Tien Nam Do and contributors; original LocalSend device screenshots on the author website.",
+    "method": "Author homepage screenshot centered on its original device-interface media, resized to 960x600 WebP; thumbnail resized to 480x300. No generated illustration.",
+    "licensePath": "covers/licenses/apache-2.0.txt"
+  },
+  {
+    "id": "nature-skills",
+    "repository": "https://github.com/Yuan1z0825/nature-skills",
+    "revision": "c1cee246a489a676e3c80cae9e282da4b58cf19a",
+    "reviewedAt": "2026-11-01",
+    "sourceUrl": "https://github.com/Yuan1z0825/nature-skills/blob/c1cee246a489a676e3c80cae9e282da4b58cf19a/README.md",
+    "assetUrls": ["https://raw.githubusercontent.com/Yuan1z0825/nature-skills/c1cee246a489a676e3c80cae9e282da4b58cf19a/assets/readme-banner-cn.png"],
+    "credit": "Yuan1z0825 and the Nature Skills community; original README banner. Not a Nature or Springer Nature product.",
+    "method": "Author README screenshot including its banner, resized to 960x600 WebP; thumbnail resized to 480x300. No generated illustration.",
+    "licensePath": "covers/licenses/nature-skills-apache-2.0.txt"
+  },
+  {
+    "id": "anti-defensive-writing",
+    "repository": "https://github.com/Adkid-Zephyr/anti-defensive-writing-Skill",
+    "revision": "82d31402caa0db1790026824399044538483171b",
+    "reviewedAt": "2026-11-01",
+    "sourceUrl": "https://github.com/Adkid-Zephyr/anti-defensive-writing-Skill/blob/82d31402caa0db1790026824399044538483171b/README.md",
+    "assetUrls": [],
+    "credit": "Adkid-Zephyr; original README presentation. The text-oriented README is captured as source material, not as a standalone app.",
+    "method": "Author README screenshot, resized to 960x600 WebP; thumbnail resized to 480x300. No generated illustration or placeholder.",
+    "licensePath": "covers/licenses/anti-defensive-writing-mit.txt"
+  }
+]
