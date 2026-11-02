@@ -644,6 +644,35 @@ body {
     @apply uppercase font-bold tracking-tight text-4xl sm:right-10 sm:text-6xl md:text-8xl lg:text-[10rem];
   }
 
+  .hero-welcome {
+    color: var(--hero-title-ink, #f7fbff);
+    -webkit-text-stroke: 0.65px var(--hero-copy-edge, #061326);
+    paint-order: stroke fill;
+    text-shadow: 0 2px 5px var(--hero-copy-shadow, #030d1f);
+  }
+
+  .hero-description {
+    color: var(--hero-description-ink, #f3f8ff);
+    text-shadow: 0 1px 1px var(--hero-copy-edge, #061326), 0 1px 4px var(--hero-copy-shadow, #030d1f);
+  }
+
+  .hero-signature {
+    color: var(--hero-signature-ink, #f1f9ff);
+    -webkit-text-stroke: 0.75px rgba(9, 15, 30, 0.75);
+    paint-order: stroke fill;
+    text-shadow: 0 2px 5px rgba(3, 9, 20, 0.65);
+  }
+
+  .hero-nav-at-top .nav-hover-btn {
+    color: var(--hero-nav-ink, #f7fbff);
+    text-shadow: var(--hero-nav-shadow, 0 1px 3px #030d1f);
+  }
+
+  .hero-nav-at-top .nav-hover-btn::after,
+  .hero-nav-at-top .indicator-line {
+    background-color: var(--hero-nav-ink, #f7fbff);
+  }
+
   .hero-wordmark {
     position: absolute;
     top: clamp(4.7rem, 7vw, 6.15rem);
@@ -677,9 +706,8 @@ body {
     width: 100%;
     height: auto;
     overflow: visible;
-    filter: drop-shadow(0 0 0.35rem var(--hero-wordmark-glow))
-      drop-shadow(0 0 0.6rem var(--hero-wordmark-glow))
-      drop-shadow(0 0.4rem 0.7rem rgba(0, 0, 0, 0.25));
+    filter: drop-shadow(0 1px 0 var(--hero-wordmark-edge))
+      drop-shadow(0 2px 2px var(--hero-wordmark-shadow));
   }
 
   .hero-wordmark-stroke-path {

@@ -1,56 +1,82 @@
+import { resolveCoverIndex } from "./cover-picker/coverState.js";
+
 export const HERO_WORDMARK_THEMES = {
   1: {
-    name: "peach-gold",
-    stroke: "rgba(255, 250, 242, 0.96)",
-    strokeMid: "rgba(255, 232, 190, 0.94)",
-    strokeEnd: "rgba(255, 255, 255, 0.9)",
-    fill: "rgba(255, 250, 242, 0.74)",
-    fillMid: "rgba(255, 226, 168, 0.56)",
-    fillEnd: "rgba(255, 255, 255, 0.5)",
-    glow: "rgba(247, 210, 124, 0.76)",
-    veil: "rgba(38, 18, 26, 0.18)",
+    name: "moon-blue",
+    text: "#f7fbff",
+    subtitle: "#f3f8ff",
+    signature: "#f1f9ff",
+    edge: "rgba(6, 19, 38, 0.7)",
+    shadow: "rgba(3, 13, 31, 0.8)",
+    stroke: "rgba(246, 252, 255, 0.98)",
+    strokeMid: "rgba(214, 241, 255, 0.98)",
+    strokeEnd: "rgba(246, 249, 255, 0.98)",
+    fill: "rgba(246, 252, 255, 0.98)",
+    fillMid: "rgba(214, 241, 255, 0.98)",
+    fillEnd: "rgba(246, 249, 255, 0.98)",
+    glow: "rgba(174, 221, 255, 0.16)",
+    veil: "rgba(7, 16, 34, 0.2)",
+    wordmarkEdge: "rgba(10, 25, 48, 0.85)",
+    wordmarkShadow: "rgba(3, 14, 32, 0.65)",
   },
   2: {
-    name: "moon-blue",
-    stroke: "rgba(255, 250, 242, 0.96)",
-    strokeMid: "rgba(226, 244, 255, 0.94)",
-    strokeEnd: "rgba(255, 255, 255, 0.9)",
-    fill: "rgba(255, 250, 242, 0.74)",
-    fillMid: "rgba(234, 245, 255, 0.56)",
-    fillEnd: "rgba(255, 255, 255, 0.5)",
-    glow: "rgba(234, 245, 255, 0.72)",
-    veil: "rgba(7, 16, 34, 0.2)",
+    name: "coral-ink",
+    text: "#262238",
+    subtitle: "#242335",
+    signature: "#fff8ee",
+    edge: "rgba(255, 252, 241, 0.8)",
+    shadow: "rgba(255, 250, 238, 0.72)",
+    stroke: "rgba(42, 34, 50, 0.98)",
+    strokeMid: "rgba(57, 33, 52, 0.98)",
+    strokeEnd: "rgba(28, 38, 53, 0.98)",
+    fill: "rgba(42, 34, 50, 0.98)",
+    fillMid: "rgba(57, 33, 52, 0.98)",
+    fillEnd: "rgba(28, 38, 53, 0.98)",
+    glow: "rgba(255, 250, 238, 0.12)",
+    veil: "rgba(255, 250, 238, 0.15)",
+    wordmarkEdge: "rgba(255, 249, 238, 0.95)",
+    wordmarkShadow: "rgba(255, 245, 222, 0.8)",
   },
   3: {
-    name: "star-violet",
-    stroke: "rgba(255, 250, 242, 0.96)",
-    strokeMid: "rgba(250, 231, 255, 0.94)",
-    strokeEnd: "rgba(255, 255, 255, 0.9)",
-    fill: "rgba(255, 250, 242, 0.74)",
-    fillMid: "rgba(245, 232, 255, 0.56)",
-    fillEnd: "rgba(255, 255, 255, 0.5)",
-    glow: "rgba(245, 232, 255, 0.74)",
-    veil: "rgba(18, 10, 34, 0.2)",
+    name: "rain-blue",
+    text: "#f7f7ff",
+    subtitle: "#f3f6ff",
+    signature: "#f7f7ff",
+    edge: "rgba(9, 16, 32, 0.8)",
+    shadow: "rgba(3, 9, 20, 0.85)",
+    stroke: "rgba(247, 249, 255, 0.98)",
+    strokeMid: "rgba(217, 234, 255, 0.98)",
+    strokeEnd: "rgba(255, 244, 229, 0.98)",
+    fill: "rgba(247, 249, 255, 0.98)",
+    fillMid: "rgba(217, 234, 255, 0.98)",
+    fillEnd: "rgba(255, 244, 229, 0.98)",
+    glow: "rgba(184, 216, 255, 0.15)",
+    veil: "rgba(9, 16, 32, 0.2)",
+    wordmarkEdge: "rgba(7, 14, 29, 0.95)",
+    wordmarkShadow: "rgba(3, 9, 20, 0.78)",
   },
   4: {
-    name: "rain-mint",
-    stroke: "rgba(255, 250, 242, 0.96)",
-    strokeMid: "rgba(224, 255, 246, 0.94)",
-    strokeEnd: "rgba(255, 255, 255, 0.9)",
-    fill: "rgba(255, 250, 242, 0.74)",
-    fillMid: "rgba(214, 255, 240, 0.58)",
-    fillEnd: "rgba(255, 255, 255, 0.5)",
-    glow: "rgba(214, 255, 240, 0.76)",
-    veil: "rgba(6, 20, 18, 0.2)",
+    name: "star-rose",
+    text: "#fff6fb",
+    subtitle: "#fff4fa",
+    signature: "#fff7fb",
+    edge: "rgba(24, 10, 30, 0.8)",
+    shadow: "rgba(12, 5, 24, 0.85)",
+    stroke: "rgba(255, 246, 252, 0.98)",
+    strokeMid: "rgba(255, 217, 235, 0.98)",
+    strokeEnd: "rgba(238, 227, 255, 0.98)",
+    fill: "rgba(255, 246, 252, 0.98)",
+    fillMid: "rgba(255, 217, 235, 0.98)",
+    fillEnd: "rgba(238, 227, 255, 0.98)",
+    glow: "rgba(247, 188, 221, 0.16)",
+    veil: "rgba(24, 10, 30, 0.2)",
+    wordmarkEdge: "rgba(23, 9, 32, 0.9)",
+    wordmarkShadow: "rgba(11, 5, 24, 0.75)",
   },
 };
 
-export const getHeroWordmarkTheme = (index) => {
-  // 主题颜色循环偏移一位：1→2, 2→3, 3→4, 4→1
-  // 让 wordmark 显示"下一封面"的颜色，营造预告/呼应感
-  const shifted = ((index - 1 + 1) % 4) + 1;
-  return HERO_WORDMARK_THEMES[shifted] || HERO_WORDMARK_THEMES[1];
-};
+export const getHeroWordmarkTheme = (index) =>
+  HERO_WORDMARK_THEMES[resolveCoverIndex(index)];
 
 export const getHeroWordmarkStyle = (index) => {
   const theme = getHeroWordmarkTheme(index);
@@ -63,5 +89,20 @@ export const getHeroWordmarkStyle = (index) => {
     "--hero-wordmark-fill-end": theme.fillEnd,
     "--hero-wordmark-glow": theme.glow,
     "--hero-wordmark-veil": theme.veil,
+    "--hero-wordmark-edge": theme.wordmarkEdge,
+    "--hero-wordmark-shadow": theme.wordmarkShadow,
+  };
+};
+
+export const getHeroTextStyle = (index) => {
+  const theme = getHeroWordmarkTheme(index);
+  return {
+    "--hero-title-ink": theme.text,
+    "--hero-description-ink": theme.subtitle,
+    "--hero-signature-ink": theme.signature,
+    "--hero-copy-edge": theme.edge,
+    "--hero-copy-shadow": theme.shadow,
+    "--hero-nav-ink": theme.text,
+    "--hero-nav-shadow": `0 1px 2px ${theme.edge}, 0 2px 4px ${theme.shadow}`,
   };
 };

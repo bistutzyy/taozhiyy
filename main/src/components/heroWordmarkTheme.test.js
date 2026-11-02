@@ -1,48 +1,85 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import * as themes from "./heroWordmarkTheme.js";
 
-import {
-  HERO_WORDMARK_THEMES,
-  getHeroWordmarkStyle,
-  getHeroWordmarkTheme,
-} from "./heroWordmarkTheme.js";
-
-test("provides four wordmark palettes for the hero wallpapers (shifted by one for preview effect)", () => {
+test("matches each text palette to its current wallpaper instead of an offset preview", () => {
   assert.deepEqual(
-    Object.keys(HERO_WORDMARK_THEMES).map(Number),
-    [1, 2, 3, 4]
+    Object.keys(themes.HERO_WORDMARK_THEMES).map(Number),
+    [1, 2, 3, 4],
   );
-
-  // wordmark color is shifted by +1 to preview the next wallpaper
-  assert.equal(getHeroWordmarkTheme(1).name, "moon-blue");
-  assert.equal(getHeroWordmarkTheme(2).name, "star-violet");
-  assert.equal(getHeroWordmarkTheme(3).name, "rain-mint");
-  assert.equal(getHeroWordmarkTheme(4).name, "peach-gold");
+  assert.deepEqual(
+    [1, 2, 3, 4].map((index) => themes.getHeroWordmarkTheme(index).name),
+    ["moon-blue", "coral-ink", "rain-blue", "star-rose"],
+  );
+  for (const index of [0, 99, -1, NaN, "__proto__", {}, null]) {
+    assert.equal(
+      themes.getHeroWordmarkTheme(index),
+      themes.HERO_WORDMARK_THEMES[1],
+    );
+  }
 });
 
-test("keeps every wordmark stroke close to white for photo contrast", () => {
-  Object.values(HERO_WORDMARK_THEMES).forEach((theme) => {
-    assert.equal(theme.stroke, "rgba(255, 250, 242, 0.96)");
-  });
+test("keeps handwritten fills solid enough to remain distinct from busy photos", () => {
+  for (const theme of Object.values(themes.HERO_WORDMARK_THEMES)) {
+    for (const key of ["fill", "fillMid", "fillEnd"]) {
+      const alpha = Number(theme[key].match(/,\s*([\d.]+)\)$/)?.[1]);
+      assert.ok(alpha >= 0.94, `${theme.name} ${key} must not wash out`);
+    }
+    assert.equal(
+      themes.getHeroWordmarkStyle(
+        Object.keys(themes.HERO_WORDMARK_THEMES).find(
+          (index) => themes.HERO_WORDMARK_THEMES[index] === theme,
+        ),
+      )["--hero-wordmark-fill"],
+      theme.fill,
+    );
+  }
 });
 
-test("returns a valid palette for any index via the shift formula", () => {
-  // formula: ((index - 1 + 1) % 4) + 1 → 99 maps to slot 4 (rain-mint)
-  assert.equal(getHeroWordmarkTheme(99).name, "rain-mint");
-  // negative / zero also resolves to a real palette
-  assert.ok(Object.values(HERO_WORDMARK_THEMES).includes(getHeroWordmarkTheme(0)));
+test("uses dark upper text on the bright second cover and light text on the other covers", () => {
+  assert.equal(typeof themes.getHeroTextStyle, "function");
+  const luminance = (hex) => {
+    const rgb = hex
+      .slice(1)
+      .match(/../g)
+      .map((value) => parseInt(value, 16) / 255)
+      .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+  };
+  for (const index of [1, 2, 3, 4]) {
+    const style = themes.getHeroTextStyle(index);
+    assert.equal(luminance(style["--hero-title-ink"]) < 0.08, index === 2);
+    assert.ok(
+      luminance(style["--hero-signature-ink"]) > 0.85,
+      "lower signatures stay light over darker image regions",
+    );
+    assert.equal(style["--hero-nav-ink"], style["--hero-title-ink"]);
+    assert.ok(
+      Object.keys(style).every(
+        (key) => !/font|size|position|width|height|animation/.test(key),
+      ),
+    );
+  }
 });
 
-test("maps a wordmark palette to CSS variables (shifted)", () => {
-  // index 4 → shifted to slot 1 (peach-gold)
-  assert.deepEqual(getHeroWordmarkStyle(4), {
-    "--hero-wordmark-stroke": "rgba(255, 250, 242, 0.96)",
-    "--hero-wordmark-stroke-mid": "rgba(255, 232, 190, 0.94)",
-    "--hero-wordmark-stroke-end": "rgba(255, 255, 255, 0.9)",
-    "--hero-wordmark-fill": "rgba(255, 250, 242, 0.74)",
-    "--hero-wordmark-fill-mid": "rgba(255, 226, 168, 0.56)",
-    "--hero-wordmark-fill-end": "rgba(255, 255, 255, 0.5)",
-    "--hero-wordmark-glow": "rgba(247, 210, 124, 0.76)",
-    "--hero-wordmark-veil": "rgba(38, 18, 26, 0.18)",
-  });
+test("applies colors only to hero copy and top-of-home navigation, restoring shared variables", () => {
+  const hero = readFileSync(new URL("./Hero.jsx", import.meta.url), "utf8");
+  const nav = readFileSync(new URL("./Navbar.jsx", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+  assert.match(hero, /style=\{getHeroTextStyle\(currentIndex\)\}/);
+  assert.match(hero, /data-home-cover=\{currentIndex\}/);
+  assert.match(hero, /hero-welcome/);
+  assert.match(hero, /hero-description/);
+  assert.match(hero, /hero-signature/);
+  assert.match(hero, /getPropertyPriority\(property\)/);
+  assert.match(hero, /removeProperty\(property\)/);
+  assert.match(
+    nav,
+    /pathname === "\/" && currentScrollY === 0 && "hero-nav-at-top"/,
+  );
+  assert.match(
+    css,
+    /\.hero-nav-at-top \.nav-hover-btn\s*\{[^}]*var\(--hero-nav-ink/,
+  );
 });
