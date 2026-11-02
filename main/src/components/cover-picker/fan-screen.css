@@ -1,7 +1,6 @@
 .fan-room {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 12px;
+  grid-template-rows: minmax(0, 1fr);
   min-height: 0;
   width: 100%;
   padding: 0 28px 22px;
@@ -285,97 +284,6 @@
   opacity: 0;
   transition: opacity 0.2s;
 }
-.fan-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: fit-content;
-  max-width: 100%;
-  justify-self: center;
-  min-height: 60px;
-  padding: 8px;
-  border: 1px solid #f1e6d9b8;
-  border-radius: 7px;
-  background: #f4f6efdc;
-  box-shadow: 0 7px 25px #10273521;
-  color: #46585b;
-}
-.fan-command {
-  position: relative;
-  display: grid;
-  place-items: center;
-  flex: 0 0 40px;
-  width: 40px;
-  height: 42px;
-  padding: 0;
-  border: 1px solid #bdafa32e;
-  border-radius: 4px;
-  background: #ffffff57;
-  color: #526a6d;
-  cursor: pointer;
-}
-.fan-command > svg {
-  width: 18px;
-  height: 18px;
-  stroke-width: 1.6;
-}
-.fan-command:hover:not(:disabled) {
-  background: #fce6e8;
-  border-color: #cba0a8;
-}
-.fan-command:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.fan-command__tip {
-  display: none;
-  position: absolute;
-  z-index: 12;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 6px 9px;
-  border-radius: 4px;
-  background: #334850eb;
-  color: #fff;
-  font-size: 11px;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.fan-command:hover:not(:disabled) .fan-command__tip,
-.fan-command:focus-visible .fan-command__tip {
-  display: block;
-}
-.fan-apply {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-  min-height: 42px;
-  padding: 9px 14px;
-  border: 1px solid #cfb0b1;
-  border-radius: 4px;
-  background: #efced2;
-  color: #644f58;
-  cursor: pointer;
-}
-.fan-apply svg {
-  width: 16px;
-  height: 16px;
-}
-.fan-apply span {
-  font-size: 12px;
-  white-space: nowrap;
-}
-.fan-apply:hover:not(:disabled) {
-  background: #f7dce0;
-}
-.fan-apply:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
 @keyframes fan-loading {
   to {
     transform: rotate(360deg);
@@ -397,7 +305,6 @@
 }
 @media (max-width: 767px) {
   .fan-room {
-    gap: 10px;
     padding: 0 16px 14px;
   }
   .fan-room__stage {
@@ -436,18 +343,9 @@
   .fan-screen__seal {
     right: 7%;
   }
-  .fan-apply {
-    min-height: 42px;
-    padding-inline: 8px;
-  }
-  .fan-command__tip {
-    left: 0;
-    transform: none;
-  }
 }
 @media (max-height: 450px) and (orientation: landscape) {
   .fan-room {
-    gap: 4px;
     padding: 0 12px 8px;
   }
   .fan-screen {
@@ -485,23 +383,6 @@
   .fan-screen__seal {
     right: 12%;
     bottom: 8%;
-  }
-  .fan-controls {
-    min-height: 50px;
-    padding: 6px 8px;
-  }
-  .fan-command {
-    width: 36px;
-    height: 36px;
-    flex-basis: 36px;
-  }
-  .fan-apply {
-    width: 40px;
-    min-height: 36px;
-    padding: 0;
-  }
-  .fan-apply span {
-    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

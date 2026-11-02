@@ -111,32 +111,27 @@ test("fan leaves preview on fine hover or focus and explicitly select on click",
   assert.match(ui, /\{ready && \(?\s*<img[\s\S]*?src=\{src\}/);
 });
 
-test("the room has only random, clean-view and apply commands without a slider", () => {
-  const ui = room();
+test("cover selection has no bottom toolbar or redundant commands", () => {
+  const ui = room() + source();
   for (const text of ["随机一景", "纯净观赏", "使用此封面"])
-    assert.ok(ui.includes(text));
+    assert.ok(!ui.includes(text), `${text} must be removed`);
+  assert.doesNotMatch(ui, /fan-controls|fan-command|fan-apply/);
   assert.doesNotMatch(ui, /<input\b|<output\b|type="range"|亮度/);
-  assert.match(ui, /onShuffle/);
-  assert.match(ui, /onCleanView/);
-  assert.match(ui, /onClick=\{onConfirm\}/);
-  assert.match(ui, /disabled=\{busy \|\| !readyPreview\}/);
+  assert.doesNotMatch(ui, /onShuffle|onCleanView|onConfirm|cleanView|getRandomCoverIndex/);
+  assert.match(ui, /onSelect=\{confirmCover\}/);
   assert.match(ui, /from "react-icons\/lu"/);
 });
 
-test("remaining controls form a compact centered row without brightness styles", () => {
+test("fan stage fills one row without a reserved toolbar track", () => {
   const css = read("./fan-screen.css");
-  const controls = css.match(/\.fan-controls\s*\{([^}]+)\}/)?.[1] ?? "";
-  assert.match(controls, /display:\s*flex/);
-  assert.match(controls, /justify-content:\s*center/);
-  assert.match(controls, /justify-self:\s*center/);
-  assert.match(controls, /width:\s*fit-content/);
-  assert.match(controls, /max-width:\s*100%/);
+  const stage = css.match(/\.fan-room\s*\{([^}]+)\}/)?.[1] ?? "";
+  assert.match(stage, /grid-template-rows:\s*minmax\(0, 1fr\);/);
+  assert.doesNotMatch(css, /fan-controls|fan-command|fan-apply/);
   assert.doesNotMatch(css + read("./cover-mobile.css"), /brightness|__reset/i);
 });
 
-test("random selection stays in the preview and obeys image readiness", () => {
+test("direct selection obeys image readiness", () => {
   const ui = source();
-  assert.match(ui, /getRandomCoverIndex/);
   assert.match(
     ui,
     /readyIndexes\.has\(index\) && !failedIndexes\.has\(index\)/,
@@ -162,22 +157,16 @@ test("selected leaf expands to full-screen with cancellable captured-index Flip"
   assert.match(ui, /data-phase=/);
 });
 
-test("clean view hides editor and supplies a focusable return with Escape support", () => {
+test("Escape closes the picker directly without an intermediate clean view", () => {
   const ui = source();
-  assert.match(ui, /hidden=\{cleanView\}/);
-  assert.match(ui, /aria-label="返回封面编辑"/);
-  assert.match(ui, /returnToEditor/);
-  assert.match(ui, /data-clean=/);
-  assert.match(ui, /editorFocus\.current/);
-  assert.match(ui, /cleanReturnRef\.current\?\.focus/);
+  assert.match(ui, /onCancel=\{\(event\) => \{\s*event\.preventDefault\(\);\s*onClose\(\);/);
+  assert.doesNotMatch(ui + read("./cover-picker.css"), /cleanView|data-clean|cover-picker__return|cover-picker__preview/);
 });
 
-test("the backdrop uses four regions and only clean view mounts a full-screen photo", () => {
+test("the backdrop keeps four regions without a separate full-screen photo", () => {
   const ui = source() + room();
   assert.match(ui, /<CoverQuadrants\b/);
-  assert.match(ui, /cleanView && displayedCover &&/);
-  assert.match(ui, /src=\{displayedCover\.src\}/);
-  assert.match(ui, /data-preview-index=\{displayedCover\.index\}/);
+  assert.doesNotMatch(ui, /displayedCover|cover-picker__preview/);
   assert.doesNotMatch(ui, /previousCover|setPreviousCover/);
   assert.doesNotMatch(ui, /setInterval|new Image|compass|poem|<canvas/i);
   const css = read("./cover-picker.css") + read("./fan-screen.css");

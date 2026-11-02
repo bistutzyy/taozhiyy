@@ -2,11 +2,10 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
-import { LuArrowLeft, LuFlower2, LuX } from "react-icons/lu";
+import { LuFlower2, LuX } from "react-icons/lu";
 import CoverFan from "./CoverFan";
 import CoverQuadrants from "./CoverQuadrants";
 import {
-  getRandomCoverIndex,
   updateCoverPreviewTrigger,
   getHighlightedCoverIndex,
 } from "./coverState.js";
@@ -29,15 +28,12 @@ function CoverPickerSession({
 }) {
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
-  const cleanReturnRef = useRef(null);
-  const editorFocus = useRef(null);
   const revealRef = useRef(null);
   const projectionTimeline = useRef(null);
   const latestApply = useRef(onApply);
   latestApply.current = onApply;
   const confirming = useRef(false);
   const [busy, setBusy] = useState(false);
-  const [cleanView, setCleanView] = useState(false);
   const [selection, setSelection] = useState(null);
   const [previewIndex, setPreviewIndex] = useState(currentIndex);
   const [previewTriggers, setPreviewTriggers] = useState([]);
@@ -47,13 +43,7 @@ function CoverPickerSession({
   const highlightedIndex =
     selection?.index ?? getHighlightedCoverIndex(previewTriggers, available);
   const activePreviewIndex = highlightedIndex ?? previewIndex;
-  const nextCover = covers.find(
-    ({ index }) => index === activePreviewIndex && available.includes(index),
-  );
-  const displayedCover =
-    nextCover ?? covers.find(({ index }) => available.includes(index));
-
-  // A restored focus/command must be both the visible preview and the apply target.
+  // A restored focus must be both the visible preview and the apply target.
   useLayoutEffect(() => {
     if (
       !confirming.current &&
@@ -129,19 +119,6 @@ function CoverPickerSession({
     };
   }, []);
 
-  useEffect(() => {
-    if (cleanView) cleanReturnRef.current?.focus({ preventScroll: true });
-    else if (editorFocus.current?.isConnected)
-      editorFocus.current.focus({ preventScroll: true });
-  }, [cleanView]);
-  const enterCleanView = () => {
-    if (confirming.current) return;
-    editorFocus.current = document.activeElement;
-    setPreviewIndex(activePreviewIndex);
-    setPreviewTriggers([]);
-    setCleanView(true);
-  };
-  const returnToEditor = () => setCleanView(false);
   const previewCover = (index, source = "pointer") => {
     if (!confirming.current && available.includes(index)) {
       setPreviewIndex(index);
@@ -155,11 +132,6 @@ function CoverPickerSession({
       setPreviewTriggers((previous) =>
         updateCoverPreviewTrigger(previous, source, index, false),
       );
-  };
-  const shuffleCover = () => {
-    if (confirming.current) return;
-    const index = getRandomCoverIndex(available, activePreviewIndex);
-    if (index !== null) previewCover(index, "command");
   };
   const confirmCover = (requestedIndex = activePreviewIndex, source) => {
     const index = requestedIndex;
@@ -236,12 +208,10 @@ function CoverPickerSession({
       ref={dialogRef}
       className="cover-picker"
       aria-labelledby="cover-picker-title"
-      data-clean={cleanView}
       data-phase={busy ? "unfolding" : "select"}
       onCancel={(event) => {
         event.preventDefault();
-        if (cleanView) returnToEditor();
-        else onClose();
+        onClose();
       }}
     >
       <div className="cover-picker__media" aria-hidden="true">
@@ -251,19 +221,9 @@ function CoverPickerSession({
           failedIndexes={failedIndexes}
           highlightedIndex={highlightedIndex}
           previewIndex={activePreviewIndex}
-          hidden={cleanView}
         />
-        {cleanView && displayedCover && (
-          <img
-            className="cover-picker__preview"
-            data-preview-index={displayedCover.index}
-            src={displayedCover.src}
-            alt=""
-            draggable="false"
-          />
-        )}
       </div>
-      <div className="cover-picker__content" hidden={cleanView}>
+      <div className="cover-picker__content">
         <header className="cover-picker__header">
           <div className="cover-picker__heading">
             <LuFlower2 aria-hidden="true" />
@@ -295,25 +255,9 @@ function CoverPickerSession({
           onPreview={previewCover}
           onPreviewEnd={endPreview}
           onSelect={confirmCover}
-          onShuffle={shuffleCover}
-          onCleanView={enterCleanView}
-          onConfirm={() => confirmCover()}
           onRetry={onRetry}
         />
       </div>
-      {cleanView && (
-        <button
-          ref={cleanReturnRef}
-          type="button"
-          className="cover-picker__return"
-          aria-label="返回封面编辑"
-          title="返回封面编辑"
-          onClick={returnToEditor}
-        >
-          <LuArrowLeft aria-hidden="true" />
-          <span>返回编辑</span>
-        </button>
-      )}
       {selection && (
         <>
           <div

@@ -17,7 +17,7 @@
   .cover-picker__title-grid {
     display: inline;
   }
-  .cover-picker:not([data-clean="true"]) .cover-picker__media {
+  .cover-picker__media {
     background: #202429;
   }
   .fan-room__stage {
