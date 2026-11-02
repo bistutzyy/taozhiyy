@@ -1,5 +1,6 @@
 import { motionProjects } from './projects-motion.js';
 import { aiProjects } from './projects-ai.js';
+import { utilityProjects } from './projects-utilities.js';
 
 const publicBase = import.meta.env?.BASE_URL || '/';
 const publicAsset = path => publicBase + path.replace(/^\//, '');
@@ -38,6 +39,7 @@ export const projects = [
   },
   ...motionProjects,
   ...aiProjects,
+  ...utilityProjects,
 ].map(project => ({...project,cover:publicAsset(project.cover),preview:publicAsset(project.cover.replace('/covers/','/thumbs/'))}));
 
 export function filterProjects(items, query = '') {
