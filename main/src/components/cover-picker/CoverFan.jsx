@@ -1,32 +1,12 @@
 import { useId } from "react";
 import {
   LuCheck,
-  LuExpand,
   LuFlower2,
   LuLoaderCircle,
   LuRotateCw,
-  LuShuffle,
 } from "react-icons/lu";
 import "./fan-screen.css";
 import "./cover-mobile.css";
-
-function Command({ label, icon: Icon, onClick, disabled }) {
-  return (
-    <button
-      type="button"
-      className="fan-command"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      <Icon aria-hidden="true" />
-      <span className="fan-command__tip" aria-hidden="true">
-        {label}
-      </span>
-    </button>
-  );
-}
 
 export default function CoverFan({
   covers,
@@ -39,17 +19,10 @@ export default function CoverFan({
   onPreview,
   onPreviewEnd,
   onSelect,
-  onShuffle,
-  onCleanView,
-  onConfirm,
   onRetry,
 }) {
   const clipId = `fan-paper-${useId().replaceAll(":", "")}`;
   const clipStyle = { clipPath: `url("#${clipId}")` };
-  const available = covers.filter(
-    ({ index }) => readyIndexes.has(index) && !failedIndexes.has(index),
-  );
-  const readyPreview = available.some(({ index }) => index === previewIndex);
   return (
     <section
       className={`fan-room${busy ? " is-unfolding" : ""}`}
@@ -190,33 +163,6 @@ export default function CoverFan({
             <span>/ {String(covers.length).padStart(2, "0")}</span>
           </div>
         </div>
-      </div>
-      <div className="fan-controls" role="group" aria-label="封面控制">
-        <Command
-          label="随机一景"
-          icon={LuShuffle}
-          onClick={onShuffle}
-          disabled={
-            busy || !available.some(({ index }) => index !== previewIndex)
-          }
-        />
-        <Command
-          label="纯净观赏"
-          icon={LuExpand}
-          onClick={onCleanView}
-          disabled={busy || !readyPreview}
-        />
-        <button
-          type="button"
-          className="fan-apply"
-          aria-label="使用此封面"
-          title="使用此封面"
-          disabled={busy || !readyPreview}
-          onClick={onConfirm}
-        >
-          <LuCheck aria-hidden="true" />
-          <span>{busy ? "展开中" : "使用此封面"}</span>
-        </button>
       </div>
     </section>
   );

@@ -75,18 +75,9 @@ async function pixelSamples(buffer) {
     await page.mouse.move(5, 5); await highlight(page, 1);
     assert.equal(await page.locator(".cover-quadrants").getAttribute("data-preview-index"), "1", "focus fallback must also change the apply target");
     await command(page, "关闭封面选择").focus(); await highlight(page, null);
-    await command(page, "随机一景").click();
-    const chosen = await page.locator(".cover-quadrants").getAttribute("data-preview-index");
-    await highlight(page, Number(chosen));
-    await leaf(page, Number(chosen) === 2 ? 3 : 2).locator("[data-fan-hit]").hover();
-    await page.mouse.move(5, 5); await highlight(page, Number(chosen));
-    assert.equal(await page.locator(".cover-quadrants").getAttribute("data-preview-index"), chosen, "command fallback must also change the apply target");
-    await command(page, "纯净观赏").click();
-    assert.equal(await page.locator(".cover-quadrants").isVisible(), false);
-    assert.equal(await page.locator(".cover-picker__preview").evaluate(img => getComputedStyle(img).objectFit), "contain");
-    assert.equal(await page.locator(".cover-picker__preview").getAttribute("src"), getHeroCoverSrc(Number(chosen)));
-    await page.keyboard.press("Escape"); await highlight(page, null);
-    assert.equal(await page.locator(".cover-quadrants").isVisible(), true);
+    assert.equal(await page.locator(".fan-controls").count(), 0);
+    for (const name of ["随机一景", "纯净观赏", "使用此封面"])
+      assert.equal(await command(page, name).count(), 0);
     await page.keyboard.press("Escape");
     await page.locator("dialog.cover-picker").waitFor({ state: "detached" });
     assert.equal(await page.evaluate(key => localStorage.getItem(key), key), null);
@@ -103,7 +94,7 @@ async function pixelSamples(buffer) {
     assert.equal(await page.locator("#previous-image").count(), 0);
     assert.deepEqual(errors, []);
     await context.close();
-    console.log("PASS four-panel pixel brightness, pointer/focus fallback, clean view, cancellation and captured selection");
+    console.log("PASS four-panel pixel brightness, pointer/focus fallback, no toolbar, cancellation and captured selection");
 
     const failure = await pageFor({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
     let failed = false;

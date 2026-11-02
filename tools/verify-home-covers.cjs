@@ -94,15 +94,10 @@ async function checkFit(page, width, height) {
       const rect = dialog.getBoundingClientRect();
       const bad = [
         ...dialog.querySelectorAll(
-          "button,input,[data-fit-text],.fan-command__tip",
+          "button,[data-fit-text]",
         ),
       ]
         .filter((el) => {
-          if (
-            el.matches(".fan-command__tip") &&
-            getComputedStyle(el).visibility === "hidden"
-          )
-            return false;
           const r = el.getBoundingClientRect();
           return (
             r.width &&
@@ -111,8 +106,7 @@ async function checkFit(page, width, height) {
               r.top < -0.5 ||
               r.right > innerWidth + 0.5 ||
               r.bottom > innerHeight + 0.5 ||
-              (!el.matches(".fan-command") &&
-                el.scrollWidth > el.clientWidth + 1))
+              el.scrollWidth > el.clientWidth + 1)
           );
         })
         .map((el) => ({
@@ -200,14 +194,13 @@ async function newPage(browser, options = {}) {
       assert.equal(await saved(page, storageKey), null);
       assert.equal(await page.getByRole("slider").count(), 0);
       assert.equal(await command(page, "重置亮度").count(), 0);
-      assert.equal(await page.locator(".fan-controls button").count(), 3);
+      assert.equal(await page.locator(".fan-controls").count(), 0);
+      for (const name of ["随机一景", "纯净观赏", "使用此封面"])
+        assert.equal(await command(page, name).count(), 0);
       assert.equal(
         await filter(page, ".cover-picker__media"),
         "none",
       );
-      const controls = await page.locator(".fan-controls").boundingBox();
-      assert.ok(Math.abs(controls.x + controls.width / 2 - width / 2) < 1);
-      assert.ok(controls.width < 280 && controls.height <= 60, "controls stay compact");
       await page.waitForFunction(() =>
         [...document.querySelectorAll("dialog.cover-picker img")].every(
           (img) => img.complete && img.naturalWidth > 0,
@@ -216,51 +209,10 @@ async function newPage(browser, options = {}) {
       await page.waitForTimeout(350);
       await checkFit(page, width, height);
       await shot(page, `picker-${width}`);
-      await command(page, "纯净观赏").click();
-      assert.equal(
-        await page.locator("dialog.cover-picker").getAttribute("data-clean"),
-        "true",
-      );
-      assert.equal(
-        await page.locator("dialog.cover-picker button:visible").count(),
-        1,
-      );
-      assert.equal(
-        await page
-          .locator("dialog.cover-picker [data-preview-index]")
-          .evaluate((el) => getComputedStyle(el).objectFit),
-        "contain",
-        "clean view shows the full original aspect ratio",
-      );
-      assert.equal(
-        await page.evaluate(() =>
-          document.activeElement.getAttribute("aria-label"),
-        ),
-        "返回封面编辑",
-      );
-      await checkFit(page, width, height);
-      await shot(page, `clean-${width}`);
-      await page.keyboard.press("Escape");
-      assert.equal(
-        await page.locator("dialog.cover-picker").getAttribute("data-clean"),
-        "false",
-      );
-      assert.equal(
-        await page.evaluate(() =>
-          document.activeElement.getAttribute("aria-label"),
-        ),
-        "纯净观赏",
-      );
       const before = await previewIndex(page);
-      await command(page, "随机一景").click();
-      await page.waitForFunction(
-        (previous) => document.querySelector("dialog.cover-picker [data-preview-index]")?.dataset.previewIndex !== previous,
-        before,
-      );
+      await choose(page, 4);
       assert.notEqual(await previewIndex(page), before);
       assert.equal(await saved(page, storageKey), null);
-      await command(page, "纯净观赏").click();
-      await command(page, "返回封面编辑").click();
       await page.keyboard.press("Escape");
       await closedPicker(page);
       assert.equal(
@@ -276,7 +228,7 @@ async function newPage(browser, options = {}) {
       if (width === 1440) {
         await openPicker(page);
         await choose(page, 4);
-        await command(page, "使用此封面").click();
+        await frame(page, 4).locator("[data-fan-hit]").click();
         assert.equal(
           await page.locator("dialog.cover-picker").getAttribute("data-phase"),
           "unfolding",
@@ -359,7 +311,7 @@ async function newPage(browser, options = {}) {
       assert.ok(Math.abs((await page.evaluate(() => scrollY)) - scroll) < 2);
       assert.deepEqual(errors, []);
       console.log(
-        `PASS ${width}x${height}: responsive cover layout, compact controls without a slider, preview, selection, clean view, cancellation, random entry and keyboard`,
+        `PASS ${width}x${height}: responsive cover layout, no toolbar, preview, direct selection, cancellation, random entry and keyboard`,
       );
       await context.close();
     }
@@ -383,7 +335,7 @@ async function newPage(browser, options = {}) {
     );
     await choose(reduced.page, 2);
     assert.equal(await reduced.page.getByRole("slider").count(), 0);
-    await command(reduced.page, "使用此封面").click();
+    await frame(reduced.page, 2).press("Enter");
     await closedPicker(reduced.page);
     await reduced.page.waitForTimeout(100);
     assert.equal(await reduced.page.locator("#previous-image").count(), 0);
@@ -414,8 +366,9 @@ async function newPage(browser, options = {}) {
       assert.equal(await frame(slow.page, 4).isDisabled(), true);
       assert.equal(await frame(slow.page, 4).getAttribute("aria-busy"), "true");
       for (let i = 0; i < 4; i++) {
-        await command(slow.page, "随机一景").click();
+        await frame(slow.page, 4).evaluate(button => button.click());
         assert.notEqual(await previewIndex(slow.page), "4");
+        assert.equal(await slow.page.locator("dialog.cover-picker[open]").count(), 1);
       }
       release();
       await slow.page.waitForFunction(
@@ -459,7 +412,7 @@ async function newPage(browser, options = {}) {
       await slow.context.close();
     }
     console.log(
-      "PASS delayed media, ready-only shuffle and exact body restoration",
+      "PASS delayed media, disabled selection and exact body restoration",
     );
 
     const failing = await newPage(browser, {
@@ -475,7 +428,7 @@ async function newPage(browser, options = {}) {
     await failing.page.locator(".cover-picker__retry").waitFor();
     assert.equal(await frame(failing.page, 4).isDisabled(), true);
     for (let i = 0; i < 3; i++) {
-      await command(failing.page, "随机一景").click();
+      await frame(failing.page, 4).evaluate(button => button.click());
       assert.notEqual(await previewIndex(failing.page), "4");
     }
     fail = false;
@@ -484,7 +437,7 @@ async function newPage(browser, options = {}) {
       () => !document.querySelector('[data-cover-index="4"]').disabled,
     );
     await choose(failing.page, 4);
-    await command(failing.page, "使用此封面").click();
+    await applyLeaf(failing.page, 4);
     await closedPicker(failing.page);
     assert.ok(
       (await failing.page.locator("#bg-image").getAttribute("src")).endsWith(
@@ -492,7 +445,7 @@ async function newPage(browser, options = {}) {
       ),
     );
     await failing.context.close();
-    console.log("PASS failed slide retry and shuffle exclusion");
+    console.log("PASS failed slide retry and direct selection");
 
     const savedFailure = await newPage(browser, {
       viewport: { width: 390, height: 844 },
