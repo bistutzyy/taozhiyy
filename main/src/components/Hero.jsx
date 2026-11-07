@@ -47,6 +47,7 @@ const Hero = () => {
   const [failedIndexes, setFailedIndexes] = useState(() => new Set());
   const initialIndex = useRef(currentIndex);
   const pending = useRef(new Map());
+  const decoded = useRef(new Set());
   const mounted = useRef(false);
 
   useEffect(() => {
@@ -76,7 +77,11 @@ const Hero = () => {
   }, []);
 
   const requestImage = useCallback((index) => {
-    if (!COVER_INDEXES.includes(index) || pending.current.has(index)) return;
+    if (
+      !COVER_INDEXES.includes(index) ||
+      pending.current.has(index) ||
+      decoded.current.has(index)
+    ) return;
     setFailedIndexes((previous) => {
       const next = new Set(previous);
       next.delete(index);
@@ -97,6 +102,7 @@ const Hero = () => {
       )
         return;
       pending.current.delete(index);
+      decoded.current.add(index);
       setLoadedHeroIndexes((previous) => new Set(previous).add(index));
     };
     image.onerror = () => {
@@ -110,10 +116,7 @@ const Hero = () => {
   useEffect(() => {
     mounted.current = true;
     const requests = pending.current;
-    [
-      initialIndex.current,
-      ...COVER_INDEXES.filter((index) => index !== initialIndex.current),
-    ].forEach(requestImage);
+    requestImage(initialIndex.current);
     return () => {
       mounted.current = false;
       requests.forEach((image) => {
@@ -125,6 +128,11 @@ const Hero = () => {
   }, [requestImage]);
 
   useEffect(() => {
+    if (!selectorOpen) return;
+    COVER_INDEXES.forEach(requestImage);
+  }, [selectorOpen, requestImage]);
+
+  useEffect(() => {
     if (
       currentIndex !== 1 &&
       failedIndexes.has(currentIndex) &&
@@ -132,8 +140,14 @@ const Hero = () => {
     ) {
       setCurrentIndex(1);
       setPreviousIndex(1);
+    } else if (
+      currentIndex !== 1 &&
+      failedIndexes.has(currentIndex) &&
+      !failedIndexes.has(1)
+    ) {
+      requestImage(1);
     }
-  }, [currentIndex, failedIndexes, loadedHeroIndexes]);
+  }, [currentIndex, failedIndexes, loadedHeroIndexes, requestImage]);
 
   useEffect(() => {
     const handler = () => {

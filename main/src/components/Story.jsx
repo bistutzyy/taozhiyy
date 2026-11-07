@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import Button from "./Button";
 import AnimatedTitle from "./AnimatedTitle";
+import DeferredImage from "./DeferredImage";
 import { cosAsset } from "../lib/cosAsset.js";
 
 const entranceImageSrc = cosAsset(
@@ -100,7 +101,7 @@ const FloatingImage = () => {
             <div className="story-img-mask">
               <div className="story-note-label">FOLLOW-UP NOTE</div>
               <div className="story-img-content">
-                <img
+                <DeferredImage
                   ref={frameRef}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
