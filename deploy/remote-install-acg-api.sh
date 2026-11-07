@@ -279,6 +279,7 @@ add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
 add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
 location /cos/ {
+    include /etc/nginx/snippets/taozhiyy-cos-image-cache*.conf;
     proxy_pass https://tzyy-1330068502.cos.ap-beijing.myqcloud.com/;
     proxy_ssl_server_name on;
     proxy_set_header Host "tzyy-1330068502.cos.ap-beijing.myqcloud.com";

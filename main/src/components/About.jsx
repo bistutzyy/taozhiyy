@@ -3,6 +3,7 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/all";
 
 import AnimatedTitle from "./AnimatedTitle";
+import DeferredImage from "./DeferredImage";
 import { cosAsset } from "../lib/cosAsset.js";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -119,7 +120,7 @@ const About = () => {
             </span>
           </div>
 
-          <img
+          <DeferredImage
             src={cosAsset(
               "AI%E8%87%AA%E5%8A%A8%E5%8C%96%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87/main/img/about.webp"
             )}
