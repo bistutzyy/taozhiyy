@@ -13,6 +13,9 @@ import tempfile
 
 
 INCLUDE = "include /etc/nginx/snippets/taozhiyy-cos-image-cache*.conf;"
+# Accept upgrades only from the exact v1 snippets installed by this tool.
+V1_HTTP_HASH = "b2fce0df69ea7df1a01d7378e07f5810099a061a90c33c7856e7fac3ee165485"
+V1_LOCATION_HASH = "384d96e84ac6dc6a6b6dfd568444d2d33ea261f548595ab919cb837fdf75aec4"
 HTTP_CONFIG = r"""# Managed public-original-image cache. Audio/video Range requests bypass it.
 proxy_cache_path /var/cache/nginx/taozhiyy-cos levels=1:2 keys_zone=taozhiyy_cos_images:8m max_size=256m inactive=7d use_temp_path=off;
 map $uri $taozhiyy_cos_not_image {
@@ -28,21 +31,36 @@ map "$http_authorization|$http_range|$args" $taozhiyy_cos_nonstandard {
     default 1;
     "||" 0;
 }
+map "$taozhiyy_cos_not_image$taozhiyy_cos_bad_method$taozhiyy_cos_nonstandard" $taozhiyy_cos_cache_zone {
+    default off;
+    "000" taozhiyy_cos_images;
+}
 map $upstream_status $taozhiyy_cos_bad_status {
     default 1;
     200 0;
 }
+map "$taozhiyy_cos_cache_zone|$upstream_cache_status" $taozhiyy_cos_cache_status {
+    default $upstream_cache_status;
+    "off|" BYPASS;
+}
+map $remote_addr $taozhiyy_cos_local_origin_status {
+    default "";
+    127.0.0.1 $upstream_status;
+}
 """
 LOCATION_CONFIG = """# Cache only public, whole-image GET/HEAD responses; preserve all original URLs.
-proxy_cache taozhiyy_cos_images;
-proxy_cache_key "$scheme|$proxy_host|$request_uri";
+proxy_ssl_verify on;
+proxy_ssl_verify_depth 3;
+proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+proxy_cache $taozhiyy_cos_cache_zone;
+proxy_cache_key "verified-v2|$scheme|$proxy_host|$request_uri";
 proxy_cache_valid 200 1d;
 proxy_cache_lock on;
 proxy_cache_lock_timeout 5s;
 proxy_cache_revalidate on;
-proxy_cache_bypass $taozhiyy_cos_not_image $taozhiyy_cos_bad_method $taozhiyy_cos_nonstandard;
-proxy_no_cache $taozhiyy_cos_not_image $taozhiyy_cos_bad_method $taozhiyy_cos_nonstandard $taozhiyy_cos_bad_status;
-add_header X-Taozhiyy-Cache $upstream_cache_status always;
+proxy_no_cache $taozhiyy_cos_bad_status;
+add_header X-Taozhiyy-Cache $taozhiyy_cos_cache_status always;
+add_header X-Taozhiyy-Origin-Status $taozhiyy_cos_local_origin_status always;
 """
 
 
@@ -91,7 +109,14 @@ def fetch(url, byte_range=None):
         text = headers.read_text()
         fields = {key.lower(): value.strip() for key, value in re.findall(r"(?m)^([A-Za-z0-9-]+):\s*([^\r\n]*)", text)}
         data = body.read_bytes()
-        return {"status": int(re.findall(r"HTTP/\S+ (\d{3})", text)[-1]), "cache": fields.get("x-taozhiyy-cache"), "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data), "range": fields.get("content-range")}
+        return {
+            "status": int(re.findall(r"HTTP/\S+ (\d{3})", text)[-1]),
+            "cache": fields.get("x-taozhiyy-cache"),
+            "origin_status": fields.get("x-taozhiyy-origin-status"),
+            "sha256": hashlib.sha256(data).hexdigest(),
+            "bytes": len(data),
+            "range": fields.get("content-range"),
+        }
 
 
 def verify():
@@ -104,8 +129,14 @@ def verify():
     if query["cache"] != "BYPASS" or query["sha256"] != origin["sha256"]:
         raise RuntimeError("Query bypass verification failed")
     video = fetch("https://taozhiyy.top/cos/AI%E8%87%AA%E5%8A%A8%E5%8C%96%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87/main/videos/feature-1.mp4", "0-0")
-    if video["status"] != 206 or video["bytes"] != 1 or video["cache"] != "BYPASS":
-        raise RuntimeError("Video Range behavior changed")
+    if not (
+        video["status"] == 206
+        and video["origin_status"] == "206"
+        and video["bytes"] == 1
+        and video["cache"] == "BYPASS"
+        and re.fullmatch(r"bytes 0-0/[1-9]\d*", video["range"] or "")
+    ):
+        raise RuntimeError("COS did not directly return the requested video byte range")
     return {"image_first": first, "image_second": second, "query_cache": query["cache"], "video_range": video, "original_bytes_unchanged": True}
 
 
@@ -117,9 +148,14 @@ def main():
     http = Path("/etc/nginx/conf.d/taozhiyy-cos-image-cache.conf")
     location = Path("/etc/nginx/snippets/taozhiyy-cos-image-cache.conf")
     patched = patch_snippet(snippet.read_text())
-    for path, expected in ((http, HTTP_CONFIG), (location, LOCATION_CONFIG)):
-        if path.exists() and path.read_text() != expected:
-            raise ValueError(f"Existing managed file differs; review before replacing: {path}")
+    for path, expected, v1_hash in (
+        (http, HTTP_CONFIG, V1_HTTP_HASH),
+        (location, LOCATION_CONFIG, V1_LOCATION_HASH),
+    ):
+        if path.exists():
+            current = path.read_bytes()
+            if current != expected.encode() and hashlib.sha256(current).hexdigest() != v1_hash:
+                raise ValueError(f"Existing managed file differs; review before replacing: {path}")
     if shutil.disk_usage("/var").free < 768 * 1024 * 1024:
         raise ValueError("Insufficient disk space for bounded image cache")
     backup = Path("/root") / ("taozhiyy-cos-cache-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S"))

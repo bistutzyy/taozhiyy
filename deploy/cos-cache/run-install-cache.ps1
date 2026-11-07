@@ -1,11 +1,13 @@
 param(
     [Parameter(Mandatory = $true)][string]$Server,
     [Parameter(Mandatory = $true)][string]$KnownHost,
-    [int]$Port = 22222
+    [int]$Port = 22222,
+    [string]$ReportName = 'taozhiyy-cos-cache-install'
 )
 $ErrorActionPreference = 'Stop'
-$outputPath = Join-Path $env:USERPROFILE 'Downloads\taozhiyy-cos-cache-install-20261107.json'
-$statusPath = Join-Path $env:USERPROFILE 'Downloads\taozhiyy-cos-cache-install-20261107.status.txt'
+$downloads = Join-Path $env:USERPROFILE 'Downloads'
+$outputPath = Join-Path $downloads "$ReportName.json"
+$statusPath = Join-Path $downloads "$ReportName.status.txt"
 try {
     Write-Host 'Install public original-image cache after backing up Nginx configuration.'
     Write-Host 'No COS object, image quality, URL, SSH policy or production .env will be changed.'
